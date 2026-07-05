@@ -1,89 +1,38 @@
-type RightSideItem = {
-  title: string;
-  time: string;
-  category: "Admit Card" | "Result";
-  badge: string;
-};
+import Link from "next/link";
+import { admitCards, results, type RightSideItem } from "@/data/sidebarContent";
 
-const admitCards: RightSideItem[] = [
-  {
-    title: "UPSC NDA 2026",
-    time: "1 hour ago",
-    category: "Admit Card",
-    badge: "UPSC",
-  },
-  {
-    title: "SSC MTS",
-    time: "3 hours ago",
-    category: "Admit Card",
-    badge: "SSC",
-  },
-  {
-    title: "Railway NTPC",
-    time: "6 hours ago",
-    category: "Admit Card",
-    badge: "Railway",
-  },
-  {
-    title: "IBPS Clerk",
-    time: "9 hours ago",
-    category: "Admit Card",
-    badge: "IBPS",
-  },
-  {
-    title: "STET 2026",
-    time: "12 hours ago",
-    category: "Admit Card",
-    badge: "STET",
-  },
-  {
-    title: "CTET December 2026",
-    time: "1 day ago",
-    category: "Admit Card",
-    badge: "CTET",
-  },
+const dynamicBadgePalettes = [
+  "border-blue-200 bg-blue-50 text-blue-700",
+  "border-rose-200 bg-rose-50 text-rose-700",
+  "border-emerald-200 bg-emerald-50 text-emerald-700",
+  "border-amber-200 bg-amber-50 text-amber-700",
+  "border-violet-200 bg-violet-50 text-violet-700",
+  "border-cyan-200 bg-cyan-50 text-cyan-700",
+  "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+  "border-lime-200 bg-lime-50 text-lime-700",
 ];
 
-const results: RightSideItem[] = [
-  {
-    title: "SSC CPO Final Result",
-    time: "2 hours ago",
-    category: "Result",
-    badge: "SSC",
-  },
-  {
-    title: "UP Police Result 2026",
-    time: "5 hours ago",
-    category: "Result",
-    badge: "UP",
-  },
-  {
-    title: "Bank PO Mains Result",
-    time: "8 hours ago",
-    category: "Result",
-    badge: "Bank",
-  },
-  {
-    title: "UPSC CDS Result",
-    time: "11 hours ago",
-    category: "Result",
-    badge: "UPSC",
-  },
-  {
-    title: "Railway Group D Result",
-    time: "1 day ago",
-    category: "Result",
-    badge: "Railway",
-  },
-  {
-    title: "CTET Result 2026",
-    time: "2 days ago",
-    category: "Result",
-    badge: "CTET",
-  },
-];
+function getTextHash(value: string) {
+  let hash = 0;
 
-function UpdateTypeIcon({ type, className }: { type: string; className?: string }) {
+  for (let i = 0; i < value.length; i += 1) {
+    const codePoint = value.codePointAt(i) ?? 0;
+    hash = Math.trunc((hash * 31 + codePoint) % 2147483647);
+  }
+
+  return Math.abs(hash);
+}
+
+function getDynamicBadgeStyles(value: string) {
+  if (!value.trim()) {
+    return "border-indigo-200 bg-indigo-50 text-indigo-700";
+  }
+
+  const colorIndex = getTextHash(value.toLowerCase()) % dynamicBadgePalettes.length;
+  return dynamicBadgePalettes[colorIndex];
+}
+
+function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?: string }>) {
   const normalized = type.toLowerCase();
 
   if (normalized.includes("admit")) {
@@ -145,101 +94,72 @@ function UpdateTypeIcon({ type, className }: { type: string; className?: string 
   );
 }
 
-function SidebarCard({
-  title,
-  badge,
-  rows,
-  accent,
-}: {
+function SidebarCard({ title, badge, rows }: Readonly<{
   title: string;
   badge: string;
   rows: RightSideItem[];
-  accent: "rose" | "indigo";
-}) {
-  const isRose = accent === "rose";
-
+}>) {
   return (
-    <div
-      className={
-        isRose
-          ? "overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_14px_26px_rgba(15,23,42,0.10)] ring-1 ring-rose-50"
-          : "overflow-hidden rounded-xl border border-indigo-100 bg-white shadow-[0_14px_26px_rgba(15,23,42,0.10)] ring-1 ring-indigo-50"
-      }
-    >
-      <div
-        className={
-          isRose
-            ? "relative flex items-center justify-between gap-2 bg-gradient-to-r from-rose-700 via-rose-600 to-pink-500 px-3 py-2 text-white"
-            : "relative flex items-center justify-between gap-2 bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-500 px-3 py-2 text-white"
-        }
-      >
+    <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+      <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.22),transparent_45%)]" />
-        <div className="relative flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
-            <UpdateTypeIcon type={title} className="h-3.5 w-3.5" />
+        <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
+        <div className="relative flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/30">
+              <UpdateTypeIcon type={title} className="h-3 w-3" />
+            </span>
+            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-indigo-50">{title}</h2>
+          </div>
+          <span className="rounded-full bg-white/20 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ring-1 ring-white/25">
+            {badge}
           </span>
-          <h2 className="text-[15px] font-extrabold tracking-tight">{title}</h2>
         </div>
-        <span className="relative rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-white/25">
-          {badge}
-        </span>
-      </div>
+      </header>
 
-      <div className="max-h-[260px] overflow-y-auto bg-gradient-to-b from-white to-slate-50/30">
-        <table className="w-full border-collapse text-[11px]">
-          <tbody>
-            {rows.map((item, index) => (
-              <tr
-                key={`${item.title}-${index}`}
-                className={
-                  isRose
-                    ? "odd:bg-white even:bg-rose-50/25 transition-colors hover:bg-rose-50/45"
-                    : "odd:bg-white even:bg-indigo-50/25 transition-colors hover:bg-indigo-50/45"
-                }
-              >
-                <td className="border-b border-slate-200/80 px-2 py-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-1.5">
-                      <span
-                        className={
-                          isRose
-                            ? "mt-[1px] inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700"
-                            : "mt-[1px] inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700"
-                        }
-                      >
-                        <UpdateTypeIcon type={item.category} className="h-2.5 w-2.5" />
-                      </span>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-800">{item.title}</p>
-                        <p className="mt-0.5 text-[10px] font-medium text-slate-500">{item.time}</p>
-                      </div>
-                    </div>
-
-                    <span
-                      className={
-                        isRose
-                          ? "rounded-full border border-rose-100 bg-rose-50 px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide text-rose-700"
-                          : "rounded-full border border-indigo-100 bg-indigo-50 px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide text-indigo-700"
-                      }
-                    >
-                      {item.badge}
+      <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
+        <ul className="space-y-1" aria-label={`${title} list`}>
+          {rows.map((item, index) => (
+            <li key={`${item.title}-${index}`}>
+              <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 items-start gap-1.5">
+                    <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
+                      <UpdateTypeIcon type={item.category} className="h-2.5 w-2.5" />
+                      <span className="absolute -bottom-2.5 left-1/2 h-2 w-px -translate-x-1/2 bg-indigo-200/80" aria-hidden="true" />
                     </span>
+                    <div className="min-w-0">
+                      <Link
+                        href={item.href}
+                        prefetch={false}
+                        className="block truncate text-[10px] font-semibold text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 active:text-indigo-700 visited:text-indigo-700 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                      >
+                        {item.title}
+                      </Link>
+                      <p className="text-[9px] font-medium text-slate-500">{item.time}</p>
+                    </div>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+                  <span
+                    className={`rounded-full border px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${getDynamicBadgeStyles(item.badge)}`}
+                  >
+                    {item.badge}
+                  </span>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>
+    </section>
   );
 }
 
 export default function HomeRightSidebar() {
   return (
-    <aside className="w-full max-w-[320px] space-y-3">
-      <SidebarCard title="Admit Card" badge="New" rows={admitCards} accent="rose" />
-      <SidebarCard title="Result" badge="Hot" rows={results} accent="indigo" />
+    <aside className="w-full space-y-2.5 max-md:max-w-none md:ml-auto md:max-w-[272px] lg:sticky lg:top-[74px] lg:self-start">
+      <SidebarCard title="Admit Card" badge="New" rows={admitCards} />
+      <SidebarCard title="Result" badge="Hot" rows={results} />
     </aside>
   );
 }

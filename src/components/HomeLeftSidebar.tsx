@@ -1,100 +1,47 @@
-type LatestUpdate = {
-  title: string;
-  time: string;
-  type: string;
-};
+import Link from "next/link";
+import { latestUpdates, upcomingExams } from "@/data/sidebarContent";
 
-type UpcomingExam = {
-  title: string;
-  date: string;
-  category: "Exam";
-  badge: string;
-};
-
-const latestUpdates: LatestUpdate[] = [
-  
-  {
-    title: "SSC CGL Result 2024",
-    time: "2 hours ago",
-    type: "Result",
-  },
-  {
-    title: "Railway Group D Recruitment",
-    time: "4 hours ago",
-    type: "Job",
-  },
-  {
-    title: "UPSC Prelims Admit Card",
-    time: "6 hours ago",
-    type: "Admit Card",
-  },
-  {
-    title: "Bank PO Answer Key Released",
-    time: "8 hours ago",
-    type: "Answer Key",
-  },
-  {
-    title: "Admit Card Updates",
-    time: "10 hours ago",
-    type: "Admit Card",
-  },
-  {
-    title: "Result Updates",
-    time: "12 hours ago",
-    type: "Result",
-  },
-  {
-    title: "Admit Card Updates1",
-    time: "10 hours ago",
-    type: "Admit Card",
-  },
-  {
-    title: "Result Updates1",
-    time: "12 hours ago",
-    type: "Result",
-  },
+const dynamicBadgePalettes = [
+  "border-blue-200 bg-blue-50 text-blue-700",
+  "border-rose-200 bg-rose-50 text-rose-700",
+  "border-emerald-200 bg-emerald-50 text-emerald-700",
+  "border-amber-200 bg-amber-50 text-amber-700",
+  "border-violet-200 bg-violet-50 text-violet-700",
+  "border-cyan-200 bg-cyan-50 text-cyan-700",
+  "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+  "border-lime-200 bg-lime-50 text-lime-700",
 ];
 
-const upcomingExams: UpcomingExam[] = [
-  {
-    title: "SSC CHSL Tier-I Exam",
-    date: "15 Sep 2026",
-    category: "Exam",
-    badge: "SSC",
-  },
-  {
-    title: "UPSC Civil Services Mains",
-    date: "27 Sep 2026",
-    category: "Exam",
-    badge: "UPSC",
-  },
-  {
-    title: "IBPS PO Prelims",
-    date: "04 Oct 2026",
-    category: "Exam",
-    badge: "IBPS",
-  },
-  {
-    title: "NDA-II Written Exam",
-    date: "13 Oct 2026",
-    category: "Exam",
-    badge: "NDA",
-  },
-  {
-    title: "Railway NTPC CBT",
-    date: "21 Oct 2026",
-    category: "Exam",
-    badge: "Railway",
-  },
-  {
-    title: "CTET December Session",
-    date: "08 Dec 2026",
-    category: "Exam",
-    badge: "CTET",
-  },
-];
+function getTypeStyles(type: string) {
+  if (!type.trim()) {
+    return "border-indigo-200 bg-indigo-50 text-indigo-700";
+  }
 
-function BellIcon({ className }: { className?: string }) {
+  const colorIndex = getTextHash(type.toLowerCase()) % dynamicBadgePalettes.length;
+  return dynamicBadgePalettes[colorIndex];
+}
+
+function getTextHash(value: string) {
+  let hash = 0;
+
+  for (let i = 0; i < value.length; i += 1) {
+    const codePoint = value.codePointAt(i) ?? 0;
+    hash = Math.trunc((hash * 31 + codePoint) % 2147483647);
+  }
+
+  return Math.abs(hash);
+}
+
+function getExamBadgeStyles(badge: string) {
+  if (!badge.trim()) {
+    return "border-indigo-200 bg-indigo-50 text-indigo-700";
+  }
+
+  const colorIndex = getTextHash(badge.toLowerCase()) % dynamicBadgePalettes.length;
+  return dynamicBadgePalettes[colorIndex];
+}
+
+function BellIcon({ className }: Readonly<{ className?: string }>) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -113,7 +60,7 @@ function BellIcon({ className }: { className?: string }) {
   );
 }
 
-function UpdateTypeIcon({ type, className }: { type: string; className?: string }) {
+function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?: string }>) {
   const normalized = type.toLowerCase();
 
   if (normalized.includes("admit")) {
@@ -199,98 +146,119 @@ function UpdateTypeIcon({ type, className }: { type: string; className?: string 
 
 export default function HomeLeftSidebar() {
   return (
-    <aside className="w-full max-w-[320px] space-y-3">
-      <div className="overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-[0_14px_26px_rgba(15,23,42,0.10)] ring-1 ring-emerald-50">
-        <div className="relative flex items-center justify-between gap-2 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-500 px-3 py-2 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.22),transparent_45%)]" />
-          <div className="relative flex items-center gap-2">
-            <span className="live-bell-wrap inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
-              <BellIcon className="h-3.5 w-3.5" />
+    <aside className="w-full space-y-2.5 max-md:max-w-none md:max-w-[272px] lg:sticky lg:top-[74px] lg:self-start">
+      <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+        <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.25),transparent_40%)]" />
+          <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
+          <div className="relative flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="live-bell-wrap inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/30">
+                <BellIcon className="h-3 w-3" />
+              </span>
+              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-indigo-50">Latest Updates</h2>
+            </div>
+            <span className="live-chip relative rounded-full bg-white/20 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ring-1 ring-white/25">
+              Live
             </span>
-            <h2 className="text-[15px] font-extrabold tracking-tight">Latest Updates</h2>
           </div>
-          <span className="live-chip relative rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-white/25">
-            Live
-          </span>
-        </div>
+        </header>
 
-        <div className="max-h-[300px] overflow-y-auto bg-gradient-to-b from-white to-slate-50/30">
-          <table className="w-full border-collapse text-[11px]">
-            <tbody>
-              {latestUpdates.map((item, index) => (
-                <tr
-                  key={`${item.title}-${index}`}
-                  className="odd:bg-white even:bg-emerald-50/25 transition-colors hover:bg-emerald-50/45"
-                >
-                  <td className="border-b border-slate-200/80 px-2 py-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-1.5">
-                        <span className="mt-[1px] inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                          <UpdateTypeIcon type={item.type} className="h-2.5 w-2.5" />
-                        </span>
-                        <div>
-                          <p className="text-[11px] font-semibold text-slate-800">{item.title}</p>
-                          <p className="mt-0.5 text-[10px] font-medium text-slate-500">{item.time}</p>
-                        </div>
+        <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
+          <ul className="space-y-1" aria-label="Latest updates list">
+            {latestUpdates.map((item, index) => (
+              <li key={`${item.title}-${index}`}>
+                <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-start gap-1.5">
+                      <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
+                        <UpdateTypeIcon type={item.type} className="h-2.5 w-2.5" />
+                        <span className="absolute -bottom-2.5 left-1/2 h-2 w-px -translate-x-1/2 bg-indigo-200/80" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <Link
+                          href={item.href}
+                          prefetch={false}
+                          className="block truncate text-[10px] font-semibold text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 active:text-indigo-700 visited:text-indigo-700 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                        >
+                          {item.title}
+                        </Link>
+                        <p className="text-[9px] font-medium text-slate-500">{item.time}</p>
                       </div>
+                    </div>
 
-                      <span className="rounded-full border border-emerald-100 bg-emerald-50 px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide text-emerald-700">
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span
+                        className={`rounded-full border px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${getTypeStyles(item.type)}`}
+                      >
                         {item.type}
                       </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-sky-100 bg-white shadow-[0_14px_26px_rgba(15,23,42,0.10)] ring-1 ring-sky-50">
-        <div className="relative flex items-center justify-between gap-2 bg-gradient-to-r from-sky-700 via-sky-600 to-cyan-500 px-3 py-2 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.22),transparent_45%)]" />
-          <div className="relative flex items-center gap-2">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25">
-              <UpdateTypeIcon type="Exam" className="h-3.5 w-3.5" />
-            </span>
-            <h2 className="text-[15px] font-extrabold tracking-tight">Upcoming Exams</h2>
-          </div>
-          <span className="relative rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-white/25">
-            Soon
-          </span>
-        </div>
-
-        <div className="max-h-[260px] overflow-y-auto bg-gradient-to-b from-white to-slate-50/30">
-          <table className="w-full border-collapse text-[11px]">
-            <tbody>
-              {upcomingExams.map((item, index) => (
-                <tr
-                  key={`${item.title}-${index}`}
-                  className="odd:bg-white even:bg-sky-50/25 transition-colors hover:bg-sky-50/45"
-                >
-                  <td className="border-b border-slate-200/80 px-2 py-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-1.5">
-                        <span className="mt-[1px] inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700">
-                          <UpdateTypeIcon type={item.category} className="h-2.5 w-2.5" />
+                      {index < 2 ? (
+                        <span className="rounded-full border border-rose-200 bg-rose-50 px-1.5 py-[1px] text-[7px] font-bold uppercase tracking-[0.08em] text-rose-600">
+                          New
                         </span>
-                        <div>
-                          <p className="text-[11px] font-semibold text-slate-800">{item.title}</p>
-                          <p className="mt-0.5 text-[10px] font-medium text-slate-500">{item.date}</p>
-                        </div>
-                      </div>
-
-                      <span className="rounded-full border border-sky-100 bg-sky-50 px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide text-sky-700">
-                        {item.badge}
-                      </span>
+                      ) : null}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+        <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.25),transparent_40%)]" />
+          <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
+          <div className="relative flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/30">
+                <UpdateTypeIcon type="Exam" className="h-3 w-3" />
+              </span>
+              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-indigo-50">Upcoming Exams</h2>
+            </div>
+            <span className="rounded-full bg-white/20 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ring-1 ring-white/25">
+              Soon
+            </span>
+          </div>
+        </header>
+
+        <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
+          <ul className="space-y-1" aria-label="Upcoming exams list">
+            {upcomingExams.map((item, index) => (
+              <li key={`${item.title}-${index}`}>
+                <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-start gap-1.5">
+                      <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
+                        <UpdateTypeIcon type={item.category} className="h-2.5 w-2.5" />
+                        <span className="absolute -bottom-2.5 left-1/2 h-2 w-px -translate-x-1/2 bg-indigo-200/80" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <Link
+                          href={item.href}
+                          prefetch={false}
+                          className="block truncate text-[10px] font-semibold text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 active:text-indigo-700 visited:text-indigo-700 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+                        >
+                          {item.title}
+                        </Link>
+                        <p className="text-[9px] font-medium text-slate-500">{item.date}</p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`rounded-full border px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${getExamBadgeStyles(item.badge)}`}
+                    >
+                      {item.badge}
+                    </span>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </aside>
   );
 }

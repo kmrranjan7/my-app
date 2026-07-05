@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import HeaderNavbar from "@/components/HeaderNavbar";
 import "./globals.css";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL &&
-  process.env.NEXT_PUBLIC_SITE_URL.startsWith("http")
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://example.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
+  ? process.env.NEXT_PUBLIC_SITE_URL
+  : "https://example.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -51,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full">
         <HeaderNavbar />
         {children}
