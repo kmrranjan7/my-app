@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
-export default function Error({
+export default function ErrorBoundary({
   error,
   unstable_retry,
-}: {
+}: Readonly<{
   error: Error & { digest?: string };
   unstable_retry: () => void;
-}) {
+}>) {
   useEffect(() => {
     console.error(error);
   }, [error]);

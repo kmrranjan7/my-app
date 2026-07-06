@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: UpdatePageProps): Promise<Met
   };
 }
 
-export default async function UpdateDetailPage({ params }: UpdatePageProps) {
+export default async function UpdateDetailPage({ params }: Readonly<UpdatePageProps>) {
   const { slug } = await params;
   const update = getUpdateBySlug(slug);
 

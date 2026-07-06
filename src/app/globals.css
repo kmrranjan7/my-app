@@ -113,7 +113,7 @@ a {
 :root[data-theme="dark"] .site-nav-link:focus-visible {
   color: #f8fafc;
   border-color: rgba(148, 163, 184, 0.36);
-  background: rgba(148, 163, 184, 0.16);
+  background: rgba(30, 41, 59, 0.95);
 }
 
 .nav-actions {

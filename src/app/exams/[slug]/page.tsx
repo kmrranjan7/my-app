@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: ExamsPageProps): Promise<Meta
   };
 }
 
-export default async function ExamDetailPage({ params }: ExamsPageProps) {
+export default async function ExamDetailPage({ params }: Readonly<ExamsPageProps>) {
   const { slug } = await params;
   const exam = getExamBySlug(slug);
 

@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: ResultsPageProps): Promise<Me
   };
 }
 
-export default async function ResultDetailPage({ params }: ResultsPageProps) {
+export default async function ResultDetailPage({ params }: Readonly<ResultsPageProps>) {
   const { slug } = await params;
   const result = getResultBySlug(slug);
 

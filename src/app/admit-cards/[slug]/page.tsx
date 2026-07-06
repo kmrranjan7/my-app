@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: AdmitCardPageProps): Promise<
   };
 }
 
-export default async function AdmitCardDetailPage({ params }: AdmitCardPageProps) {
+export default async function AdmitCardDetailPage({ params }: Readonly<AdmitCardPageProps>) {
   const { slug } = await params;
   const admitCard = getAdmitCardBySlug(slug);
 
