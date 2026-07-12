@@ -1,54 +1,13 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+const BACKEND_POSTS_BASE = "http://localhost:8080/api/v1/posts";
+
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
 type PostType = "Job" | "Admit" | "Exam" | "Result";
 
-type CreatePostBody = Readonly<{
-  readonly postTitle?: string;
-  readonly postSlug?: string;
-  readonly contentHtml?: string;
-  readonly applicationId?: string;
-  readonly department?: string;
-  readonly organization?: string;
-  readonly startDate?: string;
-  readonly endDate?: string;
-  readonly stateName?: string;
-  readonly seoTitle?: string;
-  readonly seoDescription?: string;
-  readonly seoFocusKeyword?: string;
-  readonly faqSchemaJson?: string;
-  readonly postStatus?: PostStatus;
-  readonly scheduledAt?: string;
-  readonly postType?: PostType;
-}>;
-
-type SavedPostRecord = Readonly<{
-  readonly id: string;
-  readonly createdAt: string;
-  readonly postTitle: string;
-  readonly postSlug: string;
-  readonly contentHtml: string;
-  readonly applicationId: string;
-  readonly department: string;
-  readonly organization: string;
-  readonly startDate: string;
-  readonly endDate: string;
-  readonly stateName: string;
-  readonly seoTitle: string;
-  readonly seoDescription: string;
-  readonly seoFocusKeyword: string;
-  readonly faqSchemaJson: string;
-  readonly postStatus: PostStatus;
-  readonly scheduledAt: string;
-  readonly postType: PostType;
-}>;
-
-type UpdatePostBody = Readonly<{
+type FrontendBody = Readonly<{
   readonly id?: string;
   readonly postTitle?: string;
   readonly postSlug?: string;
@@ -68,6 +27,49 @@ type UpdatePostBody = Readonly<{
   readonly postType?: PostType;
 }>;
 
+type BackendPostRecord = Readonly<{
+  readonly id: string;
+  readonly createdAt: string;
+  readonly postTitle: string;
+  readonly postSlug: string;
+  readonly contentHtml: string;
+  readonly applicationId: string;
+  readonly department: string;
+  readonly organization: string;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly stateName: string;
+  readonly seoTitle: string;
+  readonly seoDescription: string;
+  readonly seoFocusKeyword: string;
+  readonly faqSchemaJson: string;
+  readonly postStatus: PostStatus;
+  readonly scheduledAt: string;
+  readonly postType: PostType;
+  readonly updatedAt: string;
+}>;
+
+type BackendApiResponse<T> = Readonly<{
+  readonly success: boolean;
+  readonly message: string;
+  readonly data: T;
+}>;
+
+type BackendPaged<T> = Readonly<{
+  readonly content: ReadonlyArray<T>;
+  readonly page: number;
+  readonly size: number;
+  readonly totalElements: number;
+  readonly totalPages: number;
+  readonly sort: string;
+  readonly first: boolean;
+  readonly last: boolean;
+}>;
+
+function toNonEmpty(input: unknown): string {
+  return typeof input === "string" ? input.trim() : "";
+}
+
 function toPostStatus(input: unknown): PostStatus {
   if (
     input === "Draft" ||
@@ -82,178 +84,220 @@ function toPostStatus(input: unknown): PostStatus {
 }
 
 function toPostType(input: unknown): PostType {
-  if (input === "Admit" || input === "Exam" || input === "Result" || input === "Job") {
+  if (input === "Job" || input === "Admit" || input === "Exam" || input === "Result") {
     return input;
   }
 
   return "Job";
 }
 
-function toNonEmpty(input: unknown): string {
-  return typeof input === "string" ? input.trim() : "";
+function normalizeRecord(record: Partial<BackendPostRecord>): BackendPostRecord {
+  return {
+    id: toNonEmpty(record.id),
+    createdAt: toNonEmpty(record.createdAt),
+    postTitle: toNonEmpty(record.postTitle),
+    postSlug: toNonEmpty(record.postSlug),
+    contentHtml: toNonEmpty(record.contentHtml),
+    applicationId: toNonEmpty(record.applicationId),
+    department: toNonEmpty(record.department),
+    organization: toNonEmpty(record.organization),
+    startDate: toNonEmpty(record.startDate),
+    endDate: toNonEmpty(record.endDate),
+    stateName: toNonEmpty(record.stateName),
+    seoTitle: toNonEmpty(record.seoTitle),
+    seoDescription: toNonEmpty(record.seoDescription),
+    seoFocusKeyword: toNonEmpty(record.seoFocusKeyword),
+    faqSchemaJson: toNonEmpty(record.faqSchemaJson),
+    postStatus: toPostStatus(record.postStatus),
+    scheduledAt: toNonEmpty(record.scheduledAt),
+    postType: toPostType(record.postType),
+    updatedAt: toNonEmpty(record.updatedAt),
+  };
 }
 
-function buildPostId(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const suffix = Math.floor(Math.random() * 90000 + 10000);
-  return `POST-${year}-${suffix}`;
+function mapFrontendToBackendPayload(body: FrontendBody) {
+  return {
+    postTitle: toNonEmpty(body.postTitle),
+    postSlug: toNonEmpty(body.postSlug),
+    contentHtml: toNonEmpty(body.contentHtml),
+    applicationId: toNonEmpty(body.applicationId),
+    department: toNonEmpty(body.department),
+    organization: toNonEmpty(body.organization),
+    startDate: toNonEmpty(body.startDate) || null,
+    endDate: toNonEmpty(body.endDate) || null,
+    stateName: toNonEmpty(body.stateName),
+    seoTitle: toNonEmpty(body.seoTitle),
+    seoDescription: toNonEmpty(body.seoDescription),
+    seoFocusKeyword: toNonEmpty(body.seoFocusKeyword),
+    faqSchemaJson: toNonEmpty(body.faqSchemaJson),
+    postStatus: toPostStatus(body.postStatus),
+    scheduledAt: toNonEmpty(body.scheduledAt) || null,
+    postType: toPostType(body.postType),
+  };
 }
 
-const dataDir = path.join(process.cwd(), "data");
-const recordsPath = path.join(dataDir, "saved-posts.json");
-
-async function readRecords(): Promise<SavedPostRecord[]> {
+async function readJson<T>(response: Response): Promise<T | null> {
   try {
-    const raw = await readFile(recordsPath, "utf8");
-    const parsed = JSON.parse(raw) as Array<Partial<SavedPostRecord>>;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.map((item) => ({
-      id: toNonEmpty(item.id),
-      createdAt: toNonEmpty(item.createdAt),
-      postTitle: toNonEmpty(item.postTitle),
-      postSlug: toNonEmpty(item.postSlug),
-      contentHtml: toNonEmpty(item.contentHtml),
-      applicationId: toNonEmpty(item.applicationId),
-      department: toNonEmpty(item.department),
-      organization: toNonEmpty(item.organization),
-      startDate: toNonEmpty(item.startDate),
-      endDate: toNonEmpty(item.endDate),
-      stateName: toNonEmpty(item.stateName),
-      seoTitle: toNonEmpty(item.seoTitle),
-      seoDescription: toNonEmpty(item.seoDescription),
-      seoFocusKeyword: toNonEmpty(item.seoFocusKeyword),
-      faqSchemaJson: typeof item.faqSchemaJson === "string" ? item.faqSchemaJson : "",
-      postStatus: toPostStatus(item.postStatus),
-      scheduledAt: toNonEmpty(item.scheduledAt),
-      postType: toPostType(item.postType),
-    }));
+    return (await response.json()) as T;
   } catch {
-    return [];
+    return null;
   }
 }
 
-export async function POST(request: Request) {
-  let body: CreatePostBody;
-
+async function readRequestJson<T>(request: Request): Promise<T | null> {
   try {
-    body = (await request.json()) as CreatePostBody;
+    return (await request.json()) as T;
   } catch {
-    return NextResponse.json({ message: "Invalid request payload." }, { status: 400 });
+    return null;
+  }
+}
+
+function backendMessage(payload: unknown, fallback: string): string {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "message" in payload &&
+    typeof (payload as { readonly message?: unknown }).message === "string"
+  ) {
+    return (payload as { readonly message: string }).message;
   }
 
-  const postTitle = toNonEmpty(body.postTitle);
-  const postSlug = toNonEmpty(body.postSlug);
-  const contentHtml = toNonEmpty(body.contentHtml);
-  const applicationId = toNonEmpty(body.applicationId) || buildPostId().replace("POST", "APP");
-  const department = toNonEmpty(body.department);
-  const organization = toNonEmpty(body.organization);
-  const startDate = toNonEmpty(body.startDate);
-  const endDate = toNonEmpty(body.endDate);
-  const stateName = toNonEmpty(body.stateName);
-  const seoTitle = toNonEmpty(body.seoTitle);
-  const seoDescription = toNonEmpty(body.seoDescription);
-  const seoFocusKeyword = toNonEmpty(body.seoFocusKeyword);
-  const faqSchemaJson = typeof body.faqSchemaJson === "string" ? body.faqSchemaJson : "";
-  const postStatus = toPostStatus(body.postStatus);
-  const scheduledAt = toNonEmpty(body.scheduledAt);
-  const postType = toPostType(body.postType);
+  return fallback;
+}
 
-  if (!postTitle || !postSlug || !contentHtml) {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const search = toNonEmpty(searchParams.get("search"));
+  const postType = toNonEmpty(searchParams.get("postType"));
+  const page = toNonEmpty(searchParams.get("page")) || "0";
+  const requestedSize = Number.parseInt(toNonEmpty(searchParams.get("size")) || "20", 10);
+  const safeSize = Number.isFinite(requestedSize)
+    ? Math.min(Math.max(requestedSize, 1), 100)
+    : 20;
+  const size = String(safeSize);
+
+  const qs = new URLSearchParams({
+    page,
+    size,
+    sortBy: "createdAt",
+    sortDir: "desc",
+  });
+
+  if (search) {
+    qs.set("search", search);
+  }
+
+  if (postType) {
+    qs.set("postType", postType);
+  }
+
+  const response = await fetch(`${BACKEND_POSTS_BASE}?${qs.toString()}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const payload = await readJson<unknown>(response);
     return NextResponse.json(
-      { message: "postTitle, postSlug and contentHtml are required." },
-      { status: 400 },
+      { message: backendMessage(payload, "Failed to fetch posts.") },
+      { status: response.status },
     );
   }
 
-  const nextRecord: SavedPostRecord = {
-    id: buildPostId(),
-    createdAt: new Date().toISOString(),
-    postTitle,
-    postSlug,
-    contentHtml,
-    applicationId,
-    department,
-    organization,
-    startDate,
-    endDate,
-    stateName,
-    seoTitle,
-    seoDescription,
-    seoFocusKeyword,
-    faqSchemaJson,
-    postStatus,
-    scheduledAt,
-    postType,
-  };
+  const payload = await readJson<BackendApiResponse<BackendPaged<Partial<BackendPostRecord>>>>(response);
+  const records = payload?.data?.content?.map((item) => normalizeRecord(item)) ?? [];
 
-  const records = await readRecords();
-  const nextRecords = [nextRecord, ...records];
-
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(recordsPath, JSON.stringify(nextRecords, null, 2), "utf8");
-
-  return NextResponse.json({ record: nextRecord }, { status: 201 });
-}
-
-export async function GET() {
-  const records = await readRecords();
   return NextResponse.json({ records });
 }
 
-export async function PATCH(request: Request) {
-  let body: UpdatePostBody;
+export async function POST(request: Request) {
+  const body = (await readRequestJson<FrontendBody>(request)) ?? {};
 
-  try {
-    body = (await request.json()) as UpdatePostBody;
-  } catch {
-    return NextResponse.json({ message: "Invalid request payload." }, { status: 400 });
+  const response = await fetch(BACKEND_POSTS_BASE, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(mapFrontendToBackendPayload(body)),
+  });
+
+  if (!response.ok) {
+    const payload = await readJson<unknown>(response);
+    return NextResponse.json(
+      { message: backendMessage(payload, "Failed to create post.") },
+      { status: response.status },
+    );
   }
 
+  const payload = await readJson<BackendApiResponse<Partial<BackendPostRecord>>>(response);
+  const record = normalizeRecord(payload?.data ?? {});
+
+  return NextResponse.json({ record }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const body = (await readRequestJson<FrontendBody>(request)) ?? {};
   const id = toNonEmpty(body.id);
+
   if (!id) {
     return NextResponse.json({ message: "id is required." }, { status: 400 });
   }
 
-  const records = await readRecords();
-  const index = records.findIndex((item) => item.id === id);
+  const currentResponse = await fetch(`${BACKEND_POSTS_BASE}/${encodeURIComponent(id)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
 
-  if (index < 0) {
-    return NextResponse.json({ message: "Record not found." }, { status: 404 });
+  if (!currentResponse.ok) {
+    const payload = await readJson<unknown>(currentResponse);
+    return NextResponse.json(
+      { message: backendMessage(payload, "Failed to fetch existing post for update.") },
+      { status: currentResponse.status },
+    );
   }
 
-  const current = records[index];
-  const updated: SavedPostRecord = {
-    ...current,
-    postTitle: toNonEmpty(body.postTitle) || current.postTitle,
-    postSlug: toNonEmpty(body.postSlug) || current.postSlug,
-    contentHtml: toNonEmpty(body.contentHtml) || current.contentHtml,
-    applicationId: toNonEmpty(body.applicationId) || current.applicationId,
-    department: toNonEmpty(body.department) || current.department,
-    organization: toNonEmpty(body.organization) || current.organization,
-    startDate: toNonEmpty(body.startDate) || current.startDate,
-    endDate: toNonEmpty(body.endDate) || current.endDate,
-    stateName: toNonEmpty(body.stateName) || current.stateName,
-    seoTitle: toNonEmpty(body.seoTitle) || current.seoTitle,
-    seoDescription: toNonEmpty(body.seoDescription) || current.seoDescription,
-    seoFocusKeyword: toNonEmpty(body.seoFocusKeyword) || current.seoFocusKeyword,
-    faqSchemaJson:
-      typeof body.faqSchemaJson === "string" ? body.faqSchemaJson : current.faqSchemaJson,
-    postStatus:
-      typeof body.postStatus === "string" ? toPostStatus(body.postStatus) : current.postStatus,
-    scheduledAt:
-      typeof body.scheduledAt === "string" ? toNonEmpty(body.scheduledAt) : current.scheduledAt,
-    postType: typeof body.postType === "string" ? toPostType(body.postType) : current.postType,
+  const currentPayload = await readJson<BackendApiResponse<Partial<BackendPostRecord>>>(currentResponse);
+  const current = normalizeRecord(currentPayload?.data ?? {});
+
+  const mergedBody: FrontendBody = {
+    postTitle: body.postTitle ?? current.postTitle,
+    postSlug: body.postSlug ?? current.postSlug,
+    contentHtml: body.contentHtml ?? current.contentHtml,
+    applicationId: body.applicationId ?? current.applicationId,
+    department: body.department ?? current.department,
+    organization: body.organization ?? current.organization,
+    startDate: body.startDate ?? current.startDate,
+    endDate: body.endDate ?? current.endDate,
+    stateName: body.stateName ?? current.stateName,
+    seoTitle: body.seoTitle ?? current.seoTitle,
+    seoDescription: body.seoDescription ?? current.seoDescription,
+    seoFocusKeyword: body.seoFocusKeyword ?? current.seoFocusKeyword,
+    faqSchemaJson: body.faqSchemaJson ?? current.faqSchemaJson,
+    postStatus: body.postStatus ?? current.postStatus,
+    scheduledAt: body.scheduledAt ?? current.scheduledAt,
+    postType: body.postType ?? current.postType,
   };
 
-  const nextRecords = records.map((item) => (item.id === id ? updated : item));
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(recordsPath, JSON.stringify(nextRecords, null, 2), "utf8");
+  const response = await fetch(`${BACKEND_POSTS_BASE}/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(mapFrontendToBackendPayload(mergedBody)),
+  });
 
-  return NextResponse.json({ record: updated });
+  if (!response.ok) {
+    const payload = await readJson<unknown>(response);
+    return NextResponse.json(
+      { message: backendMessage(payload, "Failed to update post.") },
+      { status: response.status },
+    );
+  }
+
+  const payload = await readJson<BackendApiResponse<Partial<BackendPostRecord>>>(response);
+  const record = normalizeRecord(payload?.data ?? {});
+
+  return NextResponse.json({ record });
 }
 
 export async function DELETE(request: Request) {
@@ -264,15 +308,17 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "id query parameter is required." }, { status: 400 });
   }
 
-  const records = await readRecords();
-  const nextRecords = records.filter((item) => item.id !== id);
+  const response = await fetch(`${BACKEND_POSTS_BASE}/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
 
-  if (nextRecords.length === records.length) {
-    return NextResponse.json({ message: "Record not found." }, { status: 404 });
+  if (!response.ok) {
+    const payload = await readJson<unknown>(response);
+    return NextResponse.json(
+      { message: backendMessage(payload, "Failed to delete post.") },
+      { status: response.status },
+    );
   }
-
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(recordsPath, JSON.stringify(nextRecords, null, 2), "utf8");
 
   return NextResponse.json({ success: true });
 }

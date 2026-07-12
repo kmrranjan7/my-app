@@ -53,6 +53,28 @@ export default function DashboardShell() {
   } = useDashboardStore((state) => state);
   const [activeMenuKey, setActiveMenuKey] = useState("Dashboard");
   const [prefillRecord, setPrefillRecord] = useState<NewPostPrefillRecord | null>(null);
+  const [savedRecordsVersion, setSavedRecordsVersion] = useState(0);
+
+  const handleStatNavigation = (statId: string) => {
+    if (statId === "job") {
+      setActiveMenuKey("Saved Jobs");
+      return;
+    }
+
+    if (statId === "admit") {
+      setActiveMenuKey("Saved Admit Card");
+      return;
+    }
+
+    if (statId === "exam") {
+      setActiveMenuKey("Saved Exam");
+      return;
+    }
+
+    if (statId === "results") {
+      setActiveMenuKey("Saved Result");
+    }
+  };
 
   const filteredJobs = useMemo(() => {
     if (!data) {
@@ -143,6 +165,8 @@ export default function DashboardShell() {
             />
           ) : activeMenuKey === "Saved Jobs" ? (
             <SavedJobsPanel
+              postTypeFilter="Job"
+              refreshToken={savedRecordsVersion}
               onEditInNewPost={(record) => {
                 setPrefillRecord(record);
                 setActiveMenuKey("New Post");
@@ -150,6 +174,7 @@ export default function DashboardShell() {
             />
           ) : activeMenuKey === "Saved Admit Card" ? (
             <SavedAdmitCardPanel
+              refreshToken={savedRecordsVersion}
               onEditInNewPost={(record) => {
                 setPrefillRecord(record);
                 setActiveMenuKey("New Post");
@@ -157,6 +182,7 @@ export default function DashboardShell() {
             />
           ) : activeMenuKey === "Saved Exam" ? (
             <SavedExamPanel
+              refreshToken={savedRecordsVersion}
               onEditInNewPost={(record) => {
                 setPrefillRecord(record);
                 setActiveMenuKey("New Post");
@@ -164,6 +190,7 @@ export default function DashboardShell() {
             />
           ) : activeMenuKey === "Saved Result" ? (
             <SavedResultPanel
+              refreshToken={savedRecordsVersion}
               onEditInNewPost={(record) => {
                 setPrefillRecord(record);
                 setActiveMenuKey("New Post");
@@ -172,12 +199,18 @@ export default function DashboardShell() {
           ) : activeMenuKey === "Profile Management" ? (
             <ProfileManagementPanel />
           ) : activeMenuKey === "New Post" ? (
-            <NewPostPanel prefillRecord={prefillRecord} />
+            <NewPostPanel
+              prefillRecord={prefillRecord}
+              onSavedRecord={() => {
+                setSavedRecordsVersion((current) => current + 1);
+                void fetchDashboardData();
+              }}
+            />
           ) : activeMenuKey === "Help & Support" ? (
             <HelpSupportPanel />
           ) : (
             <>
-              <StatsCards stats={data.stats} />
+              <StatsCards stats={data.stats} onStatClick={handleStatNavigation} />
 
               <AnalyticsSection
                 categoryData={data.categoryChart}

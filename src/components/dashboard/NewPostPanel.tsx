@@ -170,9 +170,10 @@ export type NewPostPrefillRecord = Readonly<{
 
 type NewPostPanelProps = Readonly<{
   readonly prefillRecord?: NewPostPrefillRecord | null;
+  readonly onSavedRecord?: () => void;
 }>;
 
-export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
+export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPanelProps) {
   const initialDraft = (() => {
     if (typeof window === "undefined") {
       return null;
@@ -251,6 +252,12 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [saveRecordError, setSaveRecordError] = useState<string | null>(null);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [confirmationPopup, setConfirmationPopup] = useState<{
+    readonly title: string;
+    readonly message: string;
+  } | null>(null);
   const [collapsedBoxes, setCollapsedBoxes] = useState<{
     readonly publish: boolean;
     readonly categories: boolean;
@@ -584,6 +591,16 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
     setHasRecoverableDraft(false);
   };
 
+  const handlePublishWithConfirmation = async () => {
+    setShowPublishConfirm(false);
+    await handlePublish();
+  };
+
+  const handleDraftWithConfirmation = async () => {
+    setShowDraftConfirm(false);
+    await handleSavePostRecord("Draft");
+  };
+
   const handleCreateNewPost = () => {
     setPostTitle("");
     setPostSlug("");
@@ -751,7 +768,22 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
         setPostStatus(statusOverride);
       }
 
+      const successMessage =
+        finalStatus === "Draft"
+          ? "Your draft has been saved successfully."
+          : finalStatus === "Scheduled"
+            ? "Your post is scheduled successfully."
+            : finalStatus === "Pending Review"
+              ? "Your post has been submitted for review."
+              : "Your post has been published successfully.";
+
+      setConfirmationPopup({
+        title: "Saved Successfully",
+        message: successMessage,
+      });
+
       if (editingRecordId) {
+        onSavedRecord?.();
         return true;
       }
 
@@ -767,6 +799,7 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
       };
 
       addApplicationFromPost(application);
+      onSavedRecord?.();
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save post record.";
@@ -791,6 +824,113 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
 
   return (
     <Card className="p-4">
+      {confirmationPopup ? (
+        <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-4 pt-6 backdrop-blur-[2px]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-[min(420px,94vw)] rounded-2xl border border-emerald-300 bg-white p-4 shadow-[0_20px_48px_rgba(5,150,105,0.3)] dark:border-emerald-900 dark:bg-slate-950"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+                  {confirmationPopup.title}
+                </p>
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                  {confirmationPopup.message}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmationPopup(null)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Close confirmation"
+              >
+                <X size={13} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmationPopup(null)}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showPublishConfirm ? (
+        <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-4 pt-6 backdrop-blur-[2px]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-[min(420px,94vw)] rounded-2xl border border-blue-300 bg-white p-4 shadow-[0_20px_48px_rgba(37,99,235,0.25)] dark:border-blue-900 dark:bg-slate-950"
+          >
+            <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Confirm Publish
+            </p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+              Are you sure you want to continue? This action will save the post to the database.
+            </p>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPublishConfirm(false)}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => void handlePublishWithConfirmation()}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-blue-600 bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showDraftConfirm ? (
+        <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-4 pt-6 backdrop-blur-[2px]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-[min(420px,94vw)] rounded-2xl border border-blue-300 bg-white p-4 shadow-[0_20px_48px_rgba(37,99,235,0.25)] dark:border-blue-900 dark:bg-slate-950"
+          >
+            <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Confirm Save Draft
+            </p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+              Are you sure you want to save this draft? This action will save the draft to the database.
+            </p>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDraftConfirm(false)}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDraftWithConfirmation()}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-blue-600 bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <SectionHeading
         title="New Post"
         subtitle="WordPress-style editor for creating recruitment updates, notices, and announcements"
@@ -1309,10 +1449,10 @@ export default function NewPostPanel({ prefillRecord }: NewPostPanelProps) {
                 ) : null}
 
                 <div className="mt-3 flex flex-col gap-2">
-                  <GhostButton label="Save Draft" onClick={() => void handleSavePostRecord("Draft")} />
+                  <GhostButton label="Save Draft" onClick={() => setShowDraftConfirm(true)} />
                   <button
                     type="submit"
-                    onClick={() => void handlePublish()}
+                    onClick={() => setShowPublishConfirm(true)}
                     className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                   >
                     <Send size={14} aria-hidden="true" />

@@ -1,5 +1,5 @@
 import { BookmarkCheck, PencilLine, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Card, EmptyState, SectionHeading } from "@/components/dashboard/ui";
 import type { NewPostPrefillRecord } from "@/components/dashboard/NewPostPanel";
@@ -30,43 +30,158 @@ type SavedJobsPanelProps = Readonly<{
   readonly postTypeFilter?: "Job" | "Admit" | "Exam" | "Result";
   readonly title?: string;
   readonly subtitle?: string;
+  readonly refreshToken?: number;
 }>;
 
 type StatusFilter = "All" | SavedPostRecord["postStatus"];
+const PAGE_SIZE = 20;
 
 export default function SavedJobsPanel({
   onEditInNewPost,
   postTypeFilter,
   title = "Saved Jobs",
   subtitle = "Saved records from New Post with fetch, edit, and delete actions",
+  refreshToken = 0,
 }: SavedJobsPanelProps) {
   const [records, setRecords] = useState<SavedPostRecord[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    readonly id: string;
+    readonly title: string;
+  } | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDepartment, setEditDepartment] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
+  const [page, setPage] = useState(0);
+  const [hasMoreRecords, setHasMoreRecords] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isLoadingMoreRef = useRef(false);
+  const initialLoadKeyRef = useRef<string>("");
+  const initialLoadKey = `${postTypeFilter ?? "ALL"}:${refreshToken}`;
+
+  const loadRecords = useCallback(async (targetPage: number, mode: "replace" | "append") => {
+    const params = new URLSearchParams();
+    params.set("page", String(targetPage));
+    params.set("size", String(PAGE_SIZE));
+
+    if (postTypeFilter) {
+      params.set("postType", postTypeFilter);
+    }
+
+    const endpoint = params.size > 0 ? `/api/posts?${params.toString()}` : "/api/posts";
+    const response = await fetch(endpoint, { method: "GET" });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch saved records.");
+    }
+
+    const payload = (await response.json()) as {
+      readonly records?: SavedPostRecord[];
+    };
+
+    const nextRecords = payload.records ?? [];
+
+    if (mode === "replace") {
+      setRecords(nextRecords);
+    } else {
+      setRecords((current) => [...current, ...nextRecords]);
+    }
+
+    return nextRecords;
+  }, [postTypeFilter]);
 
   useEffect(() => {
-    const fetchRecords = async () => {
+    let isMounted = true;
+
+    // In React Strict Mode (dev), effects can run twice. Skip duplicate same-key loads.
+    if (initialLoadKeyRef.current === initialLoadKey) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    initialLoadKeyRef.current = initialLoadKey;
+
+    const syncFromApi = async () => {
+      setIsInitialLoading(true);
+      setPage(0);
+      setHasMoreRecords(true);
+
       try {
-        const response = await fetch("/api/posts", { method: "GET" });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch saved records.");
+        const firstPageRecords = await loadRecords(0, "replace");
+        if (isMounted) {
+          setHasMoreRecords(firstPageRecords.length === PAGE_SIZE);
+          setErrorMessage(null);
         }
-
-        const payload = (await response.json()) as {
-          readonly records?: SavedPostRecord[];
-        };
-        setRecords(payload.records ?? []);
       } catch {
-        setErrorMessage("Unable to load saved records right now.");
+        if (isMounted) {
+          setErrorMessage("Unable to load saved records right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
       }
     };
 
-    void fetchRecords();
-  }, []);
+    void syncFromApi();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialLoadKey, loadRecords]);
+
+  const loadNextPage = useCallback(async () => {
+    if (!hasMoreRecords || isInitialLoading || isLoadingMoreRef.current) {
+      return;
+    }
+
+    isLoadingMoreRef.current = true;
+    setIsLoadingMore(true);
+
+    try {
+      const nextPage = page + 1;
+      const nextPageRecords = await loadRecords(nextPage, "append");
+      setPage(nextPage);
+      setHasMoreRecords(nextPageRecords.length === PAGE_SIZE);
+      setErrorMessage(null);
+    } catch {
+      setErrorMessage("Unable to load more saved records right now.");
+    } finally {
+      isLoadingMoreRef.current = false;
+      setIsLoadingMore(false);
+    }
+  }, [hasMoreRecords, isInitialLoading, loadRecords, page]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void loadNextPage();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "180px 0px",
+        threshold: 0,
+      },
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadNextPage]);
 
   const startEditing = (record: SavedPostRecord) => {
     setEditingId(record.id);
@@ -96,17 +211,8 @@ export default function SavedJobsPanel({
         throw new Error("Failed to update record.");
       }
 
-      setRecords((current) =>
-        current.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                postTitle: editTitle,
-                department: editDepartment,
-              }
-            : item,
-        ),
-      );
+      await loadRecords();
+      setErrorMessage(null);
       setEditingId(null);
     } catch {
       setErrorMessage("Unable to update saved record.");
@@ -123,13 +229,23 @@ export default function SavedJobsPanel({
         throw new Error("Failed to delete record.");
       }
 
-      setRecords((current) => current.filter((item) => item.id !== id));
+      await loadRecords();
+      setErrorMessage(null);
       if (editingId === id) {
         setEditingId(null);
       }
     } catch {
       setErrorMessage("Unable to delete saved record.");
     }
+  };
+
+  const confirmDeleteRecord = async () => {
+    if (!pendingDelete) {
+      return;
+    }
+
+    await deleteRecord(pendingDelete.id);
+    setPendingDelete(null);
   };
 
   const editInNewPost = (record: SavedPostRecord) => {
@@ -206,12 +322,52 @@ export default function SavedJobsPanel({
 
   return (
     <Card className="p-4">
+      {pendingDelete ? (
+        <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-4 pt-6 backdrop-blur-[2px]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-[min(420px,94vw)] rounded-2xl border border-rose-300 bg-white p-4 shadow-[0_20px_48px_rgba(244,63,94,0.25)] dark:border-rose-900 dark:bg-slate-950"
+          >
+            <p className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Confirm Delete
+            </p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+              Are you sure you want to delete <span className="font-semibold">{pendingDelete.title || "this record"}</span>?
+            </p>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteRecord()}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-rose-600 bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <SectionHeading
         title={title}
         subtitle={subtitle}
       />
 
       <div className="mt-4 space-y-3">
+        {isInitialLoading && records.length === 0 ? (
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            Loading saved records...
+          </p>
+        ) : null}
+
         {errorMessage ? (
           <p className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/35 dark:text-rose-300">
             {errorMessage}
@@ -370,7 +526,12 @@ export default function SavedJobsPanel({
                             </button>
                             <button
                               type="button"
-                              onClick={() => void deleteRecord(record.id)}
+                              onClick={() =>
+                                setPendingDelete({
+                                  id: record.id,
+                                  title: record.postTitle,
+                                })
+                              }
                               className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 hover:underline dark:text-rose-300"
                             >
                               <Trash2 size={12} aria-hidden="true" />
@@ -468,7 +629,12 @@ export default function SavedJobsPanel({
                         </button>
                         <button
                           type="button"
-                          onClick={() => void deleteRecord(record.id)}
+                          onClick={() =>
+                            setPendingDelete({
+                              id: record.id,
+                              title: record.postTitle,
+                            })
+                          }
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 hover:underline dark:text-rose-300"
                         >
                           <Trash2 size={12} aria-hidden="true" />
@@ -480,6 +646,17 @@ export default function SavedJobsPanel({
                 </article>
                 ))}
               </div>
+            ) : null}
+
+            {byPostType.length > 0 ? (
+              <>
+                {isLoadingMore ? (
+                  <p className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Loading 20 more records...
+                  </p>
+                ) : null}
+                <div ref={loadMoreRef} className="h-1 w-full" aria-hidden="true" />
+              </>
             ) : null}
           </>
         ) : null}

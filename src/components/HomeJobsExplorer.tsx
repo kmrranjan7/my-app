@@ -114,20 +114,84 @@ function getOrgBadge(postName: string) {
 }
 
 function parseDateSafe(value: string) {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed;
+  }
+
+  const match = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (!match) {
+    return null;
+  }
+
+  const day = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const year = Number.parseInt(match[3], 10);
+  const normalized = new Date(year, month - 1, day);
+
+  if (
+    Number.isNaN(normalized.getTime()) ||
+    normalized.getFullYear() !== year ||
+    normalized.getMonth() !== month - 1 ||
+    normalized.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return normalized;
 }
 
-function getDaysUntil(value: string) {
-  const date = parseDateSafe(value);
-  if (!date) return null;
-  const now = new Date();
-  const diffMs = date.getTime() - now.getTime();
+function formatDateDdMmYyyy(value: string) {
+  const parsed = parseDateSafe(value);
+  if (!parsed) return value;
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = parsed.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function getDateOnly(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function getDaysBetween(startValue: string, endValue: string) {
+  const start = parseDateSafe(startValue);
+  const end = parseDateSafe(endValue);
+  if (!start || !end) return null;
+  const startDateOnly = getDateOnly(start);
+  const endDateOnly = getDateOnly(end);
+  const diffMs = endDateOnly.getTime() - startDateOnly.getTime();
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
-function getDeadlineChip(lastDate: string) {
-  const days = getDaysUntil(lastDate);
+function getEffectiveDaysLeft(startDate: string, lastDate: string) {
+  const start = parseDateSafe(startDate);
+  const end = parseDateSafe(lastDate);
+
+  if (!end) {
+    return null;
+  }
+
+  const today = getDateOnly(new Date());
+  const startDateOnly = start ? getDateOnly(start) : null;
+
+  // For upcoming jobs, use total window duration (matches card chip expectation).
+  if (startDateOnly && today < startDateOnly) {
+    const windowDays = getDaysBetween(startDate, lastDate);
+    return windowDays ?? null;
+  }
+
+  const endDateOnly = getDateOnly(end);
+  return Math.ceil((endDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function getDeadlineChip(startDate: string, lastDate: string) {
+  const days = getEffectiveDaysLeft(startDate, lastDate);
+
   if (days === null) {
     return {
       text: "To Be Announced",
@@ -160,14 +224,6 @@ function getDeadlineChip(lastDate: string) {
     text: `${days}d left`,
     style: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
   };
-}
-
-function isDateInRange(dateValue: string, startValue: string, endValue: string) {
-  const date = parseDateSafe(dateValue);
-  const start = parseDateSafe(startValue);
-  const end = parseDateSafe(endValue);
-  if (!date || !start || !end) return false;
-  return date >= start && date <= end;
 }
 
 type HomeJobsExplorerProps = Readonly<{
@@ -218,8 +274,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       return jobs;
     }
 
-    const todayValue = new Date().toISOString().slice(0, 10);
-
     return indexedJobs
       .filter(({ job, searchCorpus, normalizedSearchCorpus }) => {
         if (badgeFilter !== "all" && job.badge !== badgeFilter) return false;
@@ -227,9 +281,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         if (qualificationFilter !== "all" && job.qualification !== qualificationFilter) return false;
 
         if (closingWeekOnly) {
-          const daysUntilClose = getDaysUntil(job.lastDate);
-          const isOpenNow = isDateInRange(todayValue, job.startDate, job.lastDate);
-          const matchesClosingWeek = isOpenNow && daysUntilClose !== null && daysUntilClose >= 0 && daysUntilClose <= 7;
+          const effectiveDaysLeft = getEffectiveDaysLeft(job.startDate, job.lastDate);
+          const matchesClosingWeek = effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
           if (!matchesClosingWeek) return false;
         }
 
@@ -245,13 +298,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   }, [jobs, indexedJobs, searchTerm, badgeFilter, stateFilter, qualificationFilter, closingWeekOnly]);
 
   const closingThisWeekCount = useMemo(() => {
-    const today = new Date();
-    const todayValue = today.toISOString().slice(0, 10);
-
     return jobs.filter((job) => {
-      const daysUntilClose = getDaysUntil(job.lastDate);
-      const isOpenNow = isDateInRange(todayValue, job.startDate, job.lastDate);
-      return isOpenNow && daysUntilClose !== null && daysUntilClose >= 0 && daysUntilClose <= 7;
+      const effectiveDaysLeft = getEffectiveDaysLeft(job.startDate, job.lastDate);
+      return effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
     }).length;
   }, [jobs]);
 
@@ -391,13 +440,15 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] md:grid-cols-2 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const badge = getOrgBadge(job.badge);
-              const deadlineChip = getDeadlineChip(job.lastDate);
+              const deadlineChip = getDeadlineChip(job.startDate, job.lastDate);
               const hasLastDate = job.lastDate.trim().length > 0;
+              const formattedStartDate = formatDateDdMmYyyy(job.startDate);
+              const formattedLastDate = formatDateDdMmYyyy(job.lastDate);
 
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group rounded-xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-2 shadow-[0_6px_16px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_14px_28px_rgba(2,132,199,0.14)]"
+                  className="group rounded-xl border border-slate-200/90 bg-white p-2 shadow-[0_6px_16px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_14px_28px_rgba(2,132,199,0.14)]"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className={`rounded-full px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.09em] shadow-sm ${badge.style}`}>
@@ -448,14 +499,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
                         <CalendarClock className="size-2.5" aria-hidden="true" /> Start:
                       </dt>
-                      <dd className="font-semibold">{job.startDate}</dd>
+                      <dd className="font-semibold">{formattedStartDate}</dd>
                     </div>
                     <div className="inline-flex items-center gap-1">
                       <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
                         <CalendarRange className="size-2.5" aria-hidden="true" /> Last:
                       </dt>
                       <dd className={`font-semibold ${hasLastDate ? "text-rose-600" : "text-emerald-700"}`}>
-                        {hasLastDate ? job.lastDate : "To Be Announced"}
+                        {hasLastDate ? formattedLastDate : "To Be Announced"}
                       </dd>
                     </div>
                   </dl>
