@@ -16,6 +16,47 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## AI Post Generation Setup
+
+The dashboard New Post editor includes an **AI Fill** button that calls a server-side API route:
+
+- Route: `/api/ai/generate-post`
+- Supported providers: OpenAI, Gemini
+
+### 1) Configure environment variables
+
+Copy `.env.example` to `.env.local` and set one provider key.
+
+```bash
+cp .env.example .env.local
+```
+
+In `.env.local`, set either OpenAI or Gemini:
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=your_openai_key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+or
+
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-1.5-flash
+```
+
+If `AI_PROVIDER` is omitted, the route auto-selects based on available API keys.
+
+### 2) Use in dashboard
+
+1. Open Dashboard > New Post
+2. Enter title
+3. Click **AI Fill**
+
+The feature auto-populates content HTML, SEO title, meta description, focus keyword, and slug.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

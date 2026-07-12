@@ -1,0 +1,221 @@
+import type {
+  DashboardPayload,
+  UserApplication,
+} from "@/types/dashboard";
+
+export const dashboardMockData: DashboardPayload = {
+  stats: [
+    {
+      id: "vacancies",
+      label: "Total Active Vacancies",
+      value: 1284,
+      changeText: "+5.2% this month",
+    },
+    {
+      id: "submitted",
+      label: "Applications Submitted",
+      value: 318,
+      changeText: "+18 in last 7 days",
+    },
+    {
+      id: "upcoming",
+      label: "Upcoming Exams",
+      value: 11,
+      changeText: "3 this week",
+    },
+    {
+      id: "results",
+      label: "Results Published",
+      value: 7,
+      changeText: "2 new updates",
+    },
+    {
+      id: "pending",
+      label: "Pending Applications",
+      value: 42,
+      changeText: "Awaiting review",
+    },
+    {
+      id: "verified",
+      label: "Documents Verified",
+      value: 9,
+      changeText: "1 pending recheck",
+    },
+  ],
+  jobs: [
+    {
+      id: "JOB-001",
+      department: "Ministry of Railways",
+      title: "Junior Engineer (Civil)",
+      location: "New Delhi",
+      lastDate: "2026-08-12",
+      status: "Open",
+      category: "Engineering",
+    },
+    {
+      id: "JOB-002",
+      department: "Public Sector Bank Board",
+      title: "Probationary Officer",
+      location: "Mumbai",
+      lastDate: "2026-07-28",
+      status: "Closing Soon",
+      category: "Banking",
+    },
+    {
+      id: "JOB-003",
+      department: "Defence Recruitment Cell",
+      title: "Assistant Commandant",
+      location: "Pune",
+      lastDate: "2026-08-22",
+      status: "Open",
+      category: "Defence",
+    },
+    {
+      id: "JOB-004",
+      department: "National Health Mission",
+      title: "Staff Nurse Grade-II",
+      location: "Bhopal",
+      lastDate: "2026-07-20",
+      status: "Closing Soon",
+      category: "Healthcare",
+    },
+    {
+      id: "JOB-005",
+      department: "State Education Board",
+      title: "Assistant Professor",
+      location: "Bengaluru",
+      lastDate: "2026-08-15",
+      status: "Open",
+      category: "Education",
+    },
+  ],
+  applications: [
+    {
+      id: "APP-2026-0001",
+      jobId: "JOB-001",
+      jobName: "Junior Engineer (Civil)",
+      department: "Ministry of Railways",
+      appliedDate: "2026-06-18",
+      status: "Under Review",
+    },
+    {
+      id: "APP-2026-0002",
+      jobId: "JOB-003",
+      jobName: "Assistant Commandant",
+      department: "Defence Recruitment Cell",
+      appliedDate: "2026-06-26",
+      status: "Shortlisted",
+    },
+    {
+      id: "APP-2026-0003",
+      jobId: "JOB-005",
+      jobName: "Assistant Professor",
+      department: "State Education Board",
+      appliedDate: "2026-07-02",
+      status: "Applied",
+    },
+    {
+      id: "APP-2026-0004",
+      jobId: "JOB-002",
+      jobName: "Probationary Officer",
+      department: "Public Sector Bank Board",
+      appliedDate: "2026-06-12",
+      status: "Result Published",
+    },
+  ],
+  categories: [
+    { id: "CAT-ENG", name: "Engineering", openPositions: 312 },
+    { id: "CAT-BNK", name: "Banking", openPositions: 241 },
+    { id: "CAT-RLY", name: "Railways", openPositions: 198 },
+    { id: "CAT-DEF", name: "Defence", openPositions: 176 },
+    { id: "CAT-HLT", name: "Healthcare", openPositions: 153 },
+    { id: "CAT-EDU", name: "Education", openPositions: 124 },
+    { id: "CAT-PUB", name: "Public Administration", openPositions: 80 },
+  ],
+  notifications: [
+    {
+      id: "N-001",
+      title: "New Recruitment: Railways",
+      message: "New JE vacancies have been announced with zone-wise seats.",
+      date: "2026-07-05",
+      kind: "Recruitment",
+      isNew: true,
+    },
+    {
+      id: "N-002",
+      title: "Exam Update",
+      message: "Bank PO admit card download starts from 10 July.",
+      date: "2026-07-04",
+      kind: "Exam",
+      isNew: true,
+    },
+    {
+      id: "N-003",
+      title: "Result Announcement",
+      message: "Healthcare written test result has been published.",
+      date: "2026-07-02",
+      kind: "Result",
+      isNew: false,
+    },
+    {
+      id: "N-004",
+      title: "Document Verification Notice",
+      message: "Upload updated degree and identity proof by 15 July.",
+      date: "2026-07-01",
+      kind: "Verification",
+      isNew: false,
+    },
+  ],
+  categoryChart: [
+    { category: "Engineering", applications: 82 },
+    { category: "Banking", applications: 64 },
+    { category: "Railways", applications: 53 },
+    { category: "Defence", applications: 48 },
+    { category: "Healthcare", applications: 39 },
+    { category: "Education", applications: 32 },
+    { category: "Public Administration", applications: 24 },
+  ],
+  statusChart: [
+    { status: "Applied", value: 112 },
+    { status: "Under Review", value: 84 },
+    { status: "Shortlisted", value: 46 },
+    { status: "Exam Scheduled", value: 33 },
+    { status: "Result Published", value: 19 },
+  ],
+  recruitmentChart: [
+    { month: "Jan", vacancies: 320, applications: 860, results: 24 },
+    { month: "Feb", vacancies: 350, applications: 920, results: 30 },
+    { month: "Mar", vacancies: 410, applications: 980, results: 34 },
+    { month: "Apr", vacancies: 455, applications: 1020, results: 36 },
+    { month: "May", vacancies: 520, applications: 1175, results: 40 },
+    { month: "Jun", vacancies: 610, applications: 1310, results: 44 },
+    { month: "Jul", vacancies: 680, applications: 1420, results: 47 },
+  ],
+  monthlyTrend: [
+    { month: "Jan", jobs: 48 },
+    { month: "Feb", jobs: 52 },
+    { month: "Mar", jobs: 61 },
+    { month: "Apr", jobs: 73 },
+    { month: "May", jobs: 88 },
+    { month: "Jun", jobs: 96 },
+    { month: "Jul", jobs: 109 },
+  ],
+};
+
+export function generateApplicationId(seed: number): string {
+  return `APP-2026-${String(seed).padStart(4, "0")}`;
+}
+
+export function createApplicationFromJob(
+  job: DashboardPayload["jobs"][number],
+  indexSeed: number,
+): UserApplication {
+  return {
+    id: generateApplicationId(indexSeed),
+    jobId: job.id,
+    jobName: job.title,
+    department: job.department,
+    appliedDate: new Date().toISOString().slice(0, 10),
+    status: "Applied",
+  };
+}

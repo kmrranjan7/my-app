@@ -25,6 +25,12 @@ export default function HeaderNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const hideHeader =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/");
+
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
@@ -67,6 +73,10 @@ export default function HeaderNavbar() {
       globalThis.removeEventListener("keydown", onEscape);
     };
   }, []);
+
+  if (hideHeader) {
+    return null;
+  }
 
   return (
     <header
