@@ -8,7 +8,6 @@ import {
   Link2,
   Plus,
   PenLine,
-  Sparkles,
   Send,
   Settings2,
   SlidersHorizontal,
@@ -72,71 +71,6 @@ function slugify(input: string): string {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 }
-
-function buildFocusKeywordFromTitle(title: string): string {
-  const stopWords = new Set([
-    "the",
-    "for",
-    "and",
-    "with",
-    "from",
-    "into",
-    "your",
-    "this",
-    "that",
-    "are",
-    "new",
-    "latest",
-    "official",
-    "update",
-  ]);
-
-  const parts = title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter((part) => part.length > 2 && !stopWords.has(part));
-
-  return (parts.slice(0, 4).join(" ") || "job update 2026").trim();
-}
-
-function buildSeoDescriptionFromTitle(title: string): string {
-  const base = `Get complete details for ${title} including eligibility, important dates, selection process, application steps, fees, and direct official links.`;
-  if (base.length <= 160) {
-    return base;
-  }
-
-  return `${base.slice(0, 157).trimEnd()}...`;
-}
-
-function buildAiContent(title: string, keyword: string): string {
-  const today = new Date().toLocaleDateString();
-  return [
-    `<h2>${title}</h2>`,
-    `<p>${title} notification has been released. Candidates should review complete instructions before applying.</p>`,
-    "<h3>Important Highlights</h3>",
-    "<ul><li>Post Name: To be announced</li><li>Total Vacancies: Check official notification</li><li>Application Start: Update soon</li><li>Last Date: Update soon</li></ul>",
-    "<h3>Eligibility Criteria</h3>",
-    "<p>Please check age limit, educational qualifications, category relaxation, and domicile rules in the official notice.</p>",
-    "<h3>Selection Process</h3>",
-    "<p>Expected stages may include written examination, skill test, document verification, and medical examination.</p>",
-    "<h3>How to Apply</h3>",
-    "<ol><li>Open the official recruitment website.</li><li>Complete registration with valid details.</li><li>Fill the online form carefully.</li><li>Upload required documents.</li><li>Pay fee and submit final application.</li></ol>",
-    `<p><strong>SEO Focus:</strong> ${keyword}</p>`,
-    `<p><em>Last updated: ${today}</em></p>`,
-  ].join("");
-}
-
-type GeneratedPostResponse = Readonly<{
-  readonly provider: "openai" | "gemini" | "fallback";
-  readonly generated: {
-    readonly contentHtml: string;
-    readonly seoTitle: string;
-    readonly seoDescription: string;
-    readonly seoFocusKeyword: string;
-    readonly slug: string;
-  };
-}>;
 
 type CreatePostResponse = Readonly<{
   readonly record: {
@@ -245,9 +179,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [showScreenOptions, setShowScreenOptions] = useState(false);
   const [showHelpPanel, setShowHelpPanel] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
-  const [isAIFilling, setIsAIFilling] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [lastAIProvider, setLastAIProvider] = useState<"openai" | "gemini" | "fallback" | null>(null);
   const [faqSchemaJson, setFaqSchemaJson] = useState(startingDraft?.faqSchemaJson ?? "");
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -622,8 +553,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setPostCategory("Recruitment");
     setSelectedTemplateId("recruitment-notice");
     setLastAutosaveAt(null);
-    setAiError(null);
-    setLastAIProvider(null);
     setPublishError(null);
     setSaveRecordError(null);
     setHasRecoverableDraft(false);
@@ -635,55 +564,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(NEW_POST_DRAFT_KEY);
-    }
-  };
-
-  const handleAiAutoFill = async () => {
-    const trimmedTitle = postTitle.trim();
-    if (!trimmedTitle) {
-      return;
-    }
-
-    setIsAIFilling(true);
-    setAiError(null);
-
-    try {
-      const response = await fetch("/api/ai/generate-post", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: trimmedTitle,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorPayload = (await response.json()) as { readonly message?: string };
-        throw new Error(errorPayload.message ?? "Failed to generate AI content.");
-      }
-
-      const payload = (await response.json()) as GeneratedPostResponse;
-
-      setLastAIProvider(payload.provider);
-      setSeoFocusKeyword(payload.generated.seoFocusKeyword || buildFocusKeywordFromTitle(trimmedTitle));
-      setSeoTitle(payload.generated.seoTitle || `${trimmedTitle} | Eligibility, Dates, Apply Online`);
-      setSeoDescription(
-        payload.generated.seoDescription || buildSeoDescriptionFromTitle(trimmedTitle),
-      );
-      setContentHtml(
-        payload.generated.contentHtml ||
-          buildAiContent(trimmedTitle, payload.generated.seoFocusKeyword || buildFocusKeywordFromTitle(trimmedTitle)),
-      );
-
-      if (!isSlugManuallyEdited) {
-        setPostSlug(payload.generated.slug || slugify(trimmedTitle));
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "AI generation failed.";
-      setAiError(message);
-    } finally {
-      setIsAIFilling(false);
     }
   };
 
@@ -1056,15 +936,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                 }}
                 className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               />
-              <button
-                type="button"
-                onClick={handleAiAutoFill}
-                disabled={isAIFilling || postTitle.trim().length === 0}
-                className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-blue-300 bg-blue-50 px-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-800 dark:bg-blue-950/35 dark:text-blue-300 dark:hover:bg-blue-950/50"
-              >
-                <Sparkles size={14} aria-hidden="true" />
-                {isAIFilling ? "AI Writing..." : "AI Fill"}
-              </button>
             </div>
 
             <label
@@ -1108,23 +979,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
               </p>
             ) : null}
 
-            {lastAIProvider ? (
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                Last AI generated by {
-                  lastAIProvider === "openai"
-                    ? "OpenAI"
-                    : lastAIProvider === "gemini"
-                      ? "Gemini"
-                      : "Local Fallback"
-                }
-              </p>
-            ) : null}
-
-            {aiError ? (
-              <p className="mt-1 rounded-md border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 dark:border-rose-900 dark:bg-rose-950/35 dark:text-rose-300">
-                {aiError}
-              </p>
-            ) : null}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">

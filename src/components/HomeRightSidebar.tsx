@@ -1,5 +1,24 @@
 import Link from "next/link";
-import { admitCards, results, type RightSideItem } from "@/data/sidebarContent";
+import { type RightSideItem } from "@/data/sidebarContent";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+
+const ADMIT_CARDS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+const RESULTS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+
+type PublicJobsApiItem = Readonly<{
+  readonly createdAt?: string;
+  readonly organization?: string;
+  readonly postSlug?: string;
+  readonly postTitle?: string;
+}>;
+
+type PublicJobsApiResponse = Readonly<{
+  readonly data?: {
+    readonly content?: PublicJobsApiItem[];
+  };
+}>;
 
 const dynamicBadgePalettes = [
   "border-blue-200 bg-blue-50 text-blue-700",
@@ -94,13 +113,94 @@ function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?
   );
 }
 
+function toRelativeTime(value?: string): string {
+  if (!value) return "Recently";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs <= 0) return "Just now";
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+function mapAdmitApiItem(item: PublicJobsApiItem): RightSideItem {
+  const slug = item.postSlug?.trim();
+  const organization = item.organization?.trim();
+  return {
+    title: item.postTitle?.trim() || "Untitled Admit Card",
+    time: toRelativeTime(item.createdAt),
+    category: "Admit Card",
+    badge: organization || "Admit",
+    href: slug ? `/${slug}` : "/admit-card",
+  };
+}
+
+async function fetchAdmitCards(): Promise<RightSideItem[]> {
+  try {
+    const response = await fetch(ADMIT_CARDS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as PublicJobsApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapAdmitApiItem);
+  } catch {
+    return [];
+  }
+}
+
+function mapResultApiItem(item: PublicJobsApiItem): RightSideItem {
+  const slug = item.postSlug?.trim();
+  const organization = item.organization?.trim();
+  return {
+    title: item.postTitle?.trim() || "Untitled Result",
+    time: toRelativeTime(item.createdAt),
+    category: "Result",
+    badge: organization || "Result",
+    href: slug ? `/results/${slug}` : "/results",
+  };
+}
+
+async function fetchResults(): Promise<RightSideItem[]> {
+  try {
+    const response = await fetch(RESULTS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as PublicJobsApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapResultApiItem);
+  } catch {
+    return [];
+  }
+}
+
 function SidebarCard({ title, badge, rows }: Readonly<{
   title: string;
   badge: string;
   rows: RightSideItem[];
 }>) {
   return (
-    <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+    <section className="overflow-hidden rounded-xl border-2 border-indigo-200/90 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.1)] ring-1 ring-indigo-100/80">
       <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.22),transparent_45%)]" />
         <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
@@ -121,7 +221,7 @@ function SidebarCard({ title, badge, rows }: Readonly<{
         <ul className="space-y-1" aria-label={`${title} list`}>
           {rows.map((item, index) => (
             <li key={`${item.title}-${index}`}>
-              <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+              <article className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex min-w-0 items-start gap-1.5">
                     <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
@@ -155,11 +255,14 @@ function SidebarCard({ title, badge, rows }: Readonly<{
   );
 }
 
-export default function HomeRightSidebar() {
+export default async function HomeRightSidebar() {
+  const admitRows = await fetchAdmitCards();
+  const resultRows = await fetchResults();
+
   return (
     <aside className="w-full space-y-2.5 max-md:max-w-none md:ml-auto md:max-w-[272px] lg:sticky lg:top-[74px] lg:self-start">
-      <SidebarCard title="Admit Card" badge="New" rows={admitCards} />
-      <SidebarCard title="Result" badge="Hot" rows={results} />
+      <SidebarCard title="Admit Card" badge="New" rows={admitRows} />
+      <SidebarCard title="Result" badge="Hot" rows={resultRows} />
     </aside>
   );
 }

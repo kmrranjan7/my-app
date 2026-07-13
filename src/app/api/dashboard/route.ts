@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
+import { API_V1_POSTS_BASE_URL } from "@/lib/apiConfig";
 import type { DashboardPayload, NotificationItem, UserApplication } from "@/types/dashboard";
 
 export const runtime = "nodejs";
 
-const BACKEND_POSTS_BASE = "http://localhost:8080/api/v1/posts";
+const BACKEND_POSTS_BASE = API_V1_POSTS_BASE_URL;
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
 type PostType = "Job" | "Admit" | "Exam" | "Result";
@@ -112,12 +113,12 @@ function buildNotifications(records: ReadonlyArray<SavedPostRecord>): ReadonlyAr
       ? 999
       : Math.floor((now - createdTs) / (1000 * 60 * 60 * 24));
 
-    const kind: NotificationItem["kind"] =
-      record.postType === "Exam"
-        ? "Exam"
-        : record.postType === "Result"
-          ? "Result"
-          : "Recruitment";
+    let kind: NotificationItem["kind"] = "Recruitment";
+    if (record.postType === "Exam") {
+      kind = "Exam";
+    } else if (record.postType === "Result") {
+      kind = "Result";
+    }
 
     return {
       id: `N-POST-${index + 1}`,

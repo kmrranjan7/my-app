@@ -117,31 +117,56 @@ function parseDateSafe(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return null;
 
+  if (trimmed.toLowerCase() === "null") return null;
+
+  // JSON API format: yyyy-mm-dd
+  const yyyyMmDd = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+  const ymdMatch = yyyyMmDd.exec(trimmed);
+  if (ymdMatch) {
+    const year = Number.parseInt(ymdMatch[1], 10);
+    const month = Number.parseInt(ymdMatch[2], 10);
+    const day = Number.parseInt(ymdMatch[3], 10);
+    const normalized = new Date(year, month - 1, day);
+
+    if (
+      Number.isNaN(normalized.getTime()) ||
+      normalized.getFullYear() !== year ||
+      normalized.getMonth() !== month - 1 ||
+      normalized.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  // Support dd-mm-yyyy and dd/mm/yyyy if data source changes format.
+  const ddMmYyyy = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
+  const dmyMatch = ddMmYyyy.exec(trimmed);
+  if (dmyMatch) {
+    const day = Number.parseInt(dmyMatch[1], 10);
+    const month = Number.parseInt(dmyMatch[2], 10);
+    const year = Number.parseInt(dmyMatch[3], 10);
+    const normalized = new Date(year, month - 1, day);
+
+    if (
+      Number.isNaN(normalized.getTime()) ||
+      normalized.getFullYear() !== year ||
+      normalized.getMonth() !== month - 1 ||
+      normalized.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return normalized;
+  }
+
   const parsed = new Date(trimmed);
   if (!Number.isNaN(parsed.getTime())) {
     return parsed;
   }
 
-  const match = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
-  if (!match) {
-    return null;
-  }
-
-  const day = Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10);
-  const year = Number.parseInt(match[3], 10);
-  const normalized = new Date(year, month - 1, day);
-
-  if (
-    Number.isNaN(normalized.getTime()) ||
-    normalized.getFullYear() !== year ||
-    normalized.getMonth() !== month - 1 ||
-    normalized.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return normalized;
+  return null;
 }
 
 function formatDateDdMmYyyy(value: string) {
@@ -158,39 +183,46 @@ function getDateOnly(value: Date): Date {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
-function getDaysBetween(startValue: string, endValue: string) {
-  const start = parseDateSafe(startValue);
-  const end = parseDateSafe(endValue);
-  if (!start || !end) return null;
-  const startDateOnly = getDateOnly(start);
-  const endDateOnly = getDateOnly(end);
-  const diffMs = endDateOnly.getTime() - startDateOnly.getTime();
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-}
-
-function getEffectiveDaysLeft(startDate: string, lastDate: string) {
+function getDaysLeftFromLastDate(startDate: string, lastDate: string) {
   const start = parseDateSafe(startDate);
   const end = parseDateSafe(lastDate);
 
+  // If lastDate is null/empty/invalid -> To Be Announced
   if (!end) {
     return null;
   }
 
-  const today = getDateOnly(new Date());
-  const startDateOnly = start ? getDateOnly(start) : null;
-
-  // For upcoming jobs, use total window duration (matches card chip expectation).
-  if (startDateOnly && today < startDateOnly) {
-    const windowDays = getDaysBetween(startDate, lastDate);
-    return windowDays ?? null;
+  // If startDate exists and is after lastDate, treat as invalid payload.
+  if (start) {
+    const startDateOnly = getDateOnly(start);
+    const endDateOnlyFromStartCheck = getDateOnly(end);
+    if (startDateOnly.getTime() > endDateOnlyFromStartCheck.getTime()) {
+      return null;
+    }
   }
 
+  const today = getDateOnly(new Date());
+  const startDateOnly = start ? getDateOnly(start) : null;
   const endDateOnly = getDateOnly(end);
+
+  if (startDateOnly) {
+    const windowDays = Math.ceil((endDateOnly.getTime() - startDateOnly.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Requested display behavior:
+    // - upcoming window uses exclusive diff (22 -> 24 = 2)
+    // - active window uses inclusive display (01 -> 16 = 16)
+    if (today < startDateOnly) {
+      return windowDays;
+    }
+
+    return windowDays + 1;
+  }
+
   return Math.ceil((endDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 function getDeadlineChip(startDate: string, lastDate: string) {
-  const days = getEffectiveDaysLeft(startDate, lastDate);
+  const days = getDaysLeftFromLastDate(startDate, lastDate);
 
   if (days === null) {
     return {
@@ -209,7 +241,7 @@ function getDeadlineChip(startDate: string, lastDate: string) {
   if (days <= 7) {
     return {
       text: `${days}d left`,
-      style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200 animate-pulse",
+      style: "bg-rose-200 text-rose-950 ring-1 ring-rose-400 animate-pulse",
     };
   }
 
@@ -236,6 +268,32 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
+
+  const handleWhatsAppShare = (job: LatestJob) => {
+    let absoluteJobUrl = job.href;
+    if (!job.href.startsWith("http")) {
+      const normalizedPath = job.href.startsWith("/") ? job.href : `/${job.href}`;
+      absoluteJobUrl = `${globalThis.location.origin}${normalizedPath}`;
+    }
+
+    const message = [
+      `Job Update: ${job.postName}`,
+      `State: ${job.state}`,
+      `Seats: ${job.seats}`,
+      `Start Date: ${formatDateDdMmYyyy(job.startDate)}`,
+      `Last Date: ${formatDateDdMmYyyy(job.lastDate)}`,
+      `Apply Link: ${absoluteJobUrl}`,
+    ].join("\n");
+
+    const encodedMessage = encodeURIComponent(message);
+    const appShareUrl = `whatsapp://send?text=${encodedMessage}`;
+    const webShareUrl = `https://wa.me/?text=${encodedMessage}`;
+
+    globalThis.location.href = appShareUrl;
+    globalThis.setTimeout(() => {
+      globalThis.location.href = webShareUrl;
+    }, 700);
+  };
 
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
@@ -281,7 +339,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         if (qualificationFilter !== "all" && job.qualification !== qualificationFilter) return false;
 
         if (closingWeekOnly) {
-          const effectiveDaysLeft = getEffectiveDaysLeft(job.startDate, job.lastDate);
+          const effectiveDaysLeft = getDaysLeftFromLastDate(job.startDate, job.lastDate);
           const matchesClosingWeek = effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
           if (!matchesClosingWeek) return false;
         }
@@ -299,7 +357,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   const closingThisWeekCount = useMemo(() => {
     return jobs.filter((job) => {
-      const effectiveDaysLeft = getEffectiveDaysLeft(job.startDate, job.lastDate);
+      const effectiveDaysLeft = getDaysLeftFromLastDate(job.startDate, job.lastDate);
       return effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
     }).length;
   }, [jobs]);
@@ -324,7 +382,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       <div className="pointer-events-none absolute -top-20 -right-12 h-40 w-40 rounded-full bg-sky-200/35 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-fuchsia-200/25 blur-3xl" />
 
-      <div className="relative rounded-xl border border-slate-200/85 bg-white/80 px-2.5 py-2 backdrop-blur-sm">
+      <div className="relative rounded-xl border border-slate-200/85 bg-white/85 px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.06)] ring-1 ring-slate-100/80 backdrop-blur-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-700 shadow-sm">
@@ -332,7 +390,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </span>
             <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700">Latest Jobs</p>
-              <span className="hidden rounded-full bg-sky-50 px-2 py-0.5 text-[9px] font-medium text-sky-700 ring-1 ring-sky-200 lg:inline-flex">
+              <span className="hidden rounded-full bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800 ring-1 ring-sky-200 lg:inline-flex">
                 Trusted Opportunities with Clear Qualification and Deadline Information
               </span>
             </div>
@@ -340,14 +398,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           <button
             type="button"
             onClick={() => setClosingWeekOnly((prev) => !prev)}
-            className={`w-full rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:w-auto ${
+            className={`w-full rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:w-auto ${
               closingWeekOnly
-                ? "animate-pulse bg-red-700 text-white ring-red-800 shadow-[0_0_0_2px_rgba(127,29,29,0.25)]"
-                : "animate-pulse bg-red-700 text-white ring-red-800 "
+                ? "animate-pulse bg-red-900 text-white ring-red-950 shadow-[0_0_0_2px_rgba(127,29,29,0.35)]"
+                : "animate-pulse bg-red-900 text-white ring-red-950"
             }`}
           >
-            <span className="inline-flex items-center gap-1">
-              <span>Closing This Week: {closingThisWeekCount}</span>
+            <span className="inline-flex items-center gap-1 text-white">
+              Closing This Week: {closingThisWeekCount}
               <ChevronRight
                 className={`size-3 transition-transform ${closingWeekOnly ? "translate-x-0.5" : "animate-bounce"}`}
                 aria-hidden="true"
@@ -357,7 +415,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group flex min-w-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white/90 px-2 py-1.5 text-[10px] text-slate-600 shadow-sm sm:col-span-2 lg:col-span-1">
+          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] focus-within:border-sky-300 focus-within:ring-2 focus-within:ring-sky-100">
             <Search className="size-3.5 text-slate-400 transition-colors group-focus-within:text-sky-600" aria-hidden="true" />
             <input
               value={searchTerm}
@@ -367,7 +425,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             />
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/90 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-sm">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
             <select
               value={badgeFilter}
@@ -383,7 +441,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </select>
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/90 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-sm">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
             <select
               value={stateFilter}
@@ -399,7 +457,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </select>
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/90 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-sm">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
             <select
               value={qualificationFilter}
@@ -448,14 +506,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group rounded-xl border border-slate-200/90 bg-white p-2 shadow-[0_6px_16px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_14px_28px_rgba(2,132,199,0.14)]"
+                  className="group space-y-1 rounded-xl border border-slate-200/90 bg-white p-2.5 shadow-[0_10px_22px_rgba(15,23,42,0.09),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_20px_38px_rgba(2,132,199,0.16),0_8px_16px_rgba(15,23,42,0.08)]"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className={`rounded-full px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.09em] shadow-sm ${badge.style}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] shadow-sm ${badge.style}`}>
                       {badge.label}
                     </p>
                     <div className="flex items-center gap-1">
-                      <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                     </div>
                   </div>
 
@@ -463,49 +521,53 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <span className="mt-0.5 inline-flex size-4 items-center justify-center rounded bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 transition-colors group-hover:from-blue-100 group-hover:to-indigo-100 group-hover:text-blue-900">
                       <ArrowUpRight className="size-3" aria-hidden="true" />
                     </span>
-                    <span className="line-clamp-2 text-[11px] font-bold leading-4 transition-colors group-hover:text-blue-900">{job.postName}</span>
+                    <span className="line-clamp-2 text-[11px] font-extrabold leading-4.5 transition-colors group-hover:text-blue-900">{job.postName}</span>
                   </Link>
 
-                  <dl className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px]">
-                    <div className="inline-flex items-center gap-1 text-slate-700">
-                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
+                  <dl className="mt-1.5 grid grid-cols-3 gap-x-1.5 gap-y-1 text-[9px]">
+                    <div className="inline-flex items-center gap-0.5 text-slate-700 whitespace-nowrap">
+                      <dt className="inline-flex items-center gap-0.5 font-semibold text-slate-700">
                         <Users className="size-2.5" aria-hidden="true" /> Seat:
                       </dt>
-                      <dd className="font-bold">{job.seats}</dd>
+                      <dd className="rounded bg-emerald-600 px-1 py-0.5 font-bold text-white">{job.seats}</dd>
                     </div>
-                    <div className="inline-flex items-center gap-1 text-slate-700">
-                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
+                    <div className="inline-flex items-center gap-0.5 text-slate-700 whitespace-nowrap">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
                         <MapPin className="size-2.5" aria-hidden="true" /> State:
                       </dt>
-                      <dd className="line-clamp-1 font-semibold">{job.state}</dd>
+                      <dd className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-800">{job.state}</dd>
                     </div>
-                    <div className="inline-flex items-center gap-1">
+                    <div className="inline-flex items-center justify-end gap-1">
+                      <dt className="sr-only">Actions</dt>
+                      <dd className="inline-flex items-center gap-1">
                       <button
                         type="button"
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm transition-transform hover:scale-105"
+                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm ring-1 ring-emerald-300/70 transition-transform hover:scale-105"
                         aria-label={`Share ${job.postName} on WhatsApp`}
+                        onClick={() => handleWhatsAppShare(job)}
                       >
                         <Send className="size-2.5" aria-hidden="true" />
                       </button>
                       <button
                         type="button"
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sm transition-transform hover:scale-105"
+                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sm ring-1 ring-sky-300/70 transition-transform hover:scale-105"
                         aria-label={`Save ${job.postName}`}
                       >
                         <Bookmark className="size-2.5" aria-hidden="true" />
                       </button>
+                      </dd>
                     </div>
-                    <div className="inline-flex items-center gap-1 text-slate-700">
-                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
+                    <div className="col-span-1 inline-flex min-w-0 items-center gap-1 text-slate-700 whitespace-nowrap">
+                      <dt className="inline-flex shrink-0 items-center gap-1 font-semibold text-slate-700">
                         <CalendarClock className="size-2.5" aria-hidden="true" /> Start:
                       </dt>
-                      <dd className="font-semibold">{formattedStartDate}</dd>
+                      <dd className="rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-800">{formattedStartDate}</dd>
                     </div>
-                    <div className="inline-flex items-center gap-1">
-                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-500">
+                    <div className="col-span-2 inline-flex items-center justify-end gap-1">
+                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-700">
                         <CalendarRange className="size-2.5" aria-hidden="true" /> Last:
                       </dt>
-                      <dd className={`font-semibold ${hasLastDate ? "text-rose-600" : "text-emerald-700"}`}>
+                      <dd className={`rounded-md px-1.5 py-0.5 text-right font-semibold ${hasLastDate ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}`}>
                         {hasLastDate ? formattedLastDate : "To Be Announced"}
                       </dd>
                     </div>

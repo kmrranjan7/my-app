@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { API_V1_POSTS_BASE_URL } from "@/lib/apiConfig";
+
 export const runtime = "nodejs";
 
-const BACKEND_POSTS_BASE = "http://localhost:8080/api/v1/posts";
+const BACKEND_POSTS_BASE = API_V1_POSTS_BASE_URL;
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
 type PostType = "Job" | "Admit" | "Exam" | "Result";

@@ -2,9 +2,10 @@ import HomeJobsExplorer from "@/components/HomeJobsExplorer";
 import HomeLeftSidebar from "@/components/HomeLeftSidebar";
 import HomeRightSidebar from "@/components/HomeRightSidebar";
 import type { LatestJob } from "@/data/sidebarContent";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 
 const HOME_JOBS_PAYLOAD_LIMIT = 48;
-const JOBS_API_URL = "http://localhost:8080/api/jobs?postType=Job&postStatus=Published&page=0&size=20";
+const JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&page=0&size=20`;
 
 type JobsApiContentItem = Readonly<{
   readonly applicationId?: string;

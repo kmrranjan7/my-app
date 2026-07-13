@@ -1,5 +1,27 @@
 import Link from "next/link";
-import { latestUpdates, upcomingExams } from "@/data/sidebarContent";
+import { type LatestUpdate, type UpcomingExam } from "@/data/sidebarContent";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+
+const LATEST_UPDATES_API_URL =
+  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+const EXAMS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+
+type PublicJobsApiItem = Readonly<{
+  readonly createdAt?: string;
+  readonly endDate?: string;
+  readonly postType?: string;
+  readonly organization?: string;
+  readonly postSlug?: string;
+  readonly postTitle?: string;
+  readonly startDate?: string;
+}>;
+
+type PublicJobsApiResponse = Readonly<{
+  readonly data?: {
+    readonly content?: PublicJobsApiItem[];
+  };
+}>;
 
 const dynamicBadgePalettes = [
   "border-blue-200 bg-blue-50 text-blue-700",
@@ -39,6 +61,100 @@ function getExamBadgeStyles(badge: string) {
 
   const colorIndex = getTextHash(badge.toLowerCase()) % dynamicBadgePalettes.length;
   return dynamicBadgePalettes[colorIndex];
+}
+
+function toRelativeTime(value?: string): string {
+  if (!value) return "Recently";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs <= 0) return "Just now";
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+function mapLatestUpdateApiItem(item: PublicJobsApiItem): LatestUpdate {
+  const slug = item.postSlug?.trim();
+
+  return {
+    title: item.postTitle?.trim() || "Untitled Update",
+    time: toRelativeTime(item.createdAt),
+    type: item.postType?.trim() || "Update",
+    href: slug ? `/${slug}` : "/updates",
+  };
+}
+
+async function fetchLatestUpdates(): Promise<LatestUpdate[]> {
+  try {
+    const response = await fetch(LATEST_UPDATES_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as PublicJobsApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapLatestUpdateApiItem);
+  } catch {
+    return [];
+  }
+}
+
+function formatExamDate(value?: string): string {
+  if (!value) return "Date TBA";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Date TBA";
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function mapExamApiItem(item: PublicJobsApiItem): UpcomingExam {
+  const slug = item.postSlug?.trim();
+  const examDate = item.startDate || item.endDate || item.createdAt;
+
+  return {
+    title: item.postTitle?.trim() || "Untitled Exam",
+    date: formatExamDate(examDate),
+    category: "Exam",
+    badge: item.organization?.trim() || "Exam",
+    href: slug ? `/${slug}` : "/exams",
+  };
+}
+
+async function fetchUpcomingExams(): Promise<UpcomingExam[]> {
+  try {
+    const response = await fetch(EXAMS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as PublicJobsApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapExamApiItem);
+  } catch {
+    return [];
+  }
 }
 
 function BellIcon({ className }: Readonly<{ className?: string }>) {
@@ -144,10 +260,13 @@ function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?
   );
 }
 
-export default function HomeLeftSidebar() {
+export default async function HomeLeftSidebar() {
+  const updateRows = await fetchLatestUpdates();
+  const examRows = await fetchUpcomingExams();
+
   return (
     <aside className="w-full space-y-2.5 max-md:max-w-none md:max-w-[272px] lg:sticky lg:top-[74px] lg:self-start">
-      <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+      <section className="overflow-hidden rounded-xl border-2 border-indigo-200/90 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.1)] ring-1 ring-indigo-100/80">
         <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.25),transparent_40%)]" />
           <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
@@ -166,9 +285,9 @@ export default function HomeLeftSidebar() {
 
         <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
           <ul className="space-y-1" aria-label="Latest updates list">
-            {latestUpdates.map((item, index) => (
+            {updateRows.map((item, index) => (
               <li key={`${item.title}-${index}`}>
-                <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+                <article className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-1.5">
                       <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
@@ -194,7 +313,7 @@ export default function HomeLeftSidebar() {
                         {item.type}
                       </span>
                       {index < 2 ? (
-                        <span className="rounded-full border border-rose-200 bg-rose-50 px-1.5 py-[1px] text-[7px] font-bold uppercase tracking-[0.08em] text-rose-600">
+                        <span className="rounded-full border border-rose-300 bg-rose-100 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.08em] text-rose-900">
                           New
                         </span>
                       ) : null}
@@ -207,7 +326,7 @@ export default function HomeLeftSidebar() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-indigo-100/90 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.08)] ring-1 ring-indigo-50/80">
+      <section className="overflow-hidden rounded-xl border-2 border-indigo-200/90 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.1)] ring-1 ring-indigo-100/80">
         <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.25),transparent_40%)]" />
           <div className="absolute -right-5 -top-8 h-14 w-14 rounded-full bg-white/10 blur-sm" />
@@ -226,9 +345,9 @@ export default function HomeLeftSidebar() {
 
         <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
           <ul className="space-y-1" aria-label="Upcoming exams list">
-            {upcomingExams.map((item, index) => (
+            {examRows.map((item, index) => (
               <li key={`${item.title}-${index}`}>
-                <article className="group rounded-lg border border-transparent bg-white/85 px-1.5 py-1 shadow-[0_6px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-100 hover:bg-white hover:shadow-[0_10px_20px_rgba(99,102,241,0.1)] focus-within:border-indigo-200">
+                <article className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-1.5">
                       <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">

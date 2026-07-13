@@ -1,24 +1,26 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import AnalyticsSection from "@/components/dashboard/AnalyticsSection";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import HelpSupportPanel from "@/components/dashboard/HelpSupportPanel";
 import LatestJobsWidget from "@/components/dashboard/LatestJobsWidget";
-import NewPostPanel from "@/components/dashboard/NewPostPanel";
 import type { NewPostPrefillRecord } from "@/components/dashboard/NewPostPanel";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
-import ProfileManagementPanel from "@/components/dashboard/ProfileManagementPanel";
-import SavedAdmitCardPanel from "@/components/dashboard/SavedAdmitCardPanel";
-import SavedExamPanel from "@/components/dashboard/SavedExamPanel";
-import SavedJobsPanel from "@/components/dashboard/SavedJobsPanel";
-import SavedResultPanel from "@/components/dashboard/SavedResultPanel";
 import StatsCards from "@/components/dashboard/StatsCards";
 import { SkeletonBlock } from "@/components/dashboard/ui";
 import { useDashboardStore } from "@/stores/dashboardStore";
+
+const NewPostPanel = dynamic(() => import("@/components/dashboard/NewPostPanel"));
+const SavedJobsPanel = dynamic(() => import("@/components/dashboard/SavedJobsPanel"));
+const SavedAdmitCardPanel = dynamic(() => import("@/components/dashboard/SavedAdmitCardPanel"));
+const SavedExamPanel = dynamic(() => import("@/components/dashboard/SavedExamPanel"));
+const SavedResultPanel = dynamic(() => import("@/components/dashboard/SavedResultPanel"));
+const ProfileManagementPanel = dynamic(() => import("@/components/dashboard/ProfileManagementPanel"));
+const HelpSupportPanel = dynamic(() => import("@/components/dashboard/HelpSupportPanel"));
 
 function DashboardSkeleton() {
   return (
