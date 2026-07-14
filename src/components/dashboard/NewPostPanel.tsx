@@ -18,6 +18,7 @@ import type { Editor as TinyMCEEditor } from "tinymce";
 import { useEffect, useRef, useState } from "react";
 
 import { Card, GhostButton, SectionHeading } from "@/components/dashboard/ui";
+import { dashboardPostTemplates } from "@/components/dashboard/postTemplates";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import type { UserApplication } from "@/types/dashboard";
 
@@ -433,23 +434,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     postCategory,
   ]);
 
-  const templates = [
-    {
-      id: "recruitment-notice",
-      label: "Recruitment Notice",
-      html: "<h2>Recruitment Notice</h2><p>Applications are invited for the following positions.</p><ul><li>Post Name:</li><li>Total Vacancies:</li><li>Last Date:</li></ul>",
-    },
-    {
-      id: "exam-update",
-      label: "Exam Update",
-      html: "<h2>Exam Update</h2><p>Important details regarding upcoming examination.</p><ul><li>Exam Date:</li><li>Admit Card Date:</li><li>Reporting Time:</li></ul>",
-    },
-    {
-      id: "result-announcement",
-      label: "Result Announcement",
-      html: "<h2>Result Announcement</h2><p>The results for the recruitment process have been published.</p><p><strong>How to check:</strong> Visit the official result portal and enter your credentials.</p>",
-    },
-  ] as const;
+  const templates = dashboardPostTemplates;
 
   const selectedTemplate =
     templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
@@ -482,13 +467,15 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   };
 
   const insertSelectedTemplate = () => {
+    const templateBlock = `<section class="sarkari-template-block">${selectedTemplate.html}</section><p>&nbsp;</p>`;
+
     if (editorMode === "visual" && editorRef.current) {
-      editorRef.current.insertContent(selectedTemplate.html);
+      editorRef.current.insertContent(templateBlock);
       setContentHtml(editorRef.current.getContent());
       return;
     }
 
-    setContentHtml((current) => `${current}\n${selectedTemplate.html}`);
+    setContentHtml((current) => `${current}\n${templateBlock}`);
   };
 
   const handleAddMedia = () => {
@@ -1440,6 +1427,12 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                     return;
                   }
 
+                  if (nextTemplate === "admit-card-announcement") {
+                    setPostType("Admit");
+                    setPostCategory("Admit");
+                    return;
+                  }
+
                   if (nextTemplate === "result-announcement") {
                     setPostType("Result");
                     setPostCategory("Result");
@@ -1541,17 +1534,94 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                     setContentHtml(value);
                   }}
                   init={{
-                    height: 420,
-                    menubar: false,
-                    branding: false,
-                    browser_spellcheck: true,
-                    contextmenu: false,
-                    toolbar_sticky: true,
-                    plugins:
-                      "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount",
-                    toolbar:
-                      "styleselect | bold italic underline | alignleft aligncenter alignright | bullist numlist blockquote | link image media | code fullscreen | undo redo | removeformat",
-                    automatic_uploads: true,
+                    
+height: 500,
+
+    // UI
+    menubar: true,
+    branding: false,
+    browser_spellcheck: true,
+    contextmenu: "link image table",
+    toolbar_sticky: true,
+    resize: true,
+
+    // Uploads
+    automatic_uploads: true,
+
+    // Plugins
+    plugins: [
+      "advlist",
+      "autolink",
+      "lists",
+      "link",
+      "image",
+      "charmap",
+      "preview",
+      "anchor",
+      "searchreplace",
+      "visualblocks",
+      "code",
+      "fullscreen",
+      "insertdatetime",
+      "media",
+      "table",
+      "help",
+      "wordcount",
+      "emoticons",
+      "codesample",
+      "pagebreak",
+      "nonbreaking",
+      "quickbars"
+    ].join(" "),
+
+    // Toolbar
+    toolbar: [
+      "undo redo | blocks fontfamily fontsize",
+      "| bold italic underline strikethrough",
+      "| forecolor backcolor",
+      "| alignleft aligncenter alignright alignjustify",
+      "| bullist numlist outdent indent",
+      "| blockquote",
+      "| table",
+      "| link image media",
+      "| emoticons charmap",
+      "| codesample",
+      "| pagebreak",
+      "| removeformat",
+      "| code fullscreen preview"
+    ].join(" "),
+    // Font sizes
+    fontsize_formats:
+      "8pt 10pt 12pt 14pt 16pt 18pt 24pt 30pt 36pt 48pt",
+
+    // Font families
+    font_family_formats:
+      "Arial=arial,helvetica,sans-serif;" +
+      "Calibri=calibri,sans-serif;" +
+      "Courier New=courier new,courier,monospace;" +
+      "Georgia=georgia,palatino,serif;" +
+      "Helvetica=helvetica;" +
+      "Tahoma=tahoma,arial,helvetica,sans-serif;" +
+      "Times New Roman=times new roman,times;" +
+      "Verdana=verdana,geneva,sans-serif",
+
+    // Table defaults
+    table_default_attributes: {
+      border: "1"
+    },
+
+    table_default_styles: {
+      width: "100%",
+      borderCollapse: "collapse"
+    },
+
+    // Quick toolbar on selection
+    quickbars_selection_toolbar:
+      "bold table h1 h2 h3 forecolor backcolor",
+
+    quickbars_insert_toolbar:
+      "image h1 h2 table",
+
                     images_upload_handler: async (
                       blobInfo: { readonly blob: () => Blob },
                       progress: (percent: number) => void,
@@ -1559,7 +1629,21 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                       return uploadImage(blobInfo.blob(), progress);
                     },
                     content_style:
-                      "body { font-family: Georgia, 'Times New Roman', serif; font-size:14px; line-height:1.6; padding:8px; } h2 { font-size:1.3rem; } blockquote { border-left:3px solid #cbd5e1; margin: 0.8rem 0; padding: 0.2rem 0 0.2rem 0.8rem; color: #475569; }",
+                      "body { margin: 0; padding: 14px; background: #f8fafc; color: #0f172a; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.72; } " +
+                      ".sarkari-template-block { border: 1px solid #dbeafe; background: #ffffff; border-radius: 12px; padding: 14px; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06); } " +
+                      ".sarkari-template-block h2 { margin: 0 0 10px; font-size: 1.35rem; line-height: 1.35; color: #0f172a; background: linear-gradient(90deg, #e0f2fe, #dbeafe); border: 1px solid #bfdbfe; border-radius: 10px; padding: 8px 10px; } " +
+                      ".sarkari-template-block h3 { margin: 14px 0 8px; font-size: 1.05rem; color: #1e3a8a; border-left: 4px solid #2563eb; padding-left: 8px; } " +
+                      ".sarkari-template-block h4 { margin: 12px 0 6px; font-size: 0.98rem; color: #1e40af; } " +
+                      ".sarkari-template-block p { margin: 0 0 10px; } " +
+                      ".sarkari-template-block ul, .sarkari-template-block ol { margin: 0 0 10px 22px; padding: 0; } " +
+                      ".sarkari-template-block li { margin: 0 0 6px; } " +
+                      ".sarkari-template-block strong { color: #111827; } " +
+                      ".sarkari-template-block a { color: #1d4ed8; text-decoration: underline; font-weight: 600; } " +
+                      ".sarkari-template-block table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; background: #ffffff; } " +
+                      ".sarkari-template-block th, .sarkari-template-block td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; vertical-align: top; } " +
+                      ".sarkari-template-block th { background: #1e3a8a; color: #ffffff; font-weight: 700; } " +
+                      ".sarkari-template-block tr:nth-child(even) td { background: #f8fafc; } " +
+                      "blockquote { border-left: 4px solid #93c5fd; margin: 10px 0; padding: 6px 0 6px 10px; color: #334155; background: #f8fafc; border-radius: 4px; }",
                   }}
                 />
               </>

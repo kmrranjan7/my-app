@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
-  Bookmark,
   CalendarClock,
   CalendarRange,
   ChevronRight,
@@ -261,6 +260,31 @@ type HomeJobsExplorerProps = Readonly<{
   jobs: LatestJob[];
 }>;
 
+function buildWhatsAppMessage(
+  job: LatestJob,
+  formattedStartDate: string,
+  formattedLastDate: string,
+  hasLastDate: boolean,
+  deadlineText: string,
+) {
+  const jobLink = typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href;
+
+  return [
+    "SarkariGlobalResult - Job Alert",
+    "",
+    `Post: ${job.postName}`,
+    `Organization: ${job.badge}`,
+    `State: ${job.state}`,
+    `Qualification: ${job.qualification}`,
+    `Seats: ${job.seats}`,
+    `Start Date: ${formattedStartDate}`,
+    `Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
+    `Status: ${deadlineText}`,
+    "",
+    `Apply Link: ${jobLink}`,
+  ].join("\n");
+}
+
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [badgeFilter, setBadgeFilter] = useState("all");
@@ -350,20 +374,33 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
+  const shareOnWhatsApp = (
+    job: LatestJob,
+    formattedStartDate: string,
+    formattedLastDate: string,
+    hasLastDate: boolean,
+    deadlineText: string,
+  ) => {
+    const message = buildWhatsAppMessage(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineText);
+    const encoded = encodeURIComponent(message);
+    const url = `https://wa.me/?text=${encoded}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section>
-      <div className="pointer-events-none absolute -top-20 -right-12 h-40 w-40 rounded-full bg-sky-200/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-fuchsia-200/25 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 -right-12 h-40 w-40 rounded-full bg-cyan-200/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-amber-200/30 blur-3xl" />
 
-      <div className="relative rounded-xl border border-slate-200/85 bg-white/85 px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.06)] ring-1 ring-slate-100/80 backdrop-blur-sm">
+      <div className="relative rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-700 shadow-sm">
+            <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
               <Sparkles className="size-3.5" aria-hidden="true" />
             </span>
             <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700">Latest Jobs</p>
-              <span className="hidden rounded-full bg-sky-50 px-2 py-0.5 text-[9px] font-semibold text-sky-800 ring-1 ring-sky-200 lg:inline-flex">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-800">Latest Jobs</p>
+              <span className="hidden rounded-full bg-cyan-50 px-2 py-0.5 text-[9px] font-semibold text-cyan-800 ring-1 ring-cyan-200 lg:inline-flex">
                 Trusted Opportunities with Clear Qualification and Deadline Information
               </span>
             </div>
@@ -373,8 +410,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             onClick={() => setClosingWeekOnly((prev) => !prev)}
             className={`w-full rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:w-auto ${
               closingWeekOnly
-                ? "animate-pulse bg-red-900 text-white ring-red-950 shadow-[0_0_0_2px_rgba(127,29,29,0.35)]"
-                : "animate-pulse bg-red-900 text-white ring-red-950"
+                ? "animate-pulse bg-gradient-to-r from-rose-700 to-red-700 text-white ring-rose-900 shadow-[0_0_0_2px_rgba(190,18,60,0.28)]"
+                : "bg-gradient-to-r from-rose-600 to-red-600 text-white ring-rose-700"
             }`}
           >
             <span className="inline-flex items-center gap-1 text-white">
@@ -388,8 +425,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] focus-within:border-sky-300 focus-within:ring-2 focus-within:ring-sky-100">
-            <Search className="size-3.5 text-slate-400 transition-colors group-focus-within:text-sky-600" aria-hidden="true" />
+          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+            <Search className="size-3.5 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -398,7 +435,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             />
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
             <select
               value={badgeFilter}
@@ -414,7 +451,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </select>
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
             <select
               value={stateFilter}
@@ -430,7 +467,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </select>
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
             <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
             <select
               value={qualificationFilter}
@@ -447,14 +484,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </label>
 
           <div className="flex items-center justify-end gap-1 sm:col-span-2 lg:col-span-1">
-            <span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
+            <span className="rounded-md bg-cyan-50 px-2 py-1 text-[10px] font-semibold text-cyan-700 ring-1 ring-cyan-200">
               {filteredJobs.length} jobs
             </span>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
               >
                 <X className="size-3" aria-hidden="true" />
                 Clear
@@ -465,8 +502,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       </div>
 
       <div className="mt-2.5">
-        <div className="pointer-events-none absolute inset-x-2 top-2 z-10 h-6 rounded-t-xl bg-gradient-to-b from-white via-white/75 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-2 bottom-2 z-10 h-6 rounded-b-xl bg-gradient-to-t from-white via-white/75 to-transparent" />
         <div className="max-h-[68vh] overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-color:#0284c7_#e2e8f0] sm:max-h-[72vh] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200/70 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-cyan-400 [&::-webkit-scrollbar-thumb]:via-sky-500 [&::-webkit-scrollbar-thumb]:to-indigo-500 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-slate-100/90">
           <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] md:grid-cols-2 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
@@ -479,7 +514,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group space-y-1 rounded-xl border border-slate-200/90 bg-white p-2.5 shadow-[0_10px_22px_rgba(15,23,42,0.09),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_20px_38px_rgba(2,132,199,0.16),0_8px_16px_rgba(15,23,42,0.08)]"
+                  className="group space-y-1 rounded-xl border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] p-2.5 shadow-[0_10px_22px_rgba(15,23,42,0.08),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-[0_20px_38px_rgba(8,145,178,0.16),0_8px_16px_rgba(15,23,42,0.08)]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] shadow-sm ${badge.style}`}>
@@ -491,7 +526,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                   </div>
 
                   <Link href={job.href} className="mt-1 flex items-start gap-1 text-slate-800 transition-colors">
-                    <span className="mt-0.5 inline-flex size-4 items-center justify-center rounded bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 transition-colors group-hover:from-blue-100 group-hover:to-indigo-100 group-hover:text-blue-900">
+                    <span className="mt-0.5 inline-flex size-4 items-center justify-center rounded bg-gradient-to-br from-cyan-50 to-blue-100 text-cyan-700 transition-colors group-hover:from-cyan-100 group-hover:to-blue-200 group-hover:text-blue-900">
                       <ArrowUpRight className="size-3" aria-hidden="true" />
                     </span>
                     <span className="line-clamp-2 text-[11px] font-extrabold leading-4.5 transition-colors group-hover:text-blue-900">{job.postName}</span>
@@ -502,23 +537,26 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <dt className="inline-flex items-center gap-0.5 font-semibold text-slate-700">
                         <Users className="size-2.5" aria-hidden="true" /> Seat:
                       </dt>
-                      <dd className="rounded bg-emerald-600 px-1 py-0.5 font-bold text-white">{job.seats}</dd>
+                      <dd className="shrink-0 rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.seats}</dd>
                     </div>
                     <div className="inline-flex items-center gap-0.5 text-slate-700 whitespace-nowrap">
                       <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
                         <MapPin className="size-2.5" aria-hidden="true" /> State:
                       </dt>
-                      <dd className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-800">{job.state}</dd>
+                      <dd className="shrink-0 rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.state}</dd>
                     </div>
                     <div className="inline-flex items-center justify-end gap-1">
                       <dt className="sr-only">Actions</dt>
                       <dd className="inline-flex items-center gap-1">
                       <button
                         type="button"
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sm ring-1 ring-sky-300/70 transition-transform hover:scale-105"
-                        aria-label={`Save ${job.postName}`}
+                        onClick={() => shareOnWhatsApp(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineChip.text)}
+                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
+                        aria-label={`WhatsApp action for ${job.postName}`}
                       >
-                        <Bookmark className="size-2.5" aria-hidden="true" />
+                        <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
+                          <path d="M12 2a9.98 9.98 0 0 0-8.66 15l-1.25 4.56a.7.7 0 0 0 .86.86L7.5 21.2A10 10 0 1 0 12 2zm0 18.2a8.17 8.17 0 0 1-4.18-1.15.7.7 0 0 0-.53-.08l-2.68.73.73-2.68a.7.7 0 0 0-.08-.53A8.2 8.2 0 1 1 12 20.2zm4.51-6.15c-.25-.12-1.46-.72-1.69-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.29.19-.54.06-.25-.12-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.76-.15-.25-.02-.39.11-.52.11-.11.25-.29.37-.43.12-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.57-1.37-.78-1.87-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.43.06-.65.31s-.86.84-.86 2.05.88 2.38 1 2.54c.12.17 1.72 2.62 4.17 3.67.58.25 1.04.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z" />
+                        </svg>
                       </button>
                       </dd>
                     </div>
@@ -526,13 +564,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <dt className="inline-flex shrink-0 items-center gap-1 font-semibold text-slate-700">
                         <CalendarClock className="size-2.5" aria-hidden="true" /> Start:
                       </dt>
-                      <dd className="rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-800">{formattedStartDate}</dd>
+                      <dd className="rounded-md bg-cyan-50 px-1.5 py-0.5 font-semibold text-cyan-800 ring-1 ring-cyan-200">{formattedStartDate}</dd>
                     </div>
                     <div className="col-span-2 inline-flex items-center justify-end gap-1">
                       <dt className="inline-flex items-center gap-1 font-semibold text-slate-700">
                         <CalendarRange className="size-2.5" aria-hidden="true" /> Last:
                       </dt>
-                      <dd className={`rounded-md px-1.5 py-0.5 text-right font-semibold ${hasLastDate ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}`}>
+                      <dd className={`rounded-md px-1.5 py-0.5 text-right font-semibold ring-1 ${hasLastDate ? "bg-rose-50 text-rose-700 ring-rose-200" : "bg-emerald-50 text-emerald-700 ring-emerald-200"}`}>
                         {hasLastDate ? formattedLastDate : "To Be Announced"}
                       </dd>
                     </div>
@@ -542,7 +580,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             })}
 
             {filteredJobs.length === 0 && (
-              <div className="col-span-full rounded-xl border border-dashed border-slate-300 bg-white/80 px-4 py-8 text-center">
+              <div className="col-span-full rounded-xl border border-dashed border-cyan-200 bg-cyan-50/40 px-4 py-8 text-center">
                 <p className="text-sm font-semibold text-slate-700">No jobs found for selected filters</p>
                 <p className="mt-1 text-xs text-slate-500">Try clearing filters or changing search keywords.</p>
               </div>

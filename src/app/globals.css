@@ -387,3 +387,240 @@ a {
     animation: none;
   }
 }
+
+.sarkari-template-content {
+  margin-top: 0.75rem;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.sarkari-template-block {
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.sarkari-template-content h2 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  color: #0f172a;
+  background: linear-gradient(90deg, #e0f2fe, #dbeafe);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.sarkari-template-block h2 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  color: #0f172a;
+  background: linear-gradient(90deg, #e0f2fe, #dbeafe);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.sarkari-template-content h3 {
+  margin: 14px 0 8px;
+  font-size: 1.05rem;
+  color: #1e3a8a;
+  border-left: 4px solid #2563eb;
+  padding-left: 8px;
+}
+
+.sarkari-template-block h3 {
+  margin: 14px 0 8px;
+  font-size: 1.05rem;
+  color: #1e3a8a;
+  border-left: 4px solid #2563eb;
+  padding-left: 8px;
+}
+
+.sarkari-template-content h4 {
+  margin: 12px 0 6px;
+  font-size: 0.98rem;
+  color: #1e40af;
+}
+
+.sarkari-template-block h4 {
+  margin: 12px 0 6px;
+  font-size: 0.98rem;
+  color: #1e40af;
+}
+
+.sarkari-template-content p {
+  margin: 0 0 10px;
+}
+
+.sarkari-template-block p {
+  margin: 0 0 10px;
+}
+
+.sarkari-template-content ul,
+.sarkari-template-content ol {
+  margin: 0 0 10px 22px;
+  padding: 0;
+}
+
+.sarkari-template-block ul,
+.sarkari-template-block ol {
+  margin: 0 0 10px 22px;
+  padding: 0;
+}
+
+.sarkari-template-content li {
+  margin: 0 0 6px;
+}
+
+.sarkari-template-block li {
+  margin: 0 0 6px;
+}
+
+.sarkari-template-content strong {
+  color: #111827;
+}
+
+.sarkari-template-block strong {
+  color: #111827;
+}
+
+.sarkari-template-content a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.sarkari-template-block a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.sarkari-template-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 14px;
+  background: #ffffff;
+}
+
+.sarkari-template-block table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 14px;
+  background: #ffffff;
+}
+
+.sarkari-template-content th,
+.sarkari-template-content td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.sarkari-template-block th,
+.sarkari-template-block td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.sarkari-template-content th {
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.sarkari-template-block th {
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.sarkari-template-content tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.sarkari-template-block tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.sarkari-template-content blockquote {
+  border-left: 4px solid #93c5fd;
+  margin: 10px 0;
+  padding: 6px 0 6px 10px;
+  color: #334155;
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.sarkari-template-block blockquote {
+  border-left: 4px solid #93c5fd;
+  margin: 10px 0;
+  padding: 6px 0 6px 10px;
+  color: #334155;
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.sarkari-template-content img {
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+.sarkari-template-block img {
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  .sarkari-template-content {
+    padding: 10px;
+  }
+
+  .sarkari-template-block {
+    padding: 10px;
+  }
+
+  .sarkari-template-content h2 {
+    font-size: 1.15rem;
+  }
+
+  .sarkari-template-block h2 {
+    font-size: 1.15rem;
+  }
+
+  .sarkari-template-content h3 {
+    font-size: 1rem;
+  }
+
+  .sarkari-template-block h3 {
+    font-size: 1rem;
+  }
+
+  .sarkari-template-content th,
+  .sarkari-template-content td {
+    padding: 7px;
+    font-size: 0.84rem;
+  }
+
+  .sarkari-template-block th,
+  .sarkari-template-block td {
+    padding: 7px;
+    font-size: 0.84rem;
+  }
+}

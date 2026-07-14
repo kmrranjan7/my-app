@@ -56,6 +56,7 @@ export default function DashboardShell() {
   const [activeMenuKey, setActiveMenuKey] = useState("Dashboard");
   const [prefillRecord, setPrefillRecord] = useState<NewPostPrefillRecord | null>(null);
   const [savedRecordsVersion, setSavedRecordsVersion] = useState(0);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleStatNavigation = (statId: string) => {
     if (statId === "job") {
@@ -99,6 +100,111 @@ export default function DashboardShell() {
     void fetchDashboardData();
   }, [fetchDashboardData]);
 
+  const renderActivePanel = (dashboardData: NonNullable<typeof data>) => {
+    if (activeMenuKey === "Job Notifications") {
+      return (
+        <NotificationPanel
+          notifications={dashboardData.notifications}
+          onMarkRead={markNotificationRead}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Current Vacancies") {
+      return (
+        <LatestJobsWidget
+          jobs={filteredJobs}
+          creating={creating}
+          onApply={(job) => {
+            void addApplicationFromJob(job);
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Saved Jobs") {
+      return (
+        <SavedJobsPanel
+          postTypeFilter="Job"
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Saved Admit Card") {
+      return (
+        <SavedAdmitCardPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Saved Exam") {
+      return (
+        <SavedExamPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Saved Result") {
+      return (
+        <SavedResultPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Profile Management") {
+      return <ProfileManagementPanel />;
+    }
+
+    if (activeMenuKey === "New Post") {
+      return (
+        <NewPostPanel
+          prefillRecord={prefillRecord}
+          onSavedRecord={() => {
+            setSavedRecordsVersion((current) => current + 1);
+            void fetchDashboardData();
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Help & Support") {
+      return <HelpSupportPanel />;
+    }
+
+    return (
+      <>
+        <StatsCards stats={dashboardData.stats} onStatClick={handleStatNavigation} />
+
+        <AnalyticsSection
+          categoryData={dashboardData.categoryChart}
+          statusData={dashboardData.statusChart}
+          recruitmentData={dashboardData.recruitmentChart}
+          monthlyTrend={dashboardData.monthlyTrend}
+        />
+      </>
+    );
+  };
+
   if (loading) {
     return <DashboardSkeleton />;
   }
@@ -140,9 +246,18 @@ export default function DashboardShell() {
         onLanguageChange={setLanguage}
       />
 
-      <section className="grid grid-cols-1 gap-3 xl:grid-cols-[290px_minmax(0,1fr)]">
+      <section
+        className={[
+          "grid grid-cols-1 gap-3",
+          isSidebarCollapsed ? "xl:grid-cols-[82px_minmax(0,1fr)]" : "xl:grid-cols-[290px_minmax(0,1fr)]",
+        ].join(" ")}
+      >
         <DashboardSidebar
           activeKey={activeMenuKey}
+          collapsed={isSidebarCollapsed}
+          onToggleCollapse={() => {
+            setIsSidebarCollapsed((current) => !current);
+          }}
           onSelectKey={(nextKey) => {
             if (nextKey !== "New Post") {
               setPrefillRecord(null);
@@ -151,78 +266,7 @@ export default function DashboardShell() {
           }}
         />
 
-        <div className="space-y-3">
-          {activeMenuKey === "Job Notifications" ? (
-            <NotificationPanel
-              notifications={data.notifications}
-              onMarkRead={markNotificationRead}
-            />
-          ) : activeMenuKey === "Current Vacancies" ? (
-            <LatestJobsWidget
-              jobs={filteredJobs}
-              creating={creating}
-              onApply={(job) => {
-                void addApplicationFromJob(job);
-              }}
-            />
-          ) : activeMenuKey === "Saved Jobs" ? (
-            <SavedJobsPanel
-              postTypeFilter="Job"
-              refreshToken={savedRecordsVersion}
-              onEditInNewPost={(record) => {
-                setPrefillRecord(record);
-                setActiveMenuKey("New Post");
-              }}
-            />
-          ) : activeMenuKey === "Saved Admit Card" ? (
-            <SavedAdmitCardPanel
-              refreshToken={savedRecordsVersion}
-              onEditInNewPost={(record) => {
-                setPrefillRecord(record);
-                setActiveMenuKey("New Post");
-              }}
-            />
-          ) : activeMenuKey === "Saved Exam" ? (
-            <SavedExamPanel
-              refreshToken={savedRecordsVersion}
-              onEditInNewPost={(record) => {
-                setPrefillRecord(record);
-                setActiveMenuKey("New Post");
-              }}
-            />
-          ) : activeMenuKey === "Saved Result" ? (
-            <SavedResultPanel
-              refreshToken={savedRecordsVersion}
-              onEditInNewPost={(record) => {
-                setPrefillRecord(record);
-                setActiveMenuKey("New Post");
-              }}
-            />
-          ) : activeMenuKey === "Profile Management" ? (
-            <ProfileManagementPanel />
-          ) : activeMenuKey === "New Post" ? (
-            <NewPostPanel
-              prefillRecord={prefillRecord}
-              onSavedRecord={() => {
-                setSavedRecordsVersion((current) => current + 1);
-                void fetchDashboardData();
-              }}
-            />
-          ) : activeMenuKey === "Help & Support" ? (
-            <HelpSupportPanel />
-          ) : (
-            <>
-              <StatsCards stats={data.stats} onStatClick={handleStatNavigation} />
-
-              <AnalyticsSection
-                categoryData={data.categoryChart}
-                statusData={data.statusChart}
-                recruitmentData={data.recruitmentChart}
-                monthlyTrend={data.monthlyTrend}
-              />
-            </>
-          )}
-        </div>
+        <div className="space-y-3">{renderActivePanel(data)}</div>
       </section>
     </div>
   );

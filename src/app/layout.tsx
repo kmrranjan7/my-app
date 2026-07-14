@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HeaderNavbar from "@/components/HeaderNavbar";
+import SiteFooter from "@/components/SiteFooter";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
@@ -53,6 +54,7 @@ export default function RootLayout({
       <body className="min-h-full">
         <HeaderNavbar />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
