@@ -16,7 +16,6 @@ import {
   X,
 } from "lucide-react";
 import type { LatestJob } from "@/data/sidebarContent";
-import JobWhatsAppCard, { type JobWhatsAppData } from "./JobWhatsAppCard";
 
 const qualificationOptions = [
   "Below 10th Pass",
@@ -267,7 +266,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
-  const [activeShareJob, setActiveShareJob] = useState<JobWhatsAppData | null>(null);
 
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
@@ -351,24 +349,49 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
-  const shareOnWhatsApp = (
+  const shareOnSocialMedia = async (
     job: LatestJob,
     formattedStartDate: string,
     formattedLastDate: string,
     hasLastDate: boolean,
     deadlineText: string,
   ) => {
-    setActiveShareJob({
-      postName: job.postName,
-      organization: job.badge,
-      state: job.state,
-      qualification: job.qualification,
-      seats: job.seats,
-      startDate: formattedStartDate,
-      lastDate: hasLastDate ? formattedLastDate : "To Be Announced",
-      status: deadlineText,
-      applyLink: typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href,
-    });
+    const applyLink =
+      typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href;
+
+    const message = [
+      "✨ Sarkari Global Result - Job Alert",
+      "",
+      `✅ Post Name: ${job.postName}`,
+      `🏢 Organization: ${job.badge}`,
+      `📍 State: ${job.state}`,
+      `🎓 Qualification: ${job.qualification}`,
+      `👥 Seats: ${job.seats}`,
+      `📅 Start Date: ${formattedStartDate}`,
+      `⏰ Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
+      `🚨 Current Status: ${deadlineText}`,
+      "",
+      "👉 Apply Now",
+      `🔗 ${applyLink}`,
+    ].join("\n");
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: `${job.postName} | Sarkari Global Result`,
+          text: message,
+          url: applyLink,
+        });
+        return;
+      } catch {
+        // If user cancels or share target is unavailable, fallback to WhatsApp web share.
+      }
+    }
+
+    const encoded = encodeURIComponent(message);
+    const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
+
+    window.open(webUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -534,9 +557,17 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <dd className="inline-flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => shareOnWhatsApp(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineChip.text)}
+                        onClick={() => {
+                          void shareOnSocialMedia(
+                            job,
+                            formattedStartDate,
+                            formattedLastDate,
+                            hasLastDate,
+                            deadlineChip.text,
+                          );
+                        }}
                         className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
-                        aria-label={`WhatsApp action for ${job.postName}`}
+                        aria-label={`Share ${job.postName} on social media`}
                       >
                         <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
                           <path d="M12 2a9.98 9.98 0 0 0-8.66 15l-1.25 4.56a.7.7 0 0 0 .86.86L7.5 21.2A10 10 0 1 0 12 2zm0 18.2a8.17 8.17 0 0 1-4.18-1.15.7.7 0 0 0-.53-.08l-2.68.73.73-2.68a.7.7 0 0 0-.08-.53A8.2 8.2 0 1 1 12 20.2zm4.51-6.15c-.25-.12-1.46-.72-1.69-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.29.19-.54.06-.25-.12-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.76-.15-.25-.02-.39.11-.52.11-.11.25-.29.37-.43.12-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.57-1.37-.78-1.87-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.43.06-.65.31s-.86.84-.86 2.05.88 2.38 1 2.54c.12.17 1.72 2.62 4.17 3.67.58.25 1.04.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z" />
@@ -572,15 +603,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </div>
         </div>
       </div>
-
-      {activeShareJob ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <JobWhatsAppCard
-            job={activeShareJob}
-            onClose={() => setActiveShareJob(null)}
-          />
-        </div>
-      ) : null}
     </section>
   );
 }
