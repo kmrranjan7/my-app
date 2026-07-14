@@ -271,6 +271,7 @@ function buildWhatsAppMessage(
 
   return [
     "SarkariGlobalResult - Job Alert",
+    "-----------------------------",
     "",
     `Post: ${job.postName}`,
     `Organization: ${job.badge}`,
@@ -281,6 +282,7 @@ function buildWhatsAppMessage(
     `Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
     `Status: ${deadlineText}`,
     "",
+    "Apply Now:",
     `Apply Link: ${jobLink}`,
   ].join("\n");
 }
@@ -383,8 +385,19 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   ) => {
     const message = buildWhatsAppMessage(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineText);
     const encoded = encodeURIComponent(message);
-    const url = `https://wa.me/?text=${encoded}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const appUrl = `whatsapp://send?text=${encoded}`;
+    const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
+
+    // Prefer installed WhatsApp app on mobile; fallback to WhatsApp Web/API.
+    if (typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      window.location.href = appUrl;
+      window.setTimeout(() => {
+        window.location.href = webUrl;
+      }, 700);
+      return;
+    }
+
+    window.open(webUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -551,7 +564,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <button
                         type="button"
                         onClick={() => shareOnWhatsApp(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineChip.text)}
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105 active:scale-95 touch-manipulation sm:h-7 sm:w-7"
                         aria-label={`WhatsApp action for ${job.postName}`}
                       >
                         <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
