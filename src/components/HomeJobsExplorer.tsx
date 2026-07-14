@@ -260,6 +260,9 @@ type HomeJobsExplorerProps = Readonly<{
   jobs: LatestJob[];
 }>;
 
+const WHATSAPP_SHARE_IMAGE_URL =
+  "http://localhost:3000/uploads/1783976450353-b5012feb-4b56-41c9-b1c2-da732f2391ea.png";
+
 function buildWhatsAppMessage(
   job: LatestJob,
   formattedStartDate: string,
@@ -270,20 +273,23 @@ function buildWhatsAppMessage(
   const jobLink = typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href;
 
   return [
-    "SarkariGlobalResult - Job Alert",
-    "-----------------------------",
+    "SarkariGlobalResult - Job Alert Card",
+    "==============================",
     "",
-    `Post: ${job.postName}`,
-    `Organization: ${job.badge}`,
-    `State: ${job.state}`,
-    `Qualification: ${job.qualification}`,
-    `Seats: ${job.seats}`,
-    `Start Date: ${formattedStartDate}`,
-    `Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
-    `Status: ${deadlineText}`,
+    `Post Name      : ${job.postName}`,
+    `Organization   : ${job.badge}`,
+    `State          : ${job.state}`,
+    `Qualification  : ${job.qualification}`,
+    `Seats          : ${job.seats}`,
+    `Start Date     : ${formattedStartDate}`,
+    `Last Date      : ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
+    `Current Status : ${deadlineText}`,
     "",
-    "Apply Now:",
+    "Apply Now",
     `Apply Link: ${jobLink}`,
+    "",
+    "Card Image URL",
+    WHATSAPP_SHARE_IMAGE_URL,
   ].join("\n");
 }
 
@@ -392,7 +398,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     if (typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       window.location.href = appUrl;
       window.setTimeout(() => {
-        window.location.href = webUrl;
+        window.open(webUrl, "_blank", "noopener,noreferrer");
       }, 700);
       return;
     }
@@ -564,7 +570,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <button
                         type="button"
                         onClick={() => shareOnWhatsApp(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineChip.text)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105 active:scale-95 touch-manipulation sm:h-7 sm:w-7"
+                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
                         aria-label={`WhatsApp action for ${job.postName}`}
                       >
                         <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
