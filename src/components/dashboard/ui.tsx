@@ -102,13 +102,15 @@ export function GhostButton(
   props: Readonly<{
     readonly label: string;
     readonly onClick?: () => void;
+    readonly disabled?: boolean;
   }>,
 ) {
   return (
     <button
       type="button"
+      disabled={props.disabled}
       onClick={props.onClick}
-      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
     >
       {props.label}
     </button>

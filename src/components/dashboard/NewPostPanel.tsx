@@ -27,6 +27,55 @@ type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
 type PostCategory = "Recruitment" | "Admit" | "Exam" | "Result";
 type PostType = "Job" | "Admit" | "Exam" | "Result";
 
+const qualificationOptions = [
+  "Below 10th Pass",
+  "10th Pass",
+  "12th Pass",
+  "Diploma",
+  "Graduate",
+  "Post Graduate",
+] as const;
+
+const stateOptions = [
+  "All India",
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Ladakh",
+  "Lakshadweep",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+] as const;
+
 type DraftSnapshot = Readonly<{
   readonly postTitle: string;
   readonly postSlug: string;
@@ -34,6 +83,8 @@ type DraftSnapshot = Readonly<{
   readonly applicationId: string;
   readonly department: string;
   readonly organization: string;
+  readonly qualification: string;
+  readonly vacancies: number | null;
   readonly startDate: string;
   readonly endDate: string;
   readonly stateName: string;
@@ -90,6 +141,8 @@ export type NewPostPrefillRecord = Readonly<{
   readonly applicationId: string;
   readonly department: string;
   readonly organization: string;
+  readonly qualification: string;
+  readonly vacancies: number | null;
   readonly startDate: string;
   readonly endDate: string;
   readonly stateName: string;
@@ -106,6 +159,22 @@ type NewPostPanelProps = Readonly<{
   readonly prefillRecord?: NewPostPrefillRecord | null;
   readonly onSavedRecord?: () => void;
 }>;
+
+type ApplicationDetailsErrors = {
+  applicationId?: string;
+  department?: string;
+  organization?: string;
+  qualification?: string;
+  vacancies?: string;
+  stateName?: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+type PostBasicsErrors = {
+  postTitle?: string;
+  postSlug?: string;
+};
 
 export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPanelProps) {
   const initialDraft = (() => {
@@ -134,6 +203,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         applicationId: prefillRecord.applicationId,
         department: prefillRecord.department,
         organization: prefillRecord.organization,
+        qualification: prefillRecord.qualification,
+        vacancies: prefillRecord.vacancies,
         startDate: prefillRecord.startDate,
         endDate: prefillRecord.endDate,
         stateName: prefillRecord.stateName,
@@ -157,6 +228,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [applicationId, setApplicationId] = useState(startingDraft?.applicationId ?? "");
   const [department, setDepartment] = useState(startingDraft?.department ?? "");
   const [organization, setOrganization] = useState(startingDraft?.organization ?? "");
+  const [qualification, setQualification] = useState(startingDraft?.qualification ?? "");
+  const [vacancies, setVacancies] = useState<number | "">(startingDraft?.vacancies ?? "");
   const [startDate, setStartDate] = useState(startingDraft?.startDate ?? "");
   const [endDate, setEndDate] = useState(startingDraft?.endDate ?? "");
   const [stateName, setStateName] = useState(startingDraft?.stateName ?? "");
@@ -183,6 +256,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [saveRecordError, setSaveRecordError] = useState<string | null>(null);
+  const [postBasicsErrors, setPostBasicsErrors] = useState<PostBasicsErrors>({});
+  const [applicationDetailsErrors, setApplicationDetailsErrors] = useState<ApplicationDetailsErrors>({});
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [confirmationPopup, setConfirmationPopup] = useState<{
@@ -210,6 +285,73 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   );
   const addApplicationFromPost = useDashboardStore((state) => state.addApplicationFromPost);
 
+  const clearApplicationFieldError = (field: keyof ApplicationDetailsErrors) => {
+    setApplicationDetailsErrors((current) => ({
+      ...current,
+      [field]: undefined,
+    }));
+  };
+
+  const isApplicationDetailsRequired = postCategory === "Recruitment";
+
+  const validateApplicationDetails = (): ApplicationDetailsErrors => {
+    const errors: Partial<ApplicationDetailsErrors> = {};
+
+    if (!isApplicationDetailsRequired) {
+      return errors;
+    }
+
+    if (!applicationId.trim()) {
+      errors.applicationId = "Application ID is required.";
+    }
+
+    if (!department.trim()) {
+      errors.department = "Department is required.";
+    }
+
+    if (!organization.trim()) {
+      errors.organization = "Organization is required.";
+    }
+
+    if (!qualification.trim()) {
+      errors.qualification = "Qualification is required.";
+    }
+
+    if (vacancies === "") {
+      errors.vacancies = "Vacancies is required.";
+    } else if (!Number.isInteger(vacancies) || vacancies <= 0) {
+      errors.vacancies = "Vacancies must be a positive integer.";
+    }
+
+    if (!stateName.trim()) {
+      errors.stateName = "State is required.";
+    }
+
+    if (!startDate.trim()) {
+      errors.startDate = "Start date is required.";
+    }
+
+    if (startDate && endDate && new Date(endDate).getTime() < new Date(startDate).getTime()) {
+      errors.endDate = "End date must be on or after start date.";
+    }
+
+    return errors;
+  };
+
+  const validatePostBasics = (): PostBasicsErrors => {
+    const errors: PostBasicsErrors = {};
+
+    if (!postTitle.trim()) {
+      errors.postTitle = "Post title is required.";
+    }
+
+    if (!postSlug.trim()) {
+      errors.postSlug = "Permalink is required.";
+    }
+
+    return errors;
+  };
+
   useEffect(() => {
     if (editorMode !== "visual" || isTinyReady) {
       return;
@@ -229,6 +371,12 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   }, [editorMode, isTinyReady, editorRetryKey]);
 
   useEffect(() => {
+    if (!isApplicationDetailsRequired) {
+      setApplicationDetailsErrors({});
+    }
+  }, [isApplicationDetailsRequired]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -241,6 +389,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         applicationId,
         department,
         organization,
+        qualification,
+        vacancies: vacancies === "" ? null : vacancies,
         startDate,
         endDate,
         stateName,
@@ -268,6 +418,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     endDate,
     faqSchemaJson,
     organization,
+    qualification,
     postSlug,
     postStatus,
     postTitle,
@@ -277,6 +428,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     seoTitle,
     startDate,
     stateName,
+    vacancies,
     postType,
     postCategory,
   ]);
@@ -452,6 +604,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setApplicationId(initialDraft.applicationId ?? "");
     setDepartment(initialDraft.department ?? "");
     setOrganization(initialDraft.organization ?? "");
+    setQualification(initialDraft.qualification ?? "");
+    setVacancies(initialDraft.vacancies ?? "");
     setStartDate(initialDraft.startDate ?? "");
     setEndDate(initialDraft.endDate ?? "");
     setStateName(initialDraft.stateName ?? "");
@@ -463,6 +617,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setScheduledAt(initialDraft.scheduledAt);
     setPostType(initialDraft.postType ?? "Job");
     setPostCategory(initialDraft.postCategory ?? categoryFromPostType(initialDraft.postType ?? "Job"));
+    setApplicationDetailsErrors({});
     setHasRecoverableDraft(false);
     setIsSlugManuallyEdited(true);
   };
@@ -480,15 +635,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
     if (!postTitle.trim()) {
       missingRules.push("Post title");
-    }
-    if (!applicationId.trim()) {
-      missingRules.push("Application ID");
-    }
-    if (!organization.trim()) {
-      missingRules.push("Organization");
-    }
-    if (!endDate.trim()) {
-      missingRules.push("End Date");
     }
     if (contentHtml.replace(/<[^>]+>/g, " ").trim().length < 120) {
       missingRules.push("Content (minimum length)");
@@ -540,6 +686,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setApplicationId("");
     setDepartment("");
     setOrganization("");
+    setQualification("");
+    setVacancies("");
     setStartDate("");
     setEndDate("");
     setStateName("");
@@ -555,6 +703,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setLastAutosaveAt(null);
     setPublishError(null);
     setSaveRecordError(null);
+    setPostBasicsErrors({});
+    setApplicationDetailsErrors({});
     setHasRecoverableDraft(false);
     setEditingRecordId(null);
 
@@ -575,6 +725,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
       applicationId,
       department,
       organization,
+      qualification,
+      vacancies: vacancies === "" ? null : vacancies,
       startDate,
       endDate,
       stateName,
@@ -597,6 +749,17 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   };
 
   const handleSavePostRecord = async (statusOverride?: PostStatus): Promise<boolean> => {
+    const basicsErrors = validatePostBasics();
+    const detailsErrors = validateApplicationDetails();
+
+    setPostBasicsErrors(basicsErrors);
+    setApplicationDetailsErrors(detailsErrors);
+
+    if (Object.keys(basicsErrors).length > 0 || Object.keys(detailsErrors).length > 0) {
+      setSaveRecordError("Please complete all required fields.");
+      return false;
+    }
+
     setSaveRecordError(null);
     handleSaveDraftVersion();
 
@@ -610,6 +773,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         applicationId,
         department,
         organization,
+        qualification,
+        vacancies: vacancies === "" ? null : vacancies,
         startDate,
         endDate,
         stateName,
@@ -701,9 +866,17 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const seoPreviewDescription =
     seoDescription.trim() ||
     "Add an SEO description to control how this page appears in search results.";
+  const isPostBasicsValid = Object.keys(validatePostBasics()).length === 0;
+  const isApplicationDetailsValid = Object.keys(validateApplicationDetails()).length === 0;
+  const isFormValid = isPostBasicsValid && isApplicationDetailsValid;
 
   return (
-    <Card className="p-4">
+    <Card className="relative overflow-hidden border-0 bg-transparent p-0 shadow-none">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_12%,rgba(14,116,144,0.14),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(2,132,199,0.12),transparent_38%),linear-gradient(180deg,#f8fbff_0%,#f3f7fb_100%)]"
+      />
+      <div className="relative p-3 md:p-4">
       {confirmationPopup ? (
         <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/35 p-4 pt-6 backdrop-blur-[2px]">
           <div
@@ -813,11 +986,11 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
       <SectionHeading
         title="New Post"
-        subtitle="WordPress-style editor for creating recruitment updates, notices, and announcements"
+        subtitle=""
       />
 
       {hasRecoverableDraft ? (
-        <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900 dark:bg-blue-950/35 dark:text-blue-300">
+        <div className="mt-3 rounded-2xl border border-blue-200/80 bg-white/85 px-3 py-2.5 text-xs text-blue-900 shadow-[0_12px_28px_rgba(37,99,235,0.10)] backdrop-blur-sm dark:border-blue-900/60 dark:bg-blue-950/25 dark:text-blue-200">
           <p className="font-semibold">Recover previous draft?</p>
           <p className="mt-1">A saved draft is available from your last editing session.</p>
           <div className="mt-2 flex items-center gap-2">
@@ -839,11 +1012,11 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         </div>
       ) : null}
 
-      <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
+      <div className="mt-3 flex flex-wrap items-center justify-end gap-1.5 border-b border-slate-300/70 pb-3 dark:border-slate-700">
         <button
           type="button"
           onClick={handleCreateNewPost}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-emerald-300/90 bg-gradient-to-b from-emerald-100 to-emerald-50 px-2.5 text-xs font-semibold text-emerald-800 shadow-[0_8px_18px_rgba(16,185,129,0.18)] transition hover:-translate-y-[1px] hover:from-emerald-200 hover:to-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
         >
           <Plus size={13} aria-hidden="true" />
           New Post
@@ -851,7 +1024,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         <button
           type="button"
           onClick={() => setShowScreenOptions((current) => !current)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-300/90 bg-white/90 px-2.5 text-xs font-semibold text-slate-700 shadow-[0_6px_14px_rgba(15,23,42,0.08)] transition hover:-translate-y-[1px] hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <SlidersHorizontal size={13} aria-hidden="true" />
           Screen Options
@@ -859,7 +1032,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         <button
           type="button"
           onClick={() => setShowHelpPanel((current) => !current)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-300/90 bg-white/90 px-2.5 text-xs font-semibold text-slate-700 shadow-[0_6px_14px_rgba(15,23,42,0.08)] transition hover:-translate-y-[1px] hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <CircleHelp size={13} aria-hidden="true" />
           Help
@@ -867,7 +1040,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         <button
           type="button"
           onClick={() => setShowShortcutsModal(true)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-300/90 bg-white/90 px-2.5 text-xs font-semibold text-slate-700 shadow-[0_6px_14px_rgba(15,23,42,0.08)] transition hover:-translate-y-[1px] hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <Keyboard size={13} aria-hidden="true" />
           Shortcuts
@@ -909,16 +1082,16 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
       ) : null}
 
       <form
-        className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_320px]"
+        className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_340px]"
         onSubmit={(event) => event.preventDefault()}
       >
         <section className="space-y-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <label
               htmlFor="post-title"
               className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
             >
-              Add Title
+              Add Title <span className="text-rose-600" aria-hidden="true">*</span>
             </label>
             <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
               <input
@@ -929,21 +1102,34 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                 onChange={(event) => {
                   const nextTitle = event.target.value;
                   setPostTitle(nextTitle);
+                  setPostBasicsErrors((current) => ({
+                    ...current,
+                    postTitle: undefined,
+                  }));
 
                   if (!isSlugManuallyEdited) {
                     setPostSlug(slugify(nextTitle));
                   }
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                required
+                aria-invalid={Boolean(postBasicsErrors.postTitle)}
+                className={`h-10 w-full rounded-xl border bg-white px-3 text-[15px] font-semibold text-slate-900 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 ${
+                  postBasicsErrors.postTitle
+                    ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                    : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                }`}
               />
             </div>
+            {postBasicsErrors.postTitle ? (
+              <p className="mt-1 text-[11px] text-rose-600">{postBasicsErrors.postTitle}</p>
+            ) : null}
 
             <label
               htmlFor="post-slug"
               className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
             >
               <Link2 size={12} aria-hidden="true" />
-              Permalink
+              Permalink <span className="text-rose-600" aria-hidden="true">*</span>
             </label>
             <input
               id="post-slug"
@@ -953,9 +1139,22 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
               onChange={(event) => {
                 setIsSlugManuallyEdited(true);
                 setPostSlug(slugify(event.target.value));
+                setPostBasicsErrors((current) => ({
+                  ...current,
+                  postSlug: undefined,
+                }));
               }}
-              className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              required
+              aria-invalid={Boolean(postBasicsErrors.postSlug)}
+              className={`mt-1 h-8 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                postBasicsErrors.postSlug
+                  ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                  : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+              }`}
             />
+            {postBasicsErrors.postSlug ? (
+              <p className="mt-1 text-[11px] text-rose-600">{postBasicsErrors.postSlug}</p>
+            ) : null}
 
             <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
               <p className="truncate">
@@ -981,74 +1180,206 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
               Application Details
             </p>
 
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               <div>
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  Application ID
+                  Application ID {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
                 </label>
                 <input
                   type="text"
                   value={applicationId}
-                  onChange={(event) => setApplicationId(event.target.value)}
+                  onChange={(event) => {
+                    setApplicationId(event.target.value);
+                    clearApplicationFieldError("applicationId");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.applicationId)}
                   placeholder="APP-IDBI-SO-2026"
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.applicationId
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.applicationId ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.applicationId}</p>
+                ) : null}
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  Department
+                  Department {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
                 </label>
                 <input
                   type="text"
                   value={department}
-                  onChange={(event) => setDepartment(event.target.value)}
+                  onChange={(event) => {
+                    setDepartment(event.target.value);
+                    clearApplicationFieldError("department");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.department)}
                   placeholder="Specialist Officer"
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.department
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.department ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.department}</p>
+                ) : null}
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  Organization
+                  Organization {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
                 </label>
                 <input
                   type="text"
                   value={organization}
-                  onChange={(event) => setOrganization(event.target.value)}
+                  onChange={(event) => {
+                    setOrganization(event.target.value);
+                    clearApplicationFieldError("organization");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.organization)}
                   placeholder="IDBI Bank"
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.organization
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.organization ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.organization}</p>
+                ) : null}
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  State
+                  Qualification {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
+                </label>
+                <select
+                  value={qualification}
+                  onChange={(event) => {
+                    setQualification(event.target.value);
+                    clearApplicationFieldError("qualification");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.qualification)}
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.qualification
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
+                >
+                  <option value="">Select Qualification</option>
+                  {qualificationOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {applicationDetailsErrors.qualification ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.qualification}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Vacancies {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
                 </label>
                 <input
-                  type="text"
-                  value={stateName}
-                  onChange={(event) => setStateName(event.target.value)}
-                  placeholder="All India"
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={vacancies}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    if (!nextValue) {
+                      setVacancies("");
+                      return;
+                    }
+
+                    const parsed = Number.parseInt(nextValue, 10);
+                    if (!Number.isNaN(parsed)) {
+                      setVacancies(parsed);
+                      clearApplicationFieldError("vacancies");
+                    }
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.vacancies)}
+                  placeholder="120"
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.vacancies
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.vacancies ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.vacancies}</p>
+                ) : null}
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  Start Date
+                  State {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
+                </label>
+                <select
+                  value={stateName}
+                  onChange={(event) => {
+                    setStateName(event.target.value);
+                    clearApplicationFieldError("stateName");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.stateName)}
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.stateName
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
+                >
+                  <option value="">Select State</option>
+                  {stateOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {applicationDetailsErrors.stateName ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.stateName}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Start Date {isApplicationDetailsRequired ? <span className="text-rose-600" aria-hidden="true">*</span> : null}
                 </label>
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(event) => setStartDate(event.target.value)}
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  onChange={(event) => {
+                    setStartDate(event.target.value);
+                    clearApplicationFieldError("startDate");
+                    clearApplicationFieldError("endDate");
+                  }}
+                  required={isApplicationDetailsRequired}
+                  aria-invalid={Boolean(applicationDetailsErrors.startDate)}
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.startDate
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.startDate ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.startDate}</p>
+                ) : null}
               </div>
 
               <div>
@@ -1058,20 +1389,31 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(event) => setEndDate(event.target.value)}
-                  className="mt-1 h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  onChange={(event) => {
+                    setEndDate(event.target.value);
+                    clearApplicationFieldError("endDate");
+                  }}
+                  aria-invalid={Boolean(applicationDetailsErrors.endDate)}
+                  className={`mt-1 h-9 w-full rounded-lg border bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
+                    applicationDetailsErrors.endDate
+                      ? "border-rose-400 focus:border-rose-500 focus:ring-rose-400/35"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
+                  }`}
                 />
+                {applicationDetailsErrors.endDate ? (
+                  <p className="mt-1 text-[11px] text-rose-600">{applicationDetailsErrors.endDate}</p>
+                ) : null}
               </div>
             </div>
 
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <div className="mb-2">
               <button
                 type="button"
                 onClick={handleAddMedia}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-300 bg-slate-50 px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="inline-flex h-7.5 items-center gap-1.5 rounded-md border border-slate-300 bg-slate-50 px-2 text-xs font-semibold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ImagePlus size={13} aria-hidden="true" />
                 Add Media
@@ -1107,7 +1449,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                   setPostType("Job");
                   setPostCategory("Recruitment");
                 }}
-                className="h-8 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                className="h-7.5 rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               >
                 {templates.map((template) => (
                   <option key={template.id} value={template.id}>
@@ -1118,7 +1460,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
               <button
                 type="button"
                 onClick={insertSelectedTemplate}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/35 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                className="inline-flex h-7.5 items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/35 dark:text-blue-300 dark:hover:bg-blue-950/50"
               >
                 <Plus size={12} aria-hidden="true" />
                 Insert Template
@@ -1241,8 +1583,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
           </div>
         </section>
 
-        <aside className="space-y-3">
-          <article className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+        <aside className="space-y-3 xl:sticky xl:top-4 self-start">
+          <article className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <button
               type="button"
               onClick={() => toggleMetaBox("publish")}
@@ -1303,11 +1645,16 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                 ) : null}
 
                 <div className="mt-3 flex flex-col gap-2">
-                  <GhostButton label="Save Draft" onClick={() => setShowDraftConfirm(true)} />
+                  <GhostButton
+                    label="Save Draft"
+                    onClick={() => setShowDraftConfirm(true)}
+                    disabled={!isFormValid}
+                  />
                   <button
                     type="submit"
                     onClick={() => setShowPublishConfirm(true)}
-                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                    disabled={!isFormValid}
+                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Send size={14} aria-hidden="true" />
                     {postStatus === "Scheduled" ? "Schedule" : postStatus === "Pending Review" ? "Submit for Review" : "Publish"}
@@ -1340,7 +1687,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
             ) : null}
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <article className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <button
               type="button"
               onClick={() => toggleMetaBox("categories")}
@@ -1412,7 +1759,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
             ) : null}
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <article className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <button
               type="button"
               onClick={() => toggleMetaBox("tags")}
@@ -1435,7 +1782,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
             ) : null}
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <article className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <button
               type="button"
               onClick={() => toggleMetaBox("featuredImage")}
@@ -1460,7 +1807,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
             ) : null}
           </article>
 
-          <article className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/40">
+          <article className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/40">
             <button
               type="button"
               onClick={() => toggleMetaBox("seo")}
@@ -1663,6 +2010,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
           </div>
         </div>
       ) : null}
+      </div>
     </Card>
   );
 }

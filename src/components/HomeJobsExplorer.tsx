@@ -12,7 +12,6 @@ import {
   GraduationCap,
   Search,
   MapPin,
-  Send,
   Sparkles,
   Users,
   X,
@@ -269,32 +268,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
 
-  const handleWhatsAppShare = (job: LatestJob) => {
-    let absoluteJobUrl = job.href;
-    if (!job.href.startsWith("http")) {
-      const normalizedPath = job.href.startsWith("/") ? job.href : `/${job.href}`;
-      absoluteJobUrl = `${globalThis.location.origin}${normalizedPath}`;
-    }
-
-    const message = [
-      `Job Update: ${job.postName}`,
-      `State: ${job.state}`,
-      `Seats: ${job.seats}`,
-      `Start Date: ${formatDateDdMmYyyy(job.startDate)}`,
-      `Last Date: ${formatDateDdMmYyyy(job.lastDate)}`,
-      `Apply Link: ${absoluteJobUrl}`,
-    ].join("\n");
-
-    const encodedMessage = encodeURIComponent(message);
-    const appShareUrl = `whatsapp://send?text=${encodedMessage}`;
-    const webShareUrl = `https://wa.me/?text=${encodedMessage}`;
-
-    globalThis.location.href = appShareUrl;
-    globalThis.setTimeout(() => {
-      globalThis.location.href = webShareUrl;
-    }, 700);
-  };
-
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
       const searchCorpus = [
@@ -540,14 +513,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <div className="inline-flex items-center justify-end gap-1">
                       <dt className="sr-only">Actions</dt>
                       <dd className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm ring-1 ring-emerald-300/70 transition-transform hover:scale-105"
-                        aria-label={`Share ${job.postName} on WhatsApp`}
-                        onClick={() => handleWhatsAppShare(job)}
-                      >
-                        <Send className="size-2.5" aria-hidden="true" />
-                      </button>
                       <button
                         type="button"
                         className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sm ring-1 ring-sky-300/70 transition-transform hover:scale-105"

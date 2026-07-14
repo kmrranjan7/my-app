@@ -13,6 +13,8 @@ type SavedPostRecord = Readonly<{
   readonly applicationId: string;
   readonly department: string;
   readonly organization: string;
+  readonly qualification?: string;
+  readonly vacancies?: number | null;
   readonly startDate: string;
   readonly endDate: string;
   readonly stateName: string;
@@ -211,7 +213,9 @@ export default function SavedJobsPanel({
         throw new Error("Failed to update record.");
       }
 
-      await loadRecords();
+      const firstPageRecords = await loadRecords(0, "replace");
+      setPage(0);
+      setHasMoreRecords(firstPageRecords.length === PAGE_SIZE);
       setErrorMessage(null);
       setEditingId(null);
     } catch {
@@ -229,7 +233,9 @@ export default function SavedJobsPanel({
         throw new Error("Failed to delete record.");
       }
 
-      await loadRecords();
+      const firstPageRecords = await loadRecords(0, "replace");
+      setPage(0);
+      setHasMoreRecords(firstPageRecords.length === PAGE_SIZE);
       setErrorMessage(null);
       if (editingId === id) {
         setEditingId(null);
@@ -257,6 +263,8 @@ export default function SavedJobsPanel({
       applicationId: record.applicationId,
       department: record.department,
       organization: record.organization,
+      qualification: record.qualification ?? "",
+      vacancies: record.vacancies ?? null,
       startDate: record.startDate,
       endDate: record.endDate,
       stateName: record.stateName,
