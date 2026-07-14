@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import type { LatestJob } from "@/data/sidebarContent";
+import JobWhatsAppCard, { type JobWhatsAppData } from "./JobWhatsAppCard";
 
 const qualificationOptions = [
   "Below 10th Pass",
@@ -260,45 +261,13 @@ type HomeJobsExplorerProps = Readonly<{
   jobs: LatestJob[];
 }>;
 
-const WHATSAPP_SHARE_IMAGE_URL =
-  "http://localhost:3000/uploads/1783976450353-b5012feb-4b56-41c9-b1c2-da732f2391ea.png";
-
-function buildWhatsAppMessage(
-  job: LatestJob,
-  formattedStartDate: string,
-  formattedLastDate: string,
-  hasLastDate: boolean,
-  deadlineText: string,
-) {
-  const jobLink = typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href;
-
-  return [
-    "SarkariGlobalResult - Job Alert Card",
-    "==============================",
-    "",
-    `Post Name      : ${job.postName}`,
-    `Organization   : ${job.badge}`,
-    `State          : ${job.state}`,
-    `Qualification  : ${job.qualification}`,
-    `Seats          : ${job.seats}`,
-    `Start Date     : ${formattedStartDate}`,
-    `Last Date      : ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
-    `Current Status : ${deadlineText}`,
-    "",
-    "Apply Now",
-    `Apply Link: ${jobLink}`,
-    "",
-    "Card Image URL",
-    WHATSAPP_SHARE_IMAGE_URL,
-  ].join("\n");
-}
-
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [badgeFilter, setBadgeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
+  const [activeShareJob, setActiveShareJob] = useState<JobWhatsAppData | null>(null);
 
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
@@ -389,21 +358,17 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     hasLastDate: boolean,
     deadlineText: string,
   ) => {
-    const message = buildWhatsAppMessage(job, formattedStartDate, formattedLastDate, hasLastDate, deadlineText);
-    const encoded = encodeURIComponent(message);
-    const appUrl = `whatsapp://send?text=${encoded}`;
-    const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-
-    // Prefer installed WhatsApp app on mobile; fallback to WhatsApp Web/API.
-    if (typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      window.location.href = appUrl;
-      window.setTimeout(() => {
-        window.open(webUrl, "_blank", "noopener,noreferrer");
-      }, 700);
-      return;
-    }
-
-    window.open(webUrl, "_blank", "noopener,noreferrer");
+    setActiveShareJob({
+      postName: job.postName,
+      organization: job.badge,
+      state: job.state,
+      qualification: job.qualification,
+      seats: job.seats,
+      startDate: formattedStartDate,
+      lastDate: hasLastDate ? formattedLastDate : "To Be Announced",
+      status: deadlineText,
+      applyLink: typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href,
+    });
   };
 
   return (
@@ -607,6 +572,15 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </div>
         </div>
       </div>
+
+      {activeShareJob ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+          <JobWhatsAppCard
+            job={activeShareJob}
+            onClose={() => setActiveShareJob(null)}
+          />
+        </div>
+      ) : null}
     </section>
   );
 }
