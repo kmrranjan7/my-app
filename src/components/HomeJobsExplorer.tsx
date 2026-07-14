@@ -260,12 +260,143 @@ type HomeJobsExplorerProps = Readonly<{
   jobs: LatestJob[];
 }>;
 
+type ShareFallbackData = Readonly<{
+  title: string;
+  message: string;
+  applyLink: string;
+  postName: string;
+  organization: string;
+  state: string;
+  qualification: string;
+  seats: string;
+  startDate: string;
+  lastDate: string;
+  status: string;
+}>;
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function truncateForImage(value: string, maxChars: number) {
+  const compact = value.replaceAll("\n", " ").trim();
+  if (compact.length <= maxChars) return compact;
+  return `${compact.slice(0, maxChars - 1)}...`;
+}
+
+async function createShareImageCard(data: ShareFallbackData): Promise<Blob | null> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1350;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const bg = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  bg.addColorStop(0, "#e0f2fe");
+  bg.addColorStop(0.45, "#eef2ff");
+  bg.addColorStop(1, "#f8fafc");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const orbA = ctx.createRadialGradient(170, 120, 20, 170, 120, 230);
+  orbA.addColorStop(0, "rgba(14,165,233,0.28)");
+  orbA.addColorStop(1, "rgba(14,165,233,0)");
+  ctx.fillStyle = orbA;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const orbB = ctx.createRadialGradient(920, 1180, 20, 920, 1180, 240);
+  orbB.addColorStop(0, "rgba(99,102,241,0.24)");
+  orbB.addColorStop(1, "rgba(99,102,241,0)");
+  ctx.fillStyle = orbB;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawRoundedRect(ctx, 70, 70, 940, 1210, 36);
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(14,116,144,0.22)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = "#0369a1";
+  ctx.font = "700 32px Segoe UI";
+  ctx.fillText("Sarkari Global Result", 120, 152);
+
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "800 56px Segoe UI";
+  ctx.fillText("Job Alert", 120, 214);
+
+  const infoRows = [
+    ["Post", truncateForImage(data.postName, 58)],
+    ["Organization", truncateForImage(data.organization, 42)],
+    ["State", truncateForImage(data.state, 30)],
+    ["Qualification", truncateForImage(data.qualification, 38)],
+    ["Seats", truncateForImage(data.seats, 20)],
+    ["Start Date", truncateForImage(data.startDate, 24)],
+    ["Last Date", truncateForImage(data.lastDate, 24)],
+    ["Status", truncateForImage(data.status, 26)],
+  ] as const;
+
+  let currentY = 320;
+  infoRows.forEach(([label, value], rowIndex) => {
+    drawRoundedRect(ctx, 120, currentY - 48, 840, 86, 20);
+    ctx.fillStyle = rowIndex % 2 === 0 ? "#f8fafc" : "#f1f5f9";
+    ctx.fill();
+
+    ctx.fillStyle = "#334155";
+    ctx.font = "700 26px Segoe UI";
+    ctx.fillText(label, 150, currentY + 2);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "600 27px Segoe UI";
+    ctx.fillText(value, 390, currentY + 2);
+
+    currentY += 112;
+  });
+
+  drawRoundedRect(ctx, 120, 1168, 840, 76, 18);
+  const ctaGradient = ctx.createLinearGradient(120, 1168, 960, 1244);
+  ctaGradient.addColorStop(0, "#0ea5e9");
+  ctaGradient.addColorStop(1, "#2563eb");
+  ctx.fillStyle = ctaGradient;
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "700 30px Segoe UI";
+  ctx.fillText("Apply Now", 150, 1216);
+
+  ctx.font = "600 22px Segoe UI";
+  ctx.fillText(truncateForImage(data.applyLink, 66), 330, 1216);
+
+  return await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/png", 0.95);
+  });
+}
+
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [badgeFilter, setBadgeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
+  const [shareFallback, setShareFallback] = useState<ShareFallbackData | null>(null);
 
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
@@ -349,6 +480,91 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
+  const shareByPlatform = (platform: "whatsapp" | "telegram" | "x" | "facebook") => {
+    if (!shareFallback) return;
+
+    const encodedMessage = encodeURIComponent(shareFallback.message);
+    const encodedLink = encodeURIComponent(shareFallback.applyLink);
+    const encodedTitle = encodeURIComponent(shareFallback.title);
+
+    let platformUrl = "";
+    switch (platform) {
+      case "whatsapp":
+        platformUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
+        break;
+      case "telegram":
+        platformUrl = `https://t.me/share/url?url=${encodedLink}&text=${encodedTitle}`;
+        break;
+      case "x":
+        platformUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedLink}`;
+        break;
+      case "facebook":
+        platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
+        break;
+      default:
+        return;
+    }
+
+    window.open(platformUrl, "_blank", "noopener,noreferrer");
+    setShareFallback(null);
+  };
+
+  const copyShareLink = async () => {
+    if (!shareFallback) return;
+
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareFallback.applyLink);
+    }
+
+    setShareFallback(null);
+  };
+
+  const shareAsImageCard = async () => {
+    if (!shareFallback) return;
+
+    const imageBlob = await createShareImageCard(shareFallback);
+    if (!imageBlob) return;
+
+    const safePostName = shareFallback.postName
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9]+/g, "-")
+      .split("-")
+      .filter(Boolean)
+      .join("-")
+      .slice(0, 40);
+    const fileName = `${safePostName || "job-alert"}-share-card.png`;
+    const imageFile = new File([imageBlob], fileName, { type: "image/png" });
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      const maybeNavigator = navigator as Navigator & {
+        canShare?: (data: ShareData) => boolean;
+      };
+
+      if (maybeNavigator.canShare?.({ files: [imageFile] })) {
+        try {
+          await navigator.share({
+            title: shareFallback.title,
+            text: shareFallback.message,
+            files: [imageFile],
+          });
+          setShareFallback(null);
+          return;
+        } catch {
+          // If the user cancels native share, continue with download fallback.
+        }
+      }
+    }
+
+    const objectUrl = URL.createObjectURL(imageBlob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.rel = "noopener";
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
+    setShareFallback(null);
+  };
+
   const shareOnSocialMedia = async (
     job: LatestJob,
     formattedStartDate: string,
@@ -384,14 +600,23 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         });
         return;
       } catch {
-        // If user cancels or share target is unavailable, fallback to WhatsApp web share.
+        // If share target is unavailable, open in-app social options fallback.
       }
     }
 
-    const encoded = encodeURIComponent(message);
-    const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-
-    window.open(webUrl, "_blank", "noopener,noreferrer");
+    setShareFallback({
+      title: `${job.postName} | Sarkari Global Result`,
+      message,
+      applyLink,
+      postName: job.postName,
+      organization: job.badge,
+      state: job.state,
+      qualification: job.qualification,
+      seats: job.seats,
+      startDate: formattedStartDate,
+      lastDate: hasLastDate ? formattedLastDate : "To Be Announced",
+      status: deadlineText,
+    });
   };
 
   return (
@@ -603,6 +828,78 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </div>
         </div>
       </div>
+
+      {shareFallback && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-sm rounded-2xl border border-cyan-100 bg-white p-4 shadow-[0_24px_80px_rgba(8,145,178,0.28)]">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-extrabold text-slate-900">Share Job Alert</p>
+                <p className="mt-0.5 text-xs text-slate-600">Choose your platform</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShareFallback(null)}
+                className="inline-flex size-7 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition-colors hover:bg-slate-100"
+                aria-label="Close share options"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => shareByPlatform("whatsapp")}
+                className="rounded-xl bg-[#25D366] px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={() => shareByPlatform("telegram")}
+                className="rounded-xl bg-[#229ED9] px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                Telegram
+              </button>
+              <button
+                type="button"
+                onClick={() => shareByPlatform("x")}
+                className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                X (Twitter)
+              </button>
+              <button
+                type="button"
+                onClick={() => shareByPlatform("facebook")}
+                className="rounded-xl bg-[#1877F2] px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                Facebook
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                void copyShareLink();
+              }}
+              className="mt-2.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100"
+            >
+              Copy Apply Link
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                void shareAsImageCard();
+              }}
+              className="mt-2.5 w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform hover:scale-[1.01]"
+            >
+              Share as Image Card
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
