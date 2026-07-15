@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import ImageManagerPanel from "./ImageManagerPanel";
+
 import AnalyticsSection from "@/components/dashboard/AnalyticsSection";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -22,13 +24,15 @@ const SavedResultPanel = dynamic(() => import("@/components/dashboard/SavedResul
 const ProfileManagementPanel = dynamic(() => import("@/components/dashboard/ProfileManagementPanel"));
 const HelpSupportPanel = dynamic(() => import("@/components/dashboard/HelpSupportPanel"));
 
+const SKELETON_CARD_KEYS = ["a", "b", "c", "d", "e", "f"] as const;
+
 function DashboardSkeleton() {
   return (
     <div className="space-y-3" aria-hidden="true">
       <SkeletonBlock className="h-24" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <SkeletonBlock key={`stat-${index}`} className="h-24" />
+        {SKELETON_CARD_KEYS.map((key) => (
+          <SkeletonBlock key={`stat-${key}`} className="h-24" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[290px_minmax(0,1fr)]">
@@ -173,6 +177,10 @@ export default function DashboardShell() {
 
     if (activeMenuKey === "Profile Management") {
       return <ProfileManagementPanel />;
+    }
+
+    if (activeMenuKey === "Images") {
+      return <ImageManagerPanel />;
     }
 
     if (activeMenuKey === "New Post") {

@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   BellRing,
   BookOpenCheck,
+  Image,
   FolderOpen,
   PanelLeftClose,
   PanelLeftOpen,
@@ -26,6 +27,7 @@ const navItems = [
   { icon: Trophy, label: "Saved Result", key: "Saved Result" },
   { icon: BellRing, label: "Job Notifications", key: "Job Notifications" },
   { icon: ClipboardList, label: "Current Vacancies", key: "Current Vacancies" },
+  { icon: Image, label: "Images", key: "Images" },
   { icon: UserCog, label: "Profile Management", key: "Profile Management" },
   { icon: HelpCircle, label: "Help & Support", key: "Help & Support" },
 ] as const;
