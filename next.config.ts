@@ -26,6 +26,18 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: "/post-sitemap.xml",
+        destination: "http://localhost:8080/api/site/post-sitemap.xml",
+      },
+      {
+        source: String.raw`/post-sitemap:page(\d+).xml`,
+        destination: "http://localhost:8080/api/site/post-sitemap:page.xml",
+      },
+    ];
+  },
   async headers() {
     return [
       {
