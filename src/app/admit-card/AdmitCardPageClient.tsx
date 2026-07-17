@@ -83,11 +83,20 @@ function getStatus(startDate?: string, endDate?: string): string {
   const start = parseDateSafe(startDate);
   const end = parseDateSafe(endDate);
   if (!end) return "To Be Announced";
-  if (!start) return "To Be Announced";
-
-  const startOnly = toDateOnly(start);
   const endOnly = toDateOnly(end);
-  const windowDays = Math.ceil((endOnly.getTime() - startOnly.getTime()) / (1000 * 60 * 60 * 24));
+  const today = toDateOnly(new Date());
+
+  if (start) {
+    const startOnly = toDateOnly(start);
+    if (startOnly.getTime() > endOnly.getTime()) return "To Be Announced";
+
+    if (today.getTime() < startOnly.getTime()) {
+      const startsInDays = Math.ceil((startOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return `${startsInDays}d left`;
+    }
+  }
+
+  const windowDays = Math.ceil((endOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (windowDays < 0) return "Closed";
   if (windowDays === 0) return "Last day";

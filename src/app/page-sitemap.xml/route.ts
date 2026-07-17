@@ -1,26 +1,9 @@
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://www.sarkariglobalresult.com";
-
-const normalizedSiteUrl = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
-
-const PAGE_PATHS = [
-  "/",
-  "/about",
-  "/admit-card",
-  "/contact",
-  "/disclaimer",
-  "/latest-job",
-  "/privacy-policy",
-  "/result",
-  "/terms",
-] as const;
+import { PAGE_SITEMAP_PATHS, toAbsoluteUrl } from "@/lib/seo";
 
 function buildXml(): string {
   const lastmod = new Date().toISOString();
-  const urls = PAGE_PATHS.map((path) => {
-    const loc = `${normalizedSiteUrl}${path}`;
+  const urls = PAGE_SITEMAP_PATHS.map((path) => {
+    const loc = toAbsoluteUrl(path);
     return `<url><loc>${loc}</loc><lastmod>${lastmod}</lastmod></url>`;
   }).join("");
 

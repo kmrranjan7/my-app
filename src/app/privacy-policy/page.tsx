@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy policy for SarkariGlobalResult.",
+  description: "Read SarkariGlobalResult privacy policy and understand how user data is collected and handled.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "privacy policy",
+    "sarkari result privacy",
+  ],
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

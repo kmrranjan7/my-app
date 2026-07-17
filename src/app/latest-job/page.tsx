@@ -34,9 +34,49 @@ type LatestJobRow = Readonly<{
   readonly status: string;
 }>;
 
+type QuickLink = Readonly<{
+  readonly label: string;
+  readonly href: string;
+}>;
+
+const GOVT_CATEGORY_LINKS: readonly QuickLink[] = [
+  { label: "SSC Jobs", href: "/latest-job?search=SSC" },
+  { label: "UPSC Jobs", href: "/latest-job?search=UPSC" },
+  { label: "Railway Jobs", href: "/latest-job?search=Railway" },
+  { label: "Bank Jobs", href: "/latest-job?search=Bank" },
+  { label: "Defence Jobs", href: "/latest-job?search=Defence" },
+  { label: "Police Jobs", href: "/latest-job?search=Police" },
+  { label: "Teaching Jobs", href: "/latest-job?search=Teaching" },
+  { label: "PSU Jobs", href: "/latest-job?search=PSU" },
+] as const;
+
+const STATE_WISE_LINKS: readonly QuickLink[] = [
+  { label: "Uttar Pradesh Jobs", href: "/latest-job?search=Uttar%20Pradesh" },
+  { label: "Bihar Jobs", href: "/latest-job?search=Bihar" },
+  { label: "Madhya Pradesh Jobs", href: "/latest-job?search=Madhya%20Pradesh" },
+  { label: "Rajasthan Jobs", href: "/latest-job?search=Rajasthan" },
+  { label: "Maharashtra Jobs", href: "/latest-job?search=Maharashtra" },
+  { label: "Gujarat Jobs", href: "/latest-job?search=Gujarat" },
+  { label: "Delhi Jobs", href: "/latest-job?search=Delhi" },
+  { label: "West Bengal Jobs", href: "/latest-job?search=West%20Bengal" },
+] as const;
+
 export const metadata: Metadata = {
-  title: "Latest Jobs",
-  description: "Latest published government jobs fetched from API.",
+  title: "Latest Govt Jobs 2026 - Sarkari Job Notifications",
+  description: "Browse latest SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
+  keywords: [
+    "ssc jobs",
+    "upsc jobs",
+    "railway jobs",
+    "bank jobs",
+    "state wise government jobs",
+    "central government jobs",
+    "latest sarkari naukri",
+    "all govt post",
+  ],
+  alternates: {
+    canonical: "/latest-job",
+  },
 };
 
 function parseDateSafe(value?: string): Date | null {
@@ -83,11 +123,20 @@ function getStatus(startDate?: string, endDate?: string): string {
   const start = parseDateSafe(startDate);
   const end = parseDateSafe(endDate);
   if (!end) return "To Be Announced";
-  if (!start) return "To Be Announced";
-
-  const startOnly = toDateOnly(start);
   const endOnly = toDateOnly(end);
-  const windowDays = Math.ceil((endOnly.getTime() - startOnly.getTime()) / (1000 * 60 * 60 * 24));
+  const today = toDateOnly(new Date());
+
+  if (start) {
+    const startOnly = toDateOnly(start);
+    if (startOnly.getTime() > endOnly.getTime()) return "To Be Announced";
+
+    if (today.getTime() < startOnly.getTime()) {
+      const startsInDays = Math.ceil((startOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return `${startsInDays}d left`;
+    }
+  }
+
+  const windowDays = Math.ceil((endOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (windowDays < 0) return "Closed";
   if (windowDays === 0) return "Last day";
@@ -169,7 +218,9 @@ export default async function LatestJobPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_8%,rgba(255,255,255,0.45),transparent_45%)]" />
           <p className="relative text-[11px] font-black uppercase tracking-[0.14em] text-blue-800">Latest Jobs</p>
           <h1 className="relative mt-1 text-xl font-black tracking-tight text-slate-900 sm:text-2xl">Fresh Published Jobs</h1>
-          <p className="relative mt-1 text-[12px] font-medium text-slate-600">Live data from API, sorted by newest first.</p>
+          <p className="relative mt-1 text-[12px] font-medium text-slate-600">
+            Live data for SSC, UPSC, Railway, Bank, and all government post types including state-wise vacancies.
+          </p>
         </div>
 
         {rows.length === 0 ? (
@@ -245,6 +296,50 @@ export default async function LatestJobPage() {
             </div>
           </section>
         )}
+
+        <section className="grid gap-2 sm:grid-cols-2">
+          <article className="rounded-2xl border border-cyan-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
+              More Govt Posts by Category
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Explore SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU recruitment updates.
+            </p>
+            <ul className="mt-2 grid grid-cols-2 gap-1.5">
+              {GOVT_CATEGORY_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-2xl border border-blue-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
+              State Wise Govt Jobs
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Find state-wise opportunities and regional recruitment updates across major Indian states.
+            </p>
+            <ul className="mt-2 grid grid-cols-2 gap-1.5">
+              {STATE_WISE_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-800 transition-colors hover:bg-blue-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
       </section>
     </main>
   );

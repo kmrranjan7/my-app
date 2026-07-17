@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Velora Studio premium digital product experience";
+export const alt = "SarkariGlobalResult latest government jobs and exam updates";
 export const size = {
   width: 1200,
   height: 630,

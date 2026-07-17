@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import ContactForm from "./ContactForm";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contact SarkariGlobalResult for support and business inquiries.",
+  title: "Contact SarkariGlobalResult",
+  description: "Contact SarkariGlobalResult for support, correction requests, and business inquiries.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "contact sarkariglobalresult",
+    "sarkari result support",
+  ],
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {

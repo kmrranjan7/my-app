@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "About Us",
-  description: "About SarkariGlobalResult and our mission.",
+  title: "About SarkariGlobalResult",
+  description: "Learn about SarkariGlobalResult, our mission, and how we publish reliable government jobs and exam updates.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "about sarkariglobalresult",
+    "government jobs updates platform",
+  ],
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
+
+const siteUrl =
+	process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
+		? process.env.NEXT_PUBLIC_SITE_URL
+		: "https://www.sarkariglobalresult.com";
+
+const normalizedSiteUrl = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
 
 type PageProps = Readonly<{
 	params: Promise<{
@@ -14,6 +22,7 @@ type ApiPostItem = Readonly<{
 	applicationId?: string;
 	postTitle?: string;
 	postSlug?: string;
+	imageUrl?: string;
 	contentHtml?: string;
 	department?: string;
 	organization?: string;
@@ -113,6 +122,36 @@ async function fetchBySlug(slug: string): Promise<ApiPostItem | null> {
 	}
 }
 
+function buildFaqJsonLd(rawFaqSchemaJson: string | undefined): Record<string, unknown> | null {
+	const value = toText(rawFaqSchemaJson);
+	if (!value) {
+		return null;
+	}
+
+	try {
+		return JSON.parse(value) as Record<string, unknown>;
+	} catch {
+		return null;
+	}
+}
+
+function getPrimaryImageUrl(item: ApiPostItem): string | null {
+	const raw = toText(item.imageUrl);
+	if (!raw) {
+		return null;
+	}
+
+	if (raw.startsWith("http://") || raw.startsWith("https://")) {
+		return raw;
+	}
+
+	if (raw.startsWith("/")) {
+		return `${normalizedSiteUrl}${raw}`;
+	}
+
+	return `${normalizedSiteUrl}/${raw}`;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
 	const { slug } = await params;
 	const item = await fetchBySlug(slug);
@@ -128,10 +167,49 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const description =
 		toText(item.seoDescription) ||
 		`Read full details for ${toText(item.postTitle) || slug}.`;
+	const canonicalUrl = `${normalizedSiteUrl}/${slug}`;
+	const imageUrl = getPrimaryImageUrl(item);
+	const focusKeyword = toText(item.seoFocusKeyword);
+	const keywordSet = new Set<string>(DEFAULT_SEO_KEYWORDS);
+	if (focusKeyword) {
+		keywordSet.add(focusKeyword);
+	}
+
+	const postTitleKeyword = toText(item.postTitle);
+	if (postTitleKeyword) {
+		keywordSet.add(postTitleKeyword);
+	}
 
 	return {
 		title,
 		description,
+		keywords: Array.from(keywordSet),
+		alternates: {
+			canonical: `/${slug}`,
+		},
+		openGraph: {
+			title,
+			description,
+			url: canonicalUrl,
+			siteName: "SarkariGlobalResult",
+			type: "article",
+			images: imageUrl
+				? [
+					{
+						url: imageUrl,
+						width: 1200,
+						height: 630,
+						alt: title,
+					},
+				]
+				: undefined,
+		},
+		twitter: {
+			card: "summary_large_image",
+			title,
+			description,
+			images: imageUrl ? [imageUrl] : undefined,
+		},
 	};
 }
 
@@ -144,9 +222,95 @@ export default async function SlugPage({ params }: PageProps) {
 	}
 
 	const contentHtml = normalizeContentHtml(toText(item.contentHtml));
+	const title = toText(item.seoTitle) || toText(item.postTitle) || slug;
+	const description =
+		toText(item.seoDescription) || `Read full details for ${toText(item.postTitle) || slug}.`;
+	const canonicalUrl = `${normalizedSiteUrl}/${slug}`;
+	const imageUrl = getPrimaryImageUrl(item);
+	const publishedAt = toText(item.createdAt);
+	const modifiedAt = toText(item.updatedAt);
+	const faqJsonLd = buildFaqJsonLd(item.faqSchemaJson);
+
+	const webPageJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "WebPage",
+		name: title,
+		description,
+		url: canonicalUrl,
+		inLanguage: "en-IN",
+	};
+
+	const articleJsonLd: Record<string, unknown> = {
+		"@context": "https://schema.org",
+		"@type": "Article",
+		headline: title,
+		description,
+		mainEntityOfPage: canonicalUrl,
+		author: {
+			"@type": "Organization",
+			name: "SarkariGlobalResult",
+		},
+		publisher: {
+			"@type": "Organization",
+			name: "SarkariGlobalResult",
+			logo: {
+				"@type": "ImageObject",
+				url: `${normalizedSiteUrl}/favicon.ico`,
+			},
+		},
+	};
+
+	if (publishedAt) {
+		articleJsonLd.datePublished = publishedAt;
+	}
+
+	if (modifiedAt) {
+		articleJsonLd.dateModified = modifiedAt;
+	}
+
+	if (imageUrl) {
+		articleJsonLd.image = [imageUrl];
+	}
+
+	const breadcrumbJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "BreadcrumbList",
+		itemListElement: [
+			{
+				"@type": "ListItem",
+				position: 1,
+				name: "Home",
+				item: normalizedSiteUrl,
+			},
+			{
+				"@type": "ListItem",
+				position: 2,
+				name: title,
+				item: canonicalUrl,
+			},
+		],
+	};
 
 	return (
 		<main className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef5ff_42%,#f7f9fc_100%)] py-4 sm:py-6">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+			/>
+			{faqJsonLd ? (
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+				/>
+			) : null}
 			<div
 				aria-hidden="true"
 				className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(14,165,233,0.12),transparent_30%),radial-gradient(circle_at_85%_12%,rgba(30,64,175,0.10),transparent_35%)]"

@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description: "Terms and conditions for using SarkariGlobalResult.",
+  description: "Read terms and conditions for using SarkariGlobalResult services and content.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "terms and conditions",
+    "sarkari result terms",
+  ],
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

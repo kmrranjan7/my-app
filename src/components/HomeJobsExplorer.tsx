@@ -185,38 +185,26 @@ function getDaysLeftFromLastDate(startDate: string, lastDate: string) {
   const start = parseDateSafe(startDate);
   const end = parseDateSafe(lastDate);
 
-  // If lastDate is null/empty/invalid -> To Be Announced
-  if (!end) {
+  // Keep display days based on the start/end window from JSON payload.
+  if (!start || !end) {
     return null;
   }
 
-  // If startDate exists and is after lastDate, treat as invalid payload.
-  if (start) {
-    const startDateOnly = getDateOnly(start);
-    const endDateOnlyFromStartCheck = getDateOnly(end);
-    if (startDateOnly.getTime() > endDateOnlyFromStartCheck.getTime()) {
-      return null;
-    }
-  }
-
-  const today = getDateOnly(new Date());
-  const startDateOnly = start ? getDateOnly(start) : null;
+  const startDateOnly = getDateOnly(start);
   const endDateOnly = getDateOnly(end);
 
-  if (startDateOnly) {
-    const windowDays = Math.ceil((endDateOnly.getTime() - startDateOnly.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Requested display behavior:
-    // - upcoming window uses exclusive diff (22 -> 24 = 2)
-    // - active window uses inclusive display (01 -> 16 = 16)
-    if (today < startDateOnly) {
-      return windowDays;
-    }
-
-    return windowDays + 1;
+  // Invalid payload guard.
+  if (startDateOnly.getTime() > endDateOnly.getTime()) {
+    return null;
   }
 
-  return Math.ceil((endDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  // After lastDate passes, card should show Closed.
+  const today = getDateOnly(new Date());
+  if (today.getTime() > endDateOnly.getTime()) {
+    return -1;
+  }
+
+  return Math.ceil((endDateOnly.getTime() - startDateOnly.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 function getDeadlineChip(startDate: string, lastDate: string) {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 const RESULTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&page=0&size=50&sortBy=createdAt&sortDir=desc`;
 
@@ -34,8 +35,17 @@ type ResultRow = Readonly<{
 }>;
 
 export const metadata: Metadata = {
-  title: "Results",
-  description: "Latest published results fetched from API.",
+  title: "Latest Sarkari Results 2026 - Government Exam Results",
+  description: "Check latest government exam results, merit lists, and official result announcements in one place.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "latest sarkari results",
+    "government exam result",
+    "merit list",
+  ],
+  alternates: {
+    canonical: "/result",
+  },
 };
 
 function parseDateSafe(value?: string): Date | null {
@@ -82,11 +92,20 @@ function getStatus(startDate?: string, endDate?: string): string {
   const start = parseDateSafe(startDate);
   const end = parseDateSafe(endDate);
   if (!end) return "To Be Announced";
-  if (!start) return "To Be Announced";
-
-  const startOnly = toDateOnly(start);
   const endOnly = toDateOnly(end);
-  const windowDays = Math.ceil((endOnly.getTime() - startOnly.getTime()) / (1000 * 60 * 60 * 24));
+  const today = toDateOnly(new Date());
+
+  if (start) {
+    const startOnly = toDateOnly(start);
+    if (startOnly.getTime() > endOnly.getTime()) return "To Be Announced";
+
+    if (today.getTime() < startOnly.getTime()) {
+      const startsInDays = Math.ceil((startOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return `${startsInDays}d left`;
+    }
+  }
+
+  const windowDays = Math.ceil((endOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (windowDays < 0) return "Closed";
   if (windowDays === 0) return "Last day";

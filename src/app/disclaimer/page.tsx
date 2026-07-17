@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
-  description: "Disclaimer for SarkariGlobalResult.",
+  description: "Important disclaimer about SarkariGlobalResult content and verification from official sources.",
+  keywords: [
+    ...DEFAULT_SEO_KEYWORDS,
+    "sarkari result disclaimer",
+    "government job information disclaimer",
+  ],
+  alternates: {
+    canonical: "/disclaimer",
+  },
 };
 
 export default function DisclaimerPage() {

@@ -1,45 +1,55 @@
 import type { Metadata } from "next";
 import HeaderNavbar from "@/components/HeaderNavbar";
 import SiteFooter from "@/components/SiteFooter";
+import {
+  DEFAULT_SEO_DESCRIPTION,
+  DEFAULT_SEO_KEYWORDS,
+  DEFAULT_SEO_TITLE,
+  SITE_NAME,
+  SITE_URL,
+  getOrganizationJsonLd,
+  getWebsiteJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
-  ? process.env.NEXT_PUBLIC_SITE_URL
-  : "https://example.com";
+const organizationJsonLd = getOrganizationJsonLd();
+const websiteJsonLd = getWebsiteJsonLd();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Velora Studio",
-    template: "%s | Velora Studio",
+    default: DEFAULT_SEO_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Premium digital product studio delivering company-standard engineering and high-conversion brand experiences.",
-  applicationName: "Velora Studio",
+  description: DEFAULT_SEO_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [...DEFAULT_SEO_KEYWORDS],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Velora Studio",
+    title: DEFAULT_SEO_TITLE,
     description:
-      "Company-grade product engineering paired with premium 2026 interface design.",
+      "Find the latest Sarkari Result Jobs, Government Recruitment Notifications, Admit Cards, Exam Dates, Answer Keys, Results, and Online Forms for SSC, UPSC, Railway, Banking, Police, Defence, PSU, and State Government Exams.",
     url: "/",
-    siteName: "Velora Studio",
+    siteName: SITE_NAME,
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Velora Studio premium digital product experience",
+        alt: "SarkariGlobalResult logo and government jobs updates",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Velora Studio",
+    title: DEFAULT_SEO_TITLE,
     description:
-      "Company-grade engineering with premium rich design that feels unmistakably modern.",
+      "Track latest Sarkari jobs, admit card releases, exam notices, and results.",
     images: ["/twitter-image"],
   },
 };
@@ -52,6 +62,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <HeaderNavbar />
         {children}
         <SiteFooter />
