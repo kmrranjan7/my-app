@@ -387,7 +387,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       <div className="pointer-events-none absolute -top-20 -right-12 h-40 w-40 rounded-full bg-cyan-200/35 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-amber-200/30 blur-3xl" />
 
-      <div className="relative rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
+      <div className="relative rounded-xl border border-sky-100/85 bg-white px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
