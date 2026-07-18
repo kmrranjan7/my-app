@@ -423,7 +423,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       <div className="pointer-events-none absolute -top-20 h-40 w-40 rounded-full" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-amber-200/30 blur-3xl" />
 
-      <div className="relative rounded-xl border border-sky-100/85 bg-white px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
+      <div className="relative rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:px-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
@@ -439,7 +439,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           <button
             type="button"
             onClick={() => setClosingWeekOnly((prev) => !prev)}
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors ${
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:text-[10px] ${
               closingWeekOnly
                 ? "animate-pulse bg-gradient-to-r from-rose-700 to-red-700 text-white ring-rose-900 shadow-[0_0_0_2px_rgba(190,18,60,0.28)]"
                 : "bg-gradient-to-r from-rose-600 to-red-600 text-white ring-rose-700"
@@ -456,25 +456,25 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200/90 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
             <Search className="size-3.5 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-base font-medium text-slate-700 placeholder:text-slate-400 outline-none sm:text-[10px]"
+              className="w-full bg-transparent text-[13px] font-medium text-slate-700 placeholder:text-slate-400 outline-none sm:text-[10px]"
             />
           </label>
 
           <div className="space-y-1 sm:contents">
             <div className="grid grid-cols-2 gap-1 sm:contents">
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
               <select
                 value={badgeFilter}
                 onChange={(event) => handleBadgeFilterChange(event.target.value)}
                 onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -485,13 +485,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               </select>
             </label>
 
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
               <select
                 value={stateFilter}
                 onChange={(event) => handleStateFilterChange(event.target.value)}
                 onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -505,13 +505,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </div>
 
             <div className="flex items-center gap-1 sm:contents">
-            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
               <select
                 value={qualificationFilter}
                 onChange={(event) => handleQualificationFilterChange(event.target.value)}
                 onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (
@@ -544,7 +544,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       <div className="mt-2.5">
         <div className="max-h-[68vh] overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-color:#0284c7_#e2e8f0] sm:max-h-[72vh] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200/70 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-cyan-400 [&::-webkit-scrollbar-thumb]:via-sky-500 [&::-webkit-scrollbar-thumb]:to-indigo-500 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-1.5 [content-visibility:auto] [contain-intrinsic-size:380px] sm:gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
               const badge = getOrgBadge(job.badge);
@@ -557,75 +557,81 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group space-y-1 rounded-xl border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] p-2.5 shadow-[0_10px_22px_rgba(15,23,42,0.08),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-[0_20px_38px_rgba(8,145,178,0.16),0_8px_16px_rgba(15,23,42,0.08)]"
+                  className="group relative flex flex-col gap-1.5 overflow-hidden rounded-xl border border-slate-200/90 bg-[linear-gradient(165deg,#ffffff_0%,#f7fbff_55%,#f0f9ff_100%)] p-2 shadow-[0_8px_18px_rgba(15,23,42,0.08),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-[0_16px_28px_rgba(8,145,178,0.14),0_6px_12px_rgba(15,23,42,0.08)] sm:p-2.5 lg:p-3"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] shadow-sm ${badge.style}`}>
-                      {badge.label}
-                    </p>
+                  <span className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.14),transparent_70%)]" />
+
+                  <div className="relative z-10 flex items-start justify-between gap-1.5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-1">
+                      <p className={`max-w-full truncate rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] shadow-sm ${badge.style}`}>
+                        {badge.label}
+                      </p>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
+                    </div>
+
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-700 shadow-sm transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-50 sm:h-5 sm:gap-0.5 sm:px-1.5 sm:text-[8px]"
+                        className="inline-flex h-6 items-center gap-0.5 rounded-full border border-slate-200 bg-white px-1.5 text-[9px] font-semibold text-slate-700 shadow-sm transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-50"
                         aria-label={`Share ${job.postName}`}
                       >
                         <Share2 className="size-3" aria-hidden="true" />
-                        Share
+                        <span className="hidden min-[390px]:inline">Share</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => toggleSavedJob(jobKey)}
                         className={[
-                          "inline-flex size-7 items-center justify-center rounded-full border shadow-sm transition-colors active:scale-[0.98] sm:size-5",
+                          "inline-flex size-6 items-center justify-center rounded-full border shadow-sm transition-colors active:scale-[0.98] sm:size-5",
                           isSaved
                             ? "border-rose-300 bg-rose-50 text-rose-600"
                             : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50",
                         ].join(" ")}
                         aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
                       >
-                        <Heart className={isSaved ? "size-3.5 fill-current sm:size-3" : "size-3.5 sm:size-3"} aria-hidden="true" />
+                        <Heart className={isSaved ? "size-3 fill-current" : "size-3"} aria-hidden="true" />
                       </button>
-                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                     </div>
                   </div>
+
                   {copiedShareKey === jobKey && (
-                    <p className="text-[9px] font-semibold text-emerald-700">Link copied</p>
+                    <p className="relative z-10 text-[9px] font-semibold text-emerald-700">Link copied</p>
                   )}
 
-                  <Link href={job.href} className="mt-1 flex items-start gap-1 text-slate-800 transition-colors">
-                    <span className="mt-0.5 inline-flex size-4 items-center justify-center rounded bg-gradient-to-br from-cyan-50 to-blue-100 text-cyan-700 transition-colors group-hover:from-cyan-100 group-hover:to-blue-200 group-hover:text-blue-900">
+                  <Link href={job.href} className="relative z-10 mt-0.5 flex items-start gap-1 text-slate-800 transition-colors">
+                    <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded bg-gradient-to-br from-cyan-50 to-blue-100 text-cyan-700 transition-colors group-hover:from-cyan-100 group-hover:to-blue-200 group-hover:text-blue-900">
                       <ArrowUpRight className="size-3" aria-hidden="true" />
                     </span>
-                    <span className="line-clamp-2 text-[11px] font-extrabold leading-4.5 transition-colors group-hover:text-blue-900">{job.postName}</span>
+                    <span className="line-clamp-2 text-[11px] font-extrabold leading-4.5 text-slate-900 transition-colors group-hover:text-blue-900 min-[480px]:text-[12px] lg:text-[13px]">{job.postName}</span>
                   </Link>
 
-                  <dl className="mt-1.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px]">
-                    <div className="inline-flex min-w-0 items-center gap-0.5 text-slate-700">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
-                        <Users className="size-2.5" aria-hidden="true" /> Seat:
+                  <dl className="relative z-10 mt-0.5 grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] sm:text-[8px] lg:text-[9px]">
+                    <div className="inline-flex min-w-0 items-center gap-1 text-slate-700">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700/90">
+                        <Users className="size-2.5" aria-hidden="true" /> Seats
                       </dt>
-                      <dd className="truncate rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.seats}</dd>
+                      <dd className="truncate font-bold text-slate-900">{job.seats}</dd>
                     </div>
-                    <div className="inline-flex min-w-0 items-center gap-0.5 text-slate-700">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
-                        <MapPin className="size-2.5" aria-hidden="true" /> State:
+                    <div className="inline-flex min-w-0 items-center gap-1 text-slate-700">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700/90">
+                        <MapPin className="size-2.5" aria-hidden="true" /> State
                       </dt>
-                      <dd className="truncate rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.state}</dd>
+                      <dd className="truncate font-bold text-slate-900">{job.state}</dd>
                     </div>
-                    <div className="col-span-1 inline-flex min-w-0 items-center gap-1 text-slate-700">
-                      <dt className="inline-flex shrink-0 items-center gap-1 font-semibold text-slate-700">
-                        <CalendarClock className="size-2.5" aria-hidden="true" /> Start:
+                    <div className="inline-flex min-w-0 items-center gap-1 text-slate-700">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700/90">
+                        <CalendarClock className="size-2.5" aria-hidden="true" /> Start
                       </dt>
-                      <dd className="truncate rounded-md bg-cyan-50 px-1.5 py-0.5 font-semibold text-cyan-800 ring-1 ring-cyan-200">{formattedStartDate}</dd>
+                      <dd className="truncate font-bold text-slate-900">{formattedStartDate}</dd>
                     </div>
-                    <div className="col-span-1 inline-flex min-w-0 items-center justify-end gap-1">
-                      <dt className="inline-flex items-center gap-1 font-semibold text-slate-700">
-                        <CalendarRange className="size-2.5" aria-hidden="true" /> Last:
+                    <div className="inline-flex min-w-0 items-center gap-1 text-slate-700">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700/90">
+                        <CalendarRange className="size-2.5" aria-hidden="true" /> Last
                       </dt>
-                      <dd className={`truncate rounded-md px-1.5 py-0.5 text-right font-semibold ring-1 ${hasLastDate ? "bg-rose-50 text-rose-700 ring-rose-200" : "bg-emerald-50 text-emerald-700 ring-emerald-200"}`}>
+                      <dd className={`truncate font-bold ${hasLastDate ? "text-rose-700" : "text-emerald-700"}`}>
                         {hasLastDate ? formattedLastDate : "To Be Announced"}
                       </dd>
                     </div>
