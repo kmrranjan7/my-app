@@ -14,8 +14,11 @@ import {
   Sparkles,
   Users,
   X,
+  Share2,
+  Heart,
 } from "lucide-react";
 import type { LatestJob } from "@/data/sidebarContent";
+import { SITE_URL } from "@/lib/seo";
 
 const qualificationOptions = [
   "Below 10th Pass",
@@ -254,6 +257,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
+  const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
+  const [copiedShareKey, setCopiedShareKey] = useState<string | null>(null);
 
   const indexedJobs = useMemo(() => {
     return jobs.map((job) => {
@@ -337,33 +342,68 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
-  const getWhatsAppShareUrl = (
+  const buildSharePayload = (job: LatestJob, formattedStartDate: string, formattedLastDate: string, hasLastDate: boolean) => {
+    const normalizedHref = job.href.startsWith("/") ? job.href : `/${job.href}`;
+    const applyLink = job.href.startsWith("http") ? job.href : `${SITE_URL}${normalizedHref}`;
+
+    const text = [
+      "Sarkari Global Result - Job Alert",
+      `Post Name: ${job.postName}`,
+      `Organization: ${job.badge}`,
+      `State: ${job.state}`,
+      `Qualification: ${job.qualification}`,
+      `Seats: ${job.seats}`,
+      `Start Date: ${formattedStartDate}`,
+      `Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
+      `Apply Link: ${applyLink}`,
+    ].join("\n");
+
+    return {
+      title: `${job.postName} | Sarkari Global Result`,
+      text,
+      url: applyLink,
+    };
+  };
+
+  const handleShare = async (
+    shareKey: string,
     job: LatestJob,
     formattedStartDate: string,
     formattedLastDate: string,
     hasLastDate: boolean,
-    deadlineText: string,
   ) => {
-    const applyLink =
-      typeof window !== "undefined" ? new URL(job.href, window.location.origin).toString() : job.href;
+    const payload = buildSharePayload(job, formattedStartDate, formattedLastDate, hasLastDate);
 
-    const message = [
-      "✨ Sarkari Global Result - Job Alert",
-      "",
-      `✅ Post Name: ${job.postName}`,
-      `🏢 Organization: ${job.badge}`,
-      `📍 State: ${job.state}`,
-      `🎓 Qualification: ${job.qualification}`,
-      `👥 Seats: ${job.seats}`,
-      `📅 Start Date: ${formattedStartDate}`,
-      `⏰ Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
-      `🚨 Current Status: ${deadlineText}`,
-      "",
-      "👉 Apply Now",
-      `🔗 ${applyLink}`,
-    ].join("\n");
-    const encoded = encodeURIComponent(message);
-    return `https://wa.me/?text=${encoded}`;
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share(payload);
+        return;
+      } catch {
+        // Fall back to clipboard copy if share sheet is canceled/unavailable.
+      }
+    }
+
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(payload.url);
+        setCopiedShareKey(shareKey);
+        globalThis.setTimeout(() => {
+          setCopiedShareKey((current) => (current === shareKey ? null : current));
+        }, 1600);
+      } catch {
+        // Ignore clipboard errors silently.
+      }
+    }
+  };
+
+  const toggleSavedJob = (jobKey: string) => {
+    setSavedJobKeys((previous) => {
+      if (previous.includes(jobKey)) {
+        return previous.filter((key) => key !== jobKey);
+      }
+
+      return [...previous, jobKey];
+    });
   };
 
   return (
@@ -491,11 +531,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         <div className="max-h-[68vh] overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-color:#0284c7_#e2e8f0] sm:max-h-[72vh] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200/70 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-cyan-400 [&::-webkit-scrollbar-thumb]:via-sky-500 [&::-webkit-scrollbar-thumb]:to-indigo-500 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-slate-100/90">
           <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] sm:grid-cols-2 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
+              const jobKey = `${job.href}-${job.postName}`;
               const badge = getOrgBadge(job.badge);
               const deadlineChip = getDeadlineChip(job.startDate, job.lastDate);
               const hasLastDate = job.lastDate.trim().length > 0;
               const formattedStartDate = formatDateDdMmYyyy(job.startDate);
               const formattedLastDate = formatDateDdMmYyyy(job.lastDate);
+              const isSaved = savedJobKeys.includes(jobKey);
 
               return (
                 <article
@@ -507,9 +549,36 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       {badge.label}
                     </p>
                     <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
+                        }}
+                        className="inline-flex h-5 items-center gap-0.5 rounded-full border border-slate-200 bg-white px-1.5 text-[8px] font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
+                        aria-label={`Share ${job.postName}`}
+                      >
+                        <Share2 className="size-2.5" aria-hidden="true" />
+                        Share
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleSavedJob(jobKey)}
+                        className={[
+                          "inline-flex size-5 items-center justify-center rounded-full border shadow-sm transition-colors",
+                          isSaved
+                            ? "border-rose-300 bg-rose-50 text-rose-600"
+                            : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50",
+                        ].join(" ")}
+                        aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
+                      >
+                        <Heart className={isSaved ? "size-3 fill-current" : "size-3"} aria-hidden="true" />
+                      </button>
                       <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                     </div>
                   </div>
+                  {copiedShareKey === jobKey && (
+                    <p className="text-[9px] font-semibold text-emerald-700">Link copied</p>
+                  )}
 
                   <Link href={job.href} className="mt-1 flex items-start gap-1 text-slate-800 transition-colors">
                     <span className="mt-0.5 inline-flex size-4 items-center justify-center rounded bg-gradient-to-br from-cyan-50 to-blue-100 text-cyan-700 transition-colors group-hover:from-cyan-100 group-hover:to-blue-200 group-hover:text-blue-900">
@@ -518,52 +587,30 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <span className="line-clamp-2 text-[11px] font-extrabold leading-4.5 transition-colors group-hover:text-blue-900">{job.postName}</span>
                   </Link>
 
-                  <dl className="mt-1.5 grid grid-cols-3 gap-x-1.5 gap-y-1 text-[9px]">
-                    <div className="inline-flex items-center gap-0.5 text-slate-700 whitespace-nowrap">
-                      <dt className="inline-flex items-center gap-0.5 font-semibold text-slate-700">
+                  <dl className="mt-1.5 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px]">
+                    <div className="inline-flex min-w-0 items-center gap-0.5 text-slate-700">
+                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
                         <Users className="size-2.5" aria-hidden="true" /> Seat:
                       </dt>
-                      <dd className="shrink-0 rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.seats}</dd>
+                      <dd className="truncate rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.seats}</dd>
                     </div>
-                    <div className="inline-flex items-center gap-0.5 text-slate-700 whitespace-nowrap">
+                    <div className="inline-flex min-w-0 items-center gap-0.5 text-slate-700">
                       <dt className="inline-flex shrink-0 items-center gap-0.5 font-semibold text-slate-700">
                         <MapPin className="size-2.5" aria-hidden="true" /> State:
                       </dt>
-                      <dd className="shrink-0 rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.state}</dd>
+                      <dd className="truncate rounded-md bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{job.state}</dd>
                     </div>
-                    <div className="inline-flex items-center justify-end gap-1">
-                      <dt className="sr-only">Actions</dt>
-                      <dd className="inline-flex items-center gap-1">
-                      <a
-                        href={getWhatsAppShareUrl(
-                          job,
-                          formattedStartDate,
-                          formattedLastDate,
-                          hasLastDate,
-                          deadlineChip.text,
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
-                        aria-label={`Share ${job.postName} on WhatsApp`}
-                      >
-                        <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
-                          <path d="M12 2a9.98 9.98 0 0 0-8.66 15l-1.25 4.56a.7.7 0 0 0 .86.86L7.5 21.2A10 10 0 1 0 12 2zm0 18.2a8.17 8.17 0 0 1-4.18-1.15.7.7 0 0 0-.53-.08l-2.68.73.73-2.68a.7.7 0 0 0-.08-.53A8.2 8.2 0 1 1 12 20.2zm4.51-6.15c-.25-.12-1.46-.72-1.69-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.29.19-.54.06-.25-.12-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.76-.15-.25-.02-.39.11-.52.11-.11.25-.29.37-.43.12-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.57-1.37-.78-1.87-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.43.06-.65.31s-.86.84-.86 2.05.88 2.38 1 2.54c.12.17 1.72 2.62 4.17 3.67.58.25 1.04.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z" />
-                        </svg>
-                      </a>
-                      </dd>
-                    </div>
-                    <div className="col-span-1 inline-flex min-w-0 items-center gap-1 text-slate-700 whitespace-nowrap">
+                    <div className="col-span-1 inline-flex min-w-0 items-center gap-1 text-slate-700">
                       <dt className="inline-flex shrink-0 items-center gap-1 font-semibold text-slate-700">
                         <CalendarClock className="size-2.5" aria-hidden="true" /> Start:
                       </dt>
-                      <dd className="rounded-md bg-cyan-50 px-1.5 py-0.5 font-semibold text-cyan-800 ring-1 ring-cyan-200">{formattedStartDate}</dd>
+                      <dd className="truncate rounded-md bg-cyan-50 px-1.5 py-0.5 font-semibold text-cyan-800 ring-1 ring-cyan-200">{formattedStartDate}</dd>
                     </div>
-                    <div className="col-span-2 inline-flex items-center justify-end gap-1">
+                    <div className="col-span-1 inline-flex min-w-0 items-center justify-end gap-1">
                       <dt className="inline-flex items-center gap-1 font-semibold text-slate-700">
                         <CalendarRange className="size-2.5" aria-hidden="true" /> Last:
                       </dt>
-                      <dd className={`rounded-md px-1.5 py-0.5 text-right font-semibold ring-1 ${hasLastDate ? "bg-rose-50 text-rose-700 ring-rose-200" : "bg-emerald-50 text-emerald-700 ring-emerald-200"}`}>
+                      <dd className={`truncate rounded-md px-1.5 py-0.5 text-right font-semibold ring-1 ${hasLastDate ? "bg-rose-50 text-rose-700 ring-rose-200" : "bg-emerald-50 text-emerald-700 ring-emerald-200"}`}>
                         {hasLastDate ? formattedLastDate : "To Be Announced"}
                       </dd>
                     </div>
