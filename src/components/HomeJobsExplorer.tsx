@@ -456,7 +456,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-[13px] font-medium text-slate-700 placeholder:text-slate-400 outline-none sm:text-[10px]"
+              className="w-full bg-transparent text-[16px] font-medium text-slate-700 placeholder:text-slate-400 outline-none md:text-[13px]"
             />
           </label>
 
@@ -468,7 +468,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 value={badgeFilter}
                 onChange={(event) => handleBadgeFilterChange(event.target.value)}
                 onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -485,7 +485,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 value={stateFilter}
                 onChange={(event) => handleStateFilterChange(event.target.value)}
                 onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -505,7 +505,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 value={qualificationFilter}
                 onChange={(event) => handleQualificationFilterChange(event.target.value)}
                 onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-slate-700 outline-none sm:text-[10px]"
+                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (
