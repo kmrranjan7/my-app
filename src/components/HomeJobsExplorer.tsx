@@ -417,7 +417,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   return (
     <section className="relative block w-full min-w-0 max-w-full overflow-x-hidden">
 
-      <div className="relative w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:px-2.5">
+      <div className="relative mx-1 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:mx-0 sm:px-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
@@ -538,7 +538,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       <div className="mt-3 w-full min-w-0">
         <div className="overflow-visible pr-0 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="min-w-0 grid grid-cols-1 gap-1.5 min-[760px]:grid-cols-2 min-[760px]:gap-1.5 lg:gap-1.5 xl:grid-cols-3">
+          <div className="min-w-0 px-1 grid grid-cols-1 gap-1.5 sm:px-0 min-[760px]:grid-cols-2 min-[760px]:gap-1.5 lg:gap-1.5 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
               const badge = getOrgBadge(job.badge);
@@ -551,42 +551,16 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="rounded-xl border border-slate-200/90 bg-white p-2"
+                  className="rounded-xl border border-slate-200/90 bg-white p-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-[0_10px_22px_rgba(15,23,42,0.10)] active:-translate-y-0.5 active:border-cyan-200 active:shadow-[0_10px_22px_rgba(15,23,42,0.10)]"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 min-[420px]:flex-nowrap">
+                    <div className="flex min-w-0 items-center">
                       <p className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
                         {badge.label}
                       </p>
-                      <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${deadlineChip.style.replace("animate-pulse", "")}`}>{deadlineChip.text}</span>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
-                        }}
-                        className="inline-flex h-6 items-center gap-1 rounded-full border border-slate-200 bg-slate-50/80 px-2 text-[9px] font-semibold text-slate-600 transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 sm:h-5.5 sm:px-1.5 sm:text-[8px] lg:h-6 lg:text-[9px]"
-                        aria-label={`Share ${job.postName}`}
-                      >
-                        <Share2 className="size-3 sm:size-2.5 lg:size-3" aria-hidden="true" />
-                        <span className="hidden min-[390px]:inline">Share</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleSavedJob(jobKey)}
-                        className={[
-                          "inline-flex size-6 items-center justify-center rounded-full border transition-colors active:scale-[0.98] sm:size-5.5 lg:size-6",
-                          isSaved
-                            ? "border-rose-300 bg-rose-50/90 text-rose-600"
-                            : "border-slate-200 bg-slate-50/80 text-slate-500 hover:border-slate-300 hover:bg-slate-100",
-                        ].join(" ")}
-                        aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
-                      >
-                        <Heart className={isSaved ? "size-3 fill-current lg:size-3" : "size-3 lg:size-3"} aria-hidden="true" />
-                      </button>
-                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                   </div>
 
                   {copiedShareKey === jobKey && <p className="text-[9px] font-semibold text-emerald-700">Link copied</p>}
@@ -595,11 +569,44 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <span className="line-clamp-2">{job.postName}</span>
                   </Link>
 
-                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] text-slate-600">
-                    <p><span className="font-bold text-slate-700">State:</span> {job.state}</p>
-                    <p><span className="font-bold text-slate-700">Seats:</span> {job.seats}</p>
-                    <p><span className="font-bold text-slate-700">Start:</span> {formattedStartDate}</p>
-                    <p><span className="font-bold text-slate-700">Last:</span> {hasLastDate ? formattedLastDate : "To Be Announced"}</p>
+                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] leading-4 text-slate-600">
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
+                      <span className="inline-flex size-4.5" aria-hidden="true" />
+                    </div>
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
+                        }}
+                        className="inline-flex h-4.5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50/80 px-1 text-[8px] font-semibold text-slate-600 transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        aria-label={`Share ${job.postName}`}
+                      >
+                        <Share2 className="size-2.5" aria-hidden="true" />
+                      </button>
+                    </div>
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
+                      <span className="inline-flex size-5" aria-hidden="true" />
+                    </div>
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
+                      <button
+                        type="button"
+                        onClick={() => toggleSavedJob(jobKey)}
+                        className={[
+                          "inline-flex size-5 items-center justify-center rounded-full border transition-colors active:scale-[0.98]",
+                          isSaved
+                            ? "border-rose-300 bg-rose-50/90 text-rose-600"
+                            : "border-slate-200 bg-slate-50/80 text-slate-500 hover:border-slate-300 hover:bg-slate-100",
+                        ].join(" ")}
+                        aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
+                      >
+                        <Heart className={isSaved ? "size-3 fill-current" : "size-3"} aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
