@@ -426,7 +426,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-[10px] font-medium text-slate-700 placeholder:text-slate-400 outline-none"
+              className="w-full bg-transparent text-base font-medium text-slate-700 placeholder:text-slate-400 outline-none sm:text-[10px]"
             />
           </label>
 
