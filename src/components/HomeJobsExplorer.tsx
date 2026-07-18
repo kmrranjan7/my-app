@@ -337,7 +337,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
-  const shareOnSocialMedia = async (
+  const shareOnSocialMedia = (
     job: LatestJob,
     formattedStartDate: string,
     formattedLastDate: string,
@@ -362,23 +362,26 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       "👉 Apply Now",
       `🔗 ${applyLink}`,
     ].join("\n");
+    const encoded = encodeURIComponent(message);
+    const isMobileDevice = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
 
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      try {
-        await navigator.share({
-          title: `${job.postName} | Sarkari Global Result`,
-          text: message,
-          url: applyLink,
-        });
-        return;
-      } catch {
-        // If user cancels or share target is unavailable, fallback to WhatsApp web share.
-      }
+    if (isMobileDevice) {
+      const appUrl = `whatsapp://send?text=${encoded}`;
+      const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
+      window.location.href = appUrl;
+
+      // Fallback for devices without WhatsApp app handler.
+      globalThis.setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          window.location.href = webUrl;
+        }
+      }, 700);
+      return;
     }
 
-    const encoded = encodeURIComponent(message);
-    const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-
+    const webUrl = `https://web.whatsapp.com/send?text=${encoded}`;
     window.open(webUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -553,7 +556,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <button
                         type="button"
                         onClick={() => {
-                          void shareOnSocialMedia(
+                          shareOnSocialMedia(
                             job,
                             formattedStartDate,
                             formattedLastDate,
