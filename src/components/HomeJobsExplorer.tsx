@@ -572,7 +572,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                   <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] leading-4 text-slate-600">
                     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
-                      <span className="inline-flex size-4.5" aria-hidden="true" />
+                      <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
                     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
@@ -581,7 +581,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex h-4.5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50/80 px-1 text-[8px] font-semibold text-slate-600 transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
                         aria-label={`Share ${job.postName}`}
                       >
                         <Share2 className="size-2.5" aria-hidden="true" />
@@ -589,7 +589,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     </div>
                     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
-                      <span className="inline-flex size-5" aria-hidden="true" />
+                      <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
                     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
@@ -597,10 +597,10 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         type="button"
                         onClick={() => toggleSavedJob(jobKey)}
                         className={[
-                          "inline-flex size-5 items-center justify-center rounded-full border transition-colors active:scale-[0.98]",
+                          "inline-flex size-5 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98]",
                           isSaved
                             ? "border-rose-300 bg-rose-50/90 text-rose-600"
-                            : "border-slate-200 bg-slate-50/80 text-slate-500 hover:border-slate-300 hover:bg-slate-100",
+                            : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-100",
                         ].join(" ")}
                         aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
                       >
