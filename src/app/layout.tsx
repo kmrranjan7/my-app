@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import HeaderNavbar from "@/components/HeaderNavbar";
 import SiteFooter from "@/components/SiteFooter";
 import {
@@ -52,6 +52,12 @@ export const metadata: Metadata = {
       "Track latest Sarkari jobs, admit card releases, exam notices, and results.",
     images: ["/twitter-image"],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

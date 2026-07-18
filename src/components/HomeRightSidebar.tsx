@@ -260,7 +260,7 @@ export default async function HomeRightSidebar() {
   const resultRows = await fetchResults();
 
   return (
-    <aside className="w-full space-y-2.5 max-md:max-w-none md:ml-auto md:max-w-[272px] lg:sticky lg:top-[60px] lg:self-start">
+    <aside className="w-full space-y-2.5 max-md:max-w-none md:ml-auto md:max-w-[272px] lg:sticky lg:self-start">
       <SidebarCard title="Admit Card" badge="New" rows={admitRows} />
       <SidebarCard title="Result" badge="Hot" rows={resultRows} />
     </aside>

@@ -55,16 +55,17 @@ export default function HeaderNavbar() {
   }
 
   return (
-    <header
-      className={[
-        "sticky top-0 z-50 border-b-2 border-[#2563EB]/75 bg-white/92 backdrop-blur-xl transition-all duration-300",
-        isScrolled
-          ? "shadow-[0_10px_30px_rgba(2,6,23,0.12)]"
-          : "shadow-[0_4px_16px_rgba(2,6,23,0.06)]",
-      ].join(" ")}
-    >
-      <div className="mx-auto w-[min(1200px,95vw)] px-2 sm:px-3">
-        <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:grid-cols-[auto_1fr_auto]">
+    <>
+      <header
+        className={[
+          "fixed inset-x-0 top-0 z-50 border-b-2 border-[#2563EB]/75 bg-white/92 backdrop-blur-xl transition-all duration-300",
+          isScrolled
+            ? "shadow-[0_10px_30px_rgba(2,6,23,0.12)]"
+            : "shadow-[0_4px_16px_rgba(2,6,23,0.06)]",
+        ].join(" ")}
+      >
+        <div className="mx-auto w-[min(1200px,95vw)] px-2 sm:px-3">
+          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:grid-cols-[auto_1fr_auto]">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-colors duration-300 hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50"
@@ -102,9 +103,11 @@ export default function HeaderNavbar() {
             })}
           </nav>
 
-          <div className="flex items-center justify-end gap-1.5" />
+            <div className="flex items-center justify-end gap-1.5" />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      <div className="h-12" aria-hidden="true" />
+    </>
   );
 }

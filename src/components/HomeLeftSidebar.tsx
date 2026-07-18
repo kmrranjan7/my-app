@@ -265,7 +265,7 @@ export default async function HomeLeftSidebar() {
   const examRows = await fetchUpcomingExams();
 
   return (
-    <aside className="w-full space-y-2.5 max-md:max-w-none md:max-w-[272px] lg:sticky lg:top-[60px] lg:self-start">
+    <aside className="w-full space-y-2.5 max-md:max-w-none md:max-w-[272px] lg:sticky lg:self-start">
       <section className="overflow-hidden rounded-xl border-2 border-indigo-200/90 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.1)] ring-1 ring-indigo-100/80">
         <header className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 px-2 py-1.5 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.25),transparent_40%)]" />

@@ -89,8 +89,8 @@ export default async function HomePage() {
   const jobsForExplorer = jobs.slice(0, HOME_JOBS_PAYLOAD_LIMIT);
 
   return (
-    <main className="w-full py-3 sm:py-4">
-      <section className="grid w-full grid-cols-1 gap-2 px-0 lg:grid-cols-[272px_minmax(0,1fr)_272px] lg:gap-4">
+    <main className="w-full min-w-0 overflow-x-hidden py-3 sm:py-4">
+      <section className="grid w-full min-w-0 grid-cols-1 gap-2 px-0 [&>*]:min-w-0 lg:grid-cols-[272px_minmax(0,1fr)_272px] lg:gap-4">
         <div className="hidden lg:block">
           <HomeLeftSidebar />
         </div>
