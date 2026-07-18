@@ -92,10 +92,10 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
   return (
     <>
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 bg-transparent px-2 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] pt-1 lg:hidden"
         aria-label="Mobile Footer Navigation"
       >
-        <div className="mx-auto grid max-w-[390px] grid-cols-5 rounded-[22px] border border-slate-200/90 bg-white px-1.5 py-1.5 shadow-[0_12px_28px_rgba(15,23,42,0.16)]">
+        <div className="grid w-full grid-cols-5 bg-white px-1 py-1.5">
           {leftItems.map((item) => {
             const active = isActiveRoute(pathname, item.href);
             const Icon = item.icon;
@@ -197,7 +197,7 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
         </div>
       </nav>
 
-      <div aria-hidden="true" className="h-[82px] lg:hidden" />
+      <div aria-hidden="true" className="h-[74px] lg:hidden" />
     </>
   );
 }
