@@ -67,25 +67,37 @@ export default function HeaderNavbar() {
         <div className="mx-auto w-[min(1240px,96vw)] px-2 sm:px-3 lg:px-4">
           <div className="pointer-events-none hidden h-[2px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
 
-          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[62px] lg:grid-cols-[auto_1fr_auto] lg:gap-4">
-            <Link
-              href="/"
-              className="group inline-flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-2"
-              aria-label="SarkariGlobalResult home"
-            >
-              <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[11px] font-black text-white shadow-[0_10px_24px_rgba(37,99,235,0.35)]">
-                <span className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_58%)]" />
-                <span className="relative">SG</span>
-              </span>
-              <span className="flex min-w-0 flex-col leading-none">
-                <span className="truncate text-[15px] font-black tracking-tight text-slate-900 lg:text-[16px]">
-                  SarkariGlobalResult
+          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[62px] lg:grid-cols-[auto_1fr] lg:gap-4">
+            <div className="inline-flex min-w-0 items-center gap-1.5 lg:gap-2">
+              <Link
+                href="/"
+                className="group inline-flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-2"
+                aria-label="SarkariGlobalResult home"
+              >
+                <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[11px] font-black text-white shadow-[0_10px_24px_rgba(37,99,235,0.35)]">
+                  <span className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_58%)]" />
+                  <span className="relative">SGR</span>
                 </span>
-                <span className="hidden truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
-                  Government Career Desk
+                <span className="flex min-w-0 flex-col leading-none">
+                  <span className="truncate text-[15px] font-black tracking-tight text-slate-900 lg:text-[16px]">
+                    SarkariGlobalResult
+                  </span>
+                  <span className="hidden truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
+                    Government Career Desk
+                  </span>
                 </span>
-              </span>
-            </Link>
+              </Link>
+
+              <div className="hidden items-center justify-end gap-1.5 lg:flex">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 shadow-[0_6px_14px_rgba(5,150,105,0.16)] motion-safe:animate-pulse">
+                  <span className="relative inline-flex h-2 w-2" aria-hidden="true">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 motion-safe:animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                  </span>
+                  <span>Live Updates</span>
+                </span>
+              </div>
+            </div>
 
             <nav
               className="no-scrollbar hidden min-w-0 items-center justify-center gap-1 overflow-x-auto whitespace-nowrap lg:flex"
@@ -113,15 +125,6 @@ export default function HeaderNavbar() {
               })}
             </nav>
 
-            <div className="hidden items-center justify-end gap-1.5 lg:flex">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 shadow-[0_6px_14px_rgba(5,150,105,0.16)] motion-safe:animate-pulse">
-                <span className="relative inline-flex h-2 w-2" aria-hidden="true">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 motion-safe:animate-ping" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
-                </span>
-                <span>Live Updates</span>
-              </span>
-            </div>
           </div>
         </div>
       </header>
