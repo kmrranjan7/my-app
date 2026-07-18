@@ -570,11 +570,11 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                   </Link>
 
                   <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] leading-4 text-slate-600">
-                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                    <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
                       <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
-                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                    <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
                       <button
                         type="button"
@@ -587,11 +587,11 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         <Share2 className="size-2.5" aria-hidden="true" />
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                    <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
                       <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
-                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1">
+                    <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
                       <button
                         type="button"
