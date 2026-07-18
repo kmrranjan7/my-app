@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import MobileNavigation from "@/components/MobileNavigation";
 
 const quickLinks = [
   { label: "Latest Jobs", href: "/latest-job" },
@@ -176,6 +177,8 @@ export default function SiteFooter() {
 
           </div>
       </div>
+
+      <MobileNavigation pathname={pathname} />
     </footer>
   );
 }

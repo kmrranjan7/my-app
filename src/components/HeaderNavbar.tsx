@@ -64,7 +64,7 @@ export default function HeaderNavbar() {
       ].join(" ")}
     >
       <div className="mx-auto w-[min(1200px,95vw)] px-2 sm:px-3">
-        <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 sm:grid-cols-[auto_1fr_auto]">
+        <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:grid-cols-[auto_1fr_auto]">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-colors duration-300 hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50"
@@ -77,7 +77,7 @@ export default function HeaderNavbar() {
           </Link>
 
           <nav
-            className="no-scrollbar hidden min-w-0 items-center justify-end gap-0.5 overflow-x-auto whitespace-nowrap sm:flex"
+            className="no-scrollbar hidden min-w-0 items-center justify-end gap-0.5 overflow-x-auto whitespace-nowrap lg:flex"
             aria-label="Primary"
           >
             {navItems.map((item) => {
@@ -104,7 +104,6 @@ export default function HeaderNavbar() {
 
           <div className="flex items-center justify-end gap-1.5" />
         </div>
-
       </div>
     </header>
   );
