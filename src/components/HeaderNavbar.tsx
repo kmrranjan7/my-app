@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type NavItem = {
@@ -22,7 +21,6 @@ const navItems: NavItem[] = [
 
 export default function HeaderNavbar() {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   const hideHeader =
@@ -49,28 +47,6 @@ export default function HeaderNavbar() {
 
     return () => {
       globalThis.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMobileMenuOpen]);
-
-  useEffect(() => {
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    globalThis.addEventListener("keydown", onEscape);
-
-    return () => {
-      globalThis.removeEventListener("keydown", onEscape);
     };
   }, []);
 
@@ -126,82 +102,10 @@ export default function HeaderNavbar() {
             })}
           </nav>
 
-          <div className="flex items-center justify-end gap-1.5">
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#2563EB]/35 bg-white/70 text-[#2563EB] transition-all duration-300 hover:border-[#2563EB]/60 hover:bg-[#EFF6FF] hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50 sm:hidden"
-              aria-label="Open navigation menu"
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-drawer-nav"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu size={18} />
-            </button>
-          </div>
+          <div className="flex items-center justify-end gap-1.5" />
         </div>
 
       </div>
-
-      <button
-        type="button"
-        className={[
-          "fixed inset-0 z-[60] bg-slate-950/55 transition-opacity duration-300 md:hidden",
-          isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
-        ].join(" ")}
-        tabIndex={isMobileMenuOpen ? 0 : -1}
-        aria-hidden={!isMobileMenuOpen}
-        aria-label="Close navigation menu overlay"
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
-
-      <aside
-        id="mobile-drawer-nav"
-        aria-label="Mobile navigation drawer"
-        className={[
-          "fixed inset-y-0 right-0 z-[70] flex w-full max-w-sm flex-col bg-white p-5 shadow-2xl transition-transform duration-300 md:hidden",
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full",
-        ].join(" ")}
-      >
-        <div className="mb-5 flex items-center justify-between">
-          <span className="text-base font-bold text-slate-900">Menu</span>
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#2563EB]/35 text-[#2563EB] transition-all duration-300 hover:border-[#2563EB]/60 hover:bg-[#EFF6FF] hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-label="Close navigation menu"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="flex flex-col gap-2" aria-label="Mobile primary">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={[
-                  "rounded-md px-4 py-3 text-[15px] font-semibold transition-all duration-300",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/50",
-                  active
-                    ? "bg-[#EFF6FF] text-[#1d4ed8]"
-                    : "border border-slate-200/80 bg-white/70 text-slate-700 hover:border-[#2563EB]/40 hover:bg-[#F8FAFC] hover:text-[#2563EB]",
-                ].join(" ")}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-8 text-xs text-slate-500">
-          SarkariGlobalResult • Government Job & Exam Portal
-        </div>
-      </aside>
     </header>
   );
 }

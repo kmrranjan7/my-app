@@ -384,7 +384,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   return (
     <section>
-      <div className="pointer-events-none absolute -top-20 -right-12 h-40 w-40 rounded-full bg-cyan-200/35 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 h-40 w-40 rounded-full" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-amber-200/30 blur-3xl" />
 
       <div className="relative rounded-xl border border-sky-100/85 bg-white px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
