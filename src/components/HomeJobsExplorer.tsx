@@ -337,7 +337,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
-  const shareOnSocialMedia = (
+  const getWhatsAppShareUrl = (
     job: LatestJob,
     formattedStartDate: string,
     formattedLastDate: string,
@@ -363,26 +363,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       `🔗 ${applyLink}`,
     ].join("\n");
     const encoded = encodeURIComponent(message);
-    const isMobileDevice = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(
-      navigator.userAgent,
-    );
-
-    if (isMobileDevice) {
-      const appUrl = `whatsapp://send?text=${encoded}`;
-      const webUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-      window.location.href = appUrl;
-
-      // Fallback for devices without WhatsApp app handler.
-      globalThis.setTimeout(() => {
-        if (document.visibilityState === "visible") {
-          window.location.href = webUrl;
-        }
-      }, 700);
-      return;
-    }
-
-    const webUrl = `https://web.whatsapp.com/send?text=${encoded}`;
-    window.open(webUrl, "_blank", "noopener,noreferrer");
+    return `https://wa.me/?text=${encoded}`;
   };
 
   return (
@@ -553,24 +534,23 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <div className="inline-flex items-center justify-end gap-1">
                       <dt className="sr-only">Actions</dt>
                       <dd className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          shareOnSocialMedia(
-                            job,
-                            formattedStartDate,
-                            formattedLastDate,
-                            hasLastDate,
-                            deadlineChip.text,
-                          );
-                        }}
-                        className="inline-flex size-4.5 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
-                        aria-label={`Share ${job.postName} on social media`}
+                      <a
+                        href={getWhatsAppShareUrl(
+                          job,
+                          formattedStartDate,
+                          formattedLastDate,
+                          hasLastDate,
+                          deadlineChip.text,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] text-white shadow-sm ring-1 ring-[#25D366]/50 transition-transform hover:scale-105"
+                        aria-label={`Share ${job.postName} on WhatsApp`}
                       >
                         <svg viewBox="0 0 24 24" className="size-2.5" fill="currentColor" aria-hidden="true">
                           <path d="M12 2a9.98 9.98 0 0 0-8.66 15l-1.25 4.56a.7.7 0 0 0 .86.86L7.5 21.2A10 10 0 1 0 12 2zm0 18.2a8.17 8.17 0 0 1-4.18-1.15.7.7 0 0 0-.53-.08l-2.68.73.73-2.68a.7.7 0 0 0-.08-.53A8.2 8.2 0 1 1 12 20.2zm4.51-6.15c-.25-.12-1.46-.72-1.69-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.29.19-.54.06-.25-.12-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.76-.15-.25-.02-.39.11-.52.11-.11.25-.29.37-.43.12-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.57-1.37-.78-1.87-.21-.5-.42-.43-.57-.44h-.49c-.17 0-.43.06-.65.31s-.86.84-.86 2.05.88 2.38 1 2.54c.12.17 1.72 2.62 4.17 3.67.58.25 1.04.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z" />
                         </svg>
-                      </button>
+                      </a>
                       </dd>
                     </div>
                     <div className="col-span-1 inline-flex min-w-0 items-center gap-1 text-slate-700 whitespace-nowrap">
