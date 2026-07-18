@@ -388,8 +388,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-44 w-44 rounded-full bg-amber-200/30 blur-3xl" />
 
       <div className="relative rounded-xl border border-sky-100/85 bg-white px-2.5 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.10),0_2px_8px_rgba(14,116,144,0.08)] ring-1 ring-sky-100/70 backdrop-blur-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
               <Sparkles className="size-3.5" aria-hidden="true" />
             </span>
@@ -403,7 +403,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           <button
             type="button"
             onClick={() => setClosingWeekOnly((prev) => !prev)}
-            className={`w-full rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:w-auto ${
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors ${
               closingWeekOnly
                 ? "animate-pulse bg-gradient-to-r from-rose-700 to-red-700 text-white ring-rose-900 shadow-[0_0_0_2px_rgba(190,18,60,0.28)]"
                 : "bg-gradient-to-r from-rose-600 to-red-600 text-white ring-rose-700"
@@ -430,75 +430,82 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             />
           </label>
 
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
-            <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
-            <select
-              value={badgeFilter}
-              onChange={(event) => setBadgeFilter(event.target.value)}
-              className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
-            >
-              <option value="all">All Badges</option>
-              {badgeOptions.map((badge) => (
-                <option key={badge} value={badge}>
-                  {badge}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
-            <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
-            <select
-              value={stateFilter}
-              onChange={(event) => setStateFilter(event.target.value)}
-              className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
-            >
-              <option value="all">All India</option>
-              {stateOptions.map((stateName) => (
-                <option key={stateName} value={stateName}>
-                  {stateName}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
-            <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
-            <select
-              value={qualificationFilter}
-              onChange={(event) => setQualificationFilter(event.target.value as QualificationFilter)}
-              className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
-            >
-              <option value="all">All Qualification</option>
-              {qualificationOptions.map((qualification) => (
-                <option key={qualification} value={qualification}>
-                  {qualification}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex items-center justify-end gap-1 sm:col-span-2 lg:col-span-1">
-            <span className="rounded-md bg-cyan-50 px-2 py-1 text-[10px] font-semibold text-cyan-700 ring-1 ring-cyan-200">
-              {filteredJobs.length} jobs
-            </span>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+          <div className="space-y-1 sm:contents">
+            <div className="grid grid-cols-2 gap-1 sm:contents">
+            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+              <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
+              <select
+                value={badgeFilter}
+                onChange={(event) => setBadgeFilter(event.target.value)}
+                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
               >
-                <X className="size-3" aria-hidden="true" />
-                Clear
-              </button>
-            )}
+                <option value="all">All Badges</option>
+                {badgeOptions.map((badge) => (
+                  <option key={badge} value={badge}>
+                    {badge}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+              <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
+              <select
+                value={stateFilter}
+                onChange={(event) => setStateFilter(event.target.value)}
+                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
+              >
+                <option value="all">All India</option>
+                {stateOptions.map((stateName) => (
+                  <option key={stateName} value={stateName}>
+                    {stateName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            </div>
+
+            <div className="flex items-center gap-1 sm:contents">
+            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_6px_16px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+              <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
+              <select
+                value={qualificationFilter}
+                onChange={(event) => setQualificationFilter(event.target.value as QualificationFilter)}
+                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
+              >
+                <option value="all">All Qualification</option>
+                {qualificationOptions.map((qualification) => (
+                  <option key={qualification} value={qualification}>
+                    {qualification}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-center justify-end gap-1 sm:col-span-2 lg:col-span-1">
+              <span className="rounded-md bg-cyan-50 px-2 py-1 text-[10px] font-semibold text-cyan-700 ring-1 ring-cyan-200">
+                {filteredJobs.length} jobs
+              </span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                >
+                  <X className="size-3" aria-hidden="true" />
+                  Clear
+                </button>
+              )}
+            </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="mt-2.5">
         <div className="max-h-[68vh] overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-color:#0284c7_#e2e8f0] sm:max-h-[72vh] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200/70 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-cyan-400 [&::-webkit-scrollbar-thumb]:via-sky-500 [&::-webkit-scrollbar-thumb]:to-indigo-500 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 [content-visibility:auto] [contain-intrinsic-size:380px] sm:grid-cols-2 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const badge = getOrgBadge(job.badge);
               const deadlineChip = getDeadlineChip(job.startDate, job.lastDate);
