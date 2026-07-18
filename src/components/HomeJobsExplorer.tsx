@@ -342,6 +342,18 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     setClosingWeekOnly(false);
   };
 
+  const handleBadgeFilterChange = (value: string) => {
+    setBadgeFilter(value);
+  };
+
+  const handleStateFilterChange = (value: string) => {
+    setStateFilter(value);
+  };
+
+  const handleQualificationFilterChange = (value: string) => {
+    setQualificationFilter(value as QualificationFilter);
+  };
+
   const buildSharePayload = (job: LatestJob, formattedStartDate: string, formattedLastDate: string, hasLastDate: boolean) => {
     const normalizedHref = job.href.startsWith("/") ? job.href : `/${job.href}`;
     const applyLink = job.href.startsWith("http") ? job.href : `${SITE_URL}${normalizedHref}`;
@@ -460,8 +472,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
               <select
                 value={badgeFilter}
-                onChange={(event) => setBadgeFilter(event.target.value)}
-                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
+                onChange={(event) => handleBadgeFilterChange(event.target.value)}
+                onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
+                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -476,8 +489,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
               <select
                 value={stateFilter}
-                onChange={(event) => setStateFilter(event.target.value)}
-                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
+                onChange={(event) => handleStateFilterChange(event.target.value)}
+                onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
+                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -495,8 +509,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
               <select
                 value={qualificationFilter}
-                onChange={(event) => setQualificationFilter(event.target.value as QualificationFilter)}
-                className="bg-transparent text-[10px] font-semibold text-slate-700 outline-none"
+                onChange={(event) => handleQualificationFilterChange(event.target.value)}
+                onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
+                className="w-full min-w-0 bg-transparent text-base font-semibold text-slate-700 outline-none sm:text-[10px]"
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (
@@ -554,24 +569,24 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex h-5 items-center gap-0.5 rounded-full border border-slate-200 bg-white px-1.5 text-[8px] font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-700 shadow-sm transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-50 sm:h-5 sm:gap-0.5 sm:px-1.5 sm:text-[8px]"
                         aria-label={`Share ${job.postName}`}
                       >
-                        <Share2 className="size-2.5" aria-hidden="true" />
+                        <Share2 className="size-3" aria-hidden="true" />
                         Share
                       </button>
                       <button
                         type="button"
                         onClick={() => toggleSavedJob(jobKey)}
                         className={[
-                          "inline-flex size-5 items-center justify-center rounded-full border shadow-sm transition-colors",
+                          "inline-flex size-7 items-center justify-center rounded-full border shadow-sm transition-colors active:scale-[0.98] sm:size-5",
                           isSaved
                             ? "border-rose-300 bg-rose-50 text-rose-600"
                             : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50",
                         ].join(" ")}
                         aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
                       >
-                        <Heart className={isSaved ? "size-3 fill-current" : "size-3"} aria-hidden="true" />
+                        <Heart className={isSaved ? "size-3.5 fill-current sm:size-3" : "size-3.5 sm:size-3"} aria-hidden="true" />
                       </button>
                       <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                     </div>
