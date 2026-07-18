@@ -3,16 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
-  ArrowUpRight,
-  CalendarClock,
-  CalendarRange,
   ChevronRight,
   Filter,
   GraduationCap,
   Search,
   MapPin,
   Sparkles,
-  Users,
   X,
   Share2,
   Heart,
@@ -542,7 +538,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       <div className="mt-3 w-full min-w-0">
         <div className="overflow-visible pr-0 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="min-w-0 grid grid-cols-1 gap-0 min-[760px]:grid-cols-2 min-[760px]:gap-0 lg:gap-0 xl:grid-cols-3">
+          <div className="min-w-0 grid grid-cols-1 gap-1.5 min-[760px]:grid-cols-2 min-[760px]:gap-1.5 lg:gap-1.5 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
               const badge = getOrgBadge(job.badge);
@@ -555,14 +551,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group relative flex min-w-0 flex-col gap-1.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#fcfdff_100%)] p-2 shadow-[0_6px_16px_rgba(15,23,42,0.05),0_1px_3px_rgba(15,23,42,0.03)] ring-1 ring-white transition-all duration-200 hover:border-sky-200 hover:shadow-[0_12px_24px_rgba(14,116,144,0.10),0_3px_8px_rgba(15,23,42,0.05)] min-[760px]:p-2.25 lg:origin-top lg:scale-[0.94] lg:transform-gpu lg:gap-1.5 lg:p-2.5"
+                  className="rounded-xl border border-slate-200/90 bg-white p-2"
                 >
-                  <div className="relative z-10 flex items-center justify-between gap-1.5">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 flex-wrap items-center gap-1.5 min-[420px]:flex-nowrap">
-                      <p className={`max-w-full truncate rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] sm:text-[9px] lg:px-1.75 lg:text-[10px] ${badge.style.replace("shadow-sm", "")}`}>
+                      <p className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
                         {badge.label}
                       </p>
-                      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold sm:text-[9px] lg:px-1.75 lg:text-[10px] ${deadlineChip.style.replace("animate-pulse", "")}`}>{deadlineChip.text}</span>
+                      <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${deadlineChip.style.replace("animate-pulse", "")}`}>{deadlineChip.text}</span>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1">
@@ -593,43 +589,18 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     </div>
                   </div>
 
-                  {copiedShareKey === jobKey && <p className="relative z-10 text-[9px] font-semibold text-emerald-700">Link copied</p>}
+                  {copiedShareKey === jobKey && <p className="text-[9px] font-semibold text-emerald-700">Link copied</p>}
 
-                  <Link href={job.href} className="relative z-10 -mt-0.5 flex items-start gap-1 text-slate-800 transition-colors hover:text-slate-900">
-                    <span className="mt-0.5 inline-flex size-4.5 shrink-0 items-center justify-center rounded-md bg-slate-100/90 text-slate-600 transition-colors group-hover:bg-slate-200 group-hover:text-slate-800">
-                      <ArrowUpRight className="size-3" aria-hidden="true" />
-                    </span>
-                    <span className="line-clamp-2 text-[13px] font-semibold leading-5 text-slate-900 sm:text-[12px] lg:text-[13px]">{job.postName}</span>
+                  <Link href={job.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
+                    <span className="line-clamp-2">{job.postName}</span>
                   </Link>
 
-                  <dl className="relative z-10 mt-0.5 grid grid-cols-2 gap-1 text-[10px] sm:text-[9px] lg:gap-1.5 lg:text-[10px]">
-                    <div className="flex min-w-0 items-center gap-1 px-0.5 py-0.5 text-slate-600">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-medium text-slate-700">
-                        <Users className="size-2.5" aria-hidden="true" /> Seats
-                      </dt>
-                      <dd className="truncate text-right font-semibold text-slate-900">{job.seats}</dd>
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1 px-0.5 py-0.5 text-slate-600">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-medium text-slate-700">
-                        <MapPin className="size-2.5" aria-hidden="true" /> State
-                      </dt>
-                      <dd className="max-w-[60%] truncate text-right font-semibold text-slate-900">{job.state}</dd>
-                    </div>
-                    <div className="col-span-2 flex min-w-0 items-center justify-between gap-1 px-0.5 py-0.5 text-slate-600 min-[420px]:col-span-1">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-medium text-slate-700">
-                        <CalendarClock className="size-2.5" aria-hidden="true" /> Start
-                      </dt>
-                      <dd className="text-right font-semibold text-slate-900">{formattedStartDate}</dd>
-                    </div>
-                    <div className="col-span-2 flex min-w-0 items-center justify-between gap-1 px-0.5 py-0.5 text-slate-600 min-[420px]:col-span-1">
-                      <dt className="inline-flex shrink-0 items-center gap-0.5 font-medium text-slate-700">
-                        <CalendarRange className="size-2.5" aria-hidden="true" /> Last
-                      </dt>
-                      <dd className={`text-right font-semibold ${hasLastDate ? "text-rose-700" : "text-emerald-700"}`}>
-                        {hasLastDate ? formattedLastDate : "To Be Announced"}
-                      </dd>
-                    </div>
-                  </dl>
+                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] text-slate-600">
+                    <p><span className="font-bold text-slate-700">State:</span> {job.state}</p>
+                    <p><span className="font-bold text-slate-700">Seats:</span> {job.seats}</p>
+                    <p><span className="font-bold text-slate-700">Start:</span> {formattedStartDate}</p>
+                    <p><span className="font-bold text-slate-700">Last:</span> {hasLastDate ? formattedLastDate : "To Be Announced"}</p>
+                  </div>
                 </article>
               );
             })}
