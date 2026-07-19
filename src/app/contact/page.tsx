@@ -3,12 +3,15 @@ import ContactForm from "./ContactForm";
 import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Contact SarkariGlobalResult",
-  description: "Contact SarkariGlobalResult for support, correction requests, and business inquiries.",
+  title: "Contact Sarkari Global Result",
+  description: "Contact Sarkari Global Result for support, correction requests, and business inquiries.",
   keywords: [
     ...DEFAULT_SEO_KEYWORDS,
     "contact sarkariglobalresult",
     "sarkari result support",
+    "contact sarkari result",
+    "report correction government jobs",
+    "job notification support",
   ],
   alternates: {
     canonical: "/contact",

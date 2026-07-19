@@ -517,8 +517,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   };
 
   const permalink = postSlug
-    ? `https://sarkariglobalresult.gov.in/posts/${postSlug}`
-    : "https://sarkariglobalresult.gov.in/posts/your-post-slug";
+    ? `https://sarkariglobalresult.com/posts/${postSlug}`
+    : "https://sarkariglobalresult.com/posts/your-post-slug";
 
   const seoTitleLength = seoTitle.length;
   const seoDescriptionLength = seoDescription.length;

@@ -26,31 +26,22 @@ export const metadata: Metadata = {
   keywords: [...DEFAULT_SEO_KEYWORDS],
   creator: SITE_NAME,
   publisher: SITE_NAME,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
   alternates: {
     canonical: "/",
-  },
-  openGraph: {
-    title: DEFAULT_SEO_TITLE,
-    description:
-      "Find the latest Sarkari Result Jobs, Government Recruitment Notifications, Admit Cards, Exam Dates, Answer Keys, Results, and Online Forms for SSC, UPSC, Railway, Banking, Police, Defence, PSU, and State Government Exams.",
-    url: "/",
-    siteName: SITE_NAME,
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "SarkariGlobalResult logo and government jobs updates",
-      },
-    ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: DEFAULT_SEO_TITLE,
-    description:
-      "Track latest Sarkari jobs, admit card releases, exam notices, and results.",
-    images: ["/twitter-image"],
   },
 };
 

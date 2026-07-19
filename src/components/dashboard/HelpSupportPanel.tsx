@@ -50,7 +50,7 @@ export default function HelpSupportPanel() {
             </p>
             <p className="inline-flex items-center gap-1.5">
               <Mail size={13} aria-hidden="true" />
-              support@sarkariglobalresult.gov.in
+              support@sarkariglobalresult.com
             </p>
             <p className="inline-flex items-center gap-1.5">
               <MessageSquareText size={13} aria-hidden="true" />

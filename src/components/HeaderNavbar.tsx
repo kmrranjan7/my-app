@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type NavItem = {
   label: string;
@@ -19,9 +19,16 @@ const navItems: NavItem[] = [
   { label: "Answer Key", href: "/answer-key" },
 ];
 
+const moreItems: NavItem[] = [
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
 export default function HeaderNavbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   const hideHeader =
     pathname === "/login" ||
@@ -50,6 +57,38 @@ export default function HeaderNavbar() {
     };
   }, []);
 
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (moreMenuRef.current && !moreMenuRef.current.contains(target)) {
+        setIsMoreOpen(false);
+      }
+    };
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMoreOpen(false);
+      }
+    };
+
+    globalThis.addEventListener("mousedown", onPointerDown);
+    globalThis.addEventListener("keydown", onEscape);
+
+    return () => {
+      globalThis.removeEventListener("mousedown", onPointerDown);
+      globalThis.removeEventListener("keydown", onEscape);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsMoreOpen(false);
+  }, [pathname]);
+
   if (hideHeader) {
     return null;
   }
@@ -72,7 +111,7 @@ export default function HeaderNavbar() {
               <Link
                 href="/"
                 className="group inline-flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-2"
-                aria-label="SarkariGlobalResult home"
+                aria-label="Sarkari Global Result home"
               >
                 <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[11px] font-black text-white shadow-[0_10px_24px_rgba(37,99,235,0.35)]">
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_58%)]" />
@@ -80,7 +119,7 @@ export default function HeaderNavbar() {
                 </span>
                 <span className="flex min-w-0 flex-col leading-none">
                   <span className="truncate text-[15px] font-black tracking-tight text-slate-900 lg:text-[16px]">
-                    SarkariGlobalResult
+                    Sarkari Global Result
                   </span>
                   <span className="hidden truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
                     Government Career Desk
@@ -100,7 +139,7 @@ export default function HeaderNavbar() {
             </div>
 
             <nav
-              className="no-scrollbar hidden min-w-0 items-center justify-center gap-1 overflow-x-auto whitespace-nowrap lg:flex"
+              className="hidden min-w-0 items-center justify-center gap-1 overflow-visible whitespace-nowrap lg:flex lg:origin-center lg:scale-95 xl:scale-100"
               aria-label="Primary"
             >
               {navItems.map((item) => {
@@ -112,7 +151,7 @@ export default function HeaderNavbar() {
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={[
-                      "relative shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em] transition-all duration-300",
+                      "relative shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] transition-all duration-300",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45",
                       active
                         ? "border-[#2563EB]/25 bg-gradient-to-b from-[#eff6ff] to-[#dbeafe] text-[#1d4ed8] shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
@@ -123,6 +162,53 @@ export default function HeaderNavbar() {
                   </Link>
                 );
               })}
+
+              <div ref={moreMenuRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMoreOpen((prev) => !prev);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full border border-transparent px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] text-slate-700 transition-all duration-300 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-[0_9px_22px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45"
+                  aria-haspopup="menu"
+                  aria-expanded={isMoreOpen}
+                  aria-controls="header-more-menu"
+                  aria-label="More pages"
+                >
+                  <span>More</span>
+                  <span aria-hidden="true">▾</span>
+                </button>
+
+                <div
+                  id="header-more-menu"
+                  className={[
+                    "absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                    isMoreOpen
+                      ? "pointer-events-auto visible opacity-100"
+                      : "pointer-events-none invisible opacity-0",
+                  ].join(" ")}
+                >
+                  {moreItems.map((item) => {
+                    const active = isActive(item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={active ? "page" : undefined}
+                        className={[
+                          "block rounded-xl px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-200",
+                          active
+                            ? "bg-[#eff6ff] text-[#1d4ed8]"
+                            : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+                        ].join(" ")}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </nav>
 
           </div>

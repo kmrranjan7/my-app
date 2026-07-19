@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "About SarkariGlobalResult",
-  description: "Learn about SarkariGlobalResult, our mission, and how we publish reliable government jobs and exam updates.",
+  title: "About Sarkari Global Result",
+  description: "Learn about Sarkari Global Result, our mission, and how we publish reliable government jobs and exam updates.",
   keywords: [
     ...DEFAULT_SEO_KEYWORDS,
     "about sarkariglobalresult",
     "government jobs updates platform",
+    "about sarkari result website",
+    "trusted government jobs updates",
+    "sarkari exam updates portal",
   ],
   alternates: {
     canonical: "/about",
@@ -25,7 +28,7 @@ export default function AboutPage() {
 
         <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
           <p>
-            SarkariGlobalResult is dedicated to providing timely and reliable updates for government
+            Sarkari Global Result is dedicated to providing timely and reliable updates for government
             jobs, admit cards, results, answer keys, admissions, and exam-related notifications.
           </p>
           <p>

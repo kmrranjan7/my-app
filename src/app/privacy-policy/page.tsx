@@ -3,11 +3,14 @@ import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Read SarkariGlobalResult privacy policy and understand how user data is collected and handled.",
+  description: "Read Sarkari Global Result privacy policy and understand how user data is collected and handled.",
   keywords: [
     ...DEFAULT_SEO_KEYWORDS,
     "privacy policy",
     "sarkari result privacy",
+    "website privacy policy",
+    "user data policy",
+    "cookie and analytics policy",
   ],
   alternates: {
     canonical: "/privacy-policy",
@@ -26,7 +29,7 @@ export default function PrivacyPolicyPage() {
         <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
           <p>
             We value your privacy. This page describes what information may be collected when you
-            use SarkariGlobalResult and how that information is used.
+            use Sarkari Global Result and how that information is used.
           </p>
           <p>
             We may collect basic analytics and usage data to improve performance, content quality,

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import HomeJobsExplorer from "@/components/HomeJobsExplorer";
 import HomeLeftSidebar from "@/components/HomeLeftSidebar";
 import HomeRightSidebar from "@/components/HomeRightSidebar";
@@ -99,6 +100,37 @@ export default async function HomePage() {
 
         <div className="hidden lg:block">
           <HomeRightSidebar />
+        </div>
+      </section>
+
+      <section className="mx-auto mt-4 w-[min(1220px,96vw)] rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.08)] sm:p-5">
+        <h2 className="text-sm font-black uppercase tracking-[0.12em] text-blue-800">
+          Explore Top Sarkari Sections
+        </h2>
+        <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+          Jump directly to high-priority updates for latest government recruitment,
+          exam results, and admit card releases.
+        </p>
+
+        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+          <Link
+            href="/latest-job"
+            className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
+          >
+            Latest Govt Jobs 2026 Notifications and Apply Online Updates
+          </Link>
+          <Link
+            href="/result"
+            className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
+          >
+            Latest Sarkari Result, Merit List, and Selection List Announcements
+          </Link>
+          <Link
+            href="/admit-card"
+            className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
+          >
+            Download Admit Card and Government Exam Hall Ticket Updates
+          </Link>
         </div>
       </section>
     </main>

@@ -1,16 +1,16 @@
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
     ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://www.sarkariglobalresult.com";
+    : "https://sarkariglobalresult.com";
 
 export const NORMALIZED_SITE_URL = SITE_URL.endsWith("/")
   ? SITE_URL.slice(0, -1)
   : SITE_URL;
 
-export const SITE_NAME = "SarkariGlobalResult";
+export const SITE_NAME = "Sarkari Global Result";
 
 export const DEFAULT_SEO_TITLE =
-  "Sarkari Result Jobs, Admit Card, Exam, Results | SarkariGlobalResult";
+  "Sarkari Result Jobs, Admit Card, Exam, Results | Sarkari Global Result";
 
 export const DEFAULT_SEO_DESCRIPTION =
   "Get latest Sarkari result jobs, admit cards, exam dates, answer keys, and recruitment updates across India.";
@@ -161,12 +161,15 @@ export const BACKEND_SITEMAP_INDEX_URL =
 export const PAGE_SITEMAP_PATHS = [
   "/",
   "/about",
+  "/admission",
   "/admit-card",
+  "/answer-key",
   "/contact",
   "/disclaimer",
   "/latest-job",
   "/privacy-policy",
   "/result",
+  "/syllabus",
   "/terms",
 ] as const;
 

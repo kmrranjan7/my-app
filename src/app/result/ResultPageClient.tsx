@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { formatDate, getStatus, getStatusClasses } from "@/lib/dateStatus";
+import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 
 const PAGE_SIZE = 20;
+const RESULTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
-type ApiAdmitItem = Readonly<{
+type ApiResultItem = Readonly<{
   readonly applicationId?: string;
   readonly organization?: string;
   readonly postSlug?: string;
@@ -20,11 +21,11 @@ type ApiAdmitItem = Readonly<{
 
 type ApiResponse = Readonly<{
   readonly data?: {
-    readonly content?: ApiAdmitItem[];
+    readonly content?: ApiResultItem[];
   };
 }>;
 
-type AdmitRow = Readonly<{
+type ResultRow = Readonly<{
   readonly id: string;
   readonly title: string;
   readonly href: string;
@@ -36,20 +37,15 @@ type AdmitRow = Readonly<{
   readonly status: string;
 }>;
 
-function buildApiUrl(page: number): string {
-  return `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&page=${page}&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
-}
-
-
-function mapToRow(item: ApiAdmitItem, index: number, page: number): AdmitRow {
+function mapToRow(item: ApiResultItem, index: number, page: number): ResultRow {
   const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Admit Card").trim();
+  const title = (item.postTitle || "Untitled Result").trim();
 
   return {
-    id: item.applicationId?.trim() || slug || `admit-${page}-${index + 1}`,
+    id: item.applicationId?.trim() || slug || `result-${page}-${index + 1}`,
     title,
-    href: slug ? `/${slug}` : "/admit-card",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "ADMIT",
+    href: slug ? `/${slug}` : "/result",
+    badge: item.organization?.trim() || item.applicationId?.trim() || "RESULT",
     state: item.stateName?.trim() || "All India",
     seats:
       typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
@@ -61,9 +57,9 @@ function mapToRow(item: ApiAdmitItem, index: number, page: number): AdmitRow {
   };
 }
 
-async function fetchAdmitPage(page: number): Promise<AdmitRow[]> {
+async function fetchResultsPage(page: number): Promise<ResultRow[]> {
   try {
-    const response = await fetch(buildApiUrl(page), {
+    const response = await fetch(`${RESULTS_API_URL}&page=${page}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -80,99 +76,43 @@ async function fetchAdmitPage(page: number): Promise<AdmitRow[]> {
   }
 }
 
-export default function AdmitCardPageClient() {
-  const [rows, setRows] = useState<AdmitRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const isFetchingRef = useRef(false);
-  const nextPageRef = useRef(0);
-  const hasMoreRef = useRef(true);
-
-  const loadNextPage = useCallback(async () => {
-    if (isFetchingRef.current || !hasMoreRef.current) return;
-
-    isFetchingRef.current = true;
-    setIsLoading(true);
-    setLoadError(null);
-
-    const page = nextPageRef.current;
-    const newRows = await fetchAdmitPage(page);
-
-    if (newRows.length === 0) {
-      hasMoreRef.current = false;
-      setHasMore(false);
-    } else {
-      setRows((prev) => [...prev, ...newRows]);
-      nextPageRef.current = page + 1;
-      if (newRows.length < PAGE_SIZE) {
-        hasMoreRef.current = false;
-        setHasMore(false);
-      }
-    }
-
-    if (!isFirstLoadDone) {
-      setIsFirstLoadDone(true);
-      if (newRows.length === 0) {
-        setLoadError("No admit cards available right now.");
-      }
-    }
-
-    setIsLoading(false);
-    isFetchingRef.current = false;
-  }, [isFirstLoadDone]);
-
-  useEffect(() => {
-    void loadNextPage();
-  }, [loadNextPage]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting) {
-          void loadNextPage();
-        }
-      },
-      { rootMargin: "420px 0px" },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [loadNextPage]);
+export default function ResultPageClient() {
+  const {
+    items: rows,
+    hasMore,
+    isLoadingMore,
+    sentinelRef,
+  } = useInfinitePagedFeed<ResultRow>({
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchResultsPage,
+    getKey: (item) => `${item.href}|${item.title}|${item.startDate}|${item.lastDate}`,
+    rootMargin: "340px 0px",
+    loadFirstPageOnMount: true,
+  });
 
   return (
     <main className="w-full py-3 sm:py-4">
       <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
         <section className="rounded-2xl border border-indigo-100/90 bg-white/95 p-3 shadow-[0_12px_26px_rgba(15,23,42,0.07)] sm:p-4">
-          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Admit Card</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Results</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
-            Welcome to Sarkari Global Result Admit Card Updates
+            Welcome to Sarkari Global Result Latest Result Updates
           </h2>
           <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
-            Stay informed about admit card releases for major recruitment exams, entrance tests, and other government competitive exams across India.
-            If you are waiting for any official hall ticket or call letter, this page is updated regularly so you can track the latest release status without delay.
+            Stay informed about the latest result announcements for competitive exams, recruitment tests, and major government selections.
+            This page is updated frequently so you can quickly find fresh result releases and important merit list notifications.
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">Recruitment Exams</span>
-            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-700">Entrance Exams</span>
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Government Notifications</span>
+            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">Official Results</span>
+            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-700">Merit Lists</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Selection Updates</span>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
           </div>
         </section>
 
-        {rows.length === 0 && isFirstLoadDone ? (
+        {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-            <p className="text-base font-bold text-slate-800">No admit cards available right now</p>
+            <p className="text-base font-bold text-slate-800">No results available right now</p>
             <p className="mt-1 text-sm text-slate-500">Please verify API response and published records.</p>
           </section>
         ) : (
@@ -181,7 +121,7 @@ export default function AdmitCardPageClient() {
               <table className="min-w-full border-collapse text-left">
                 <thead className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 text-white">
                   <tr>
-                    <th className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Admit Card</th>
+                    <th className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Result</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Org</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">State</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
@@ -241,33 +181,31 @@ export default function AdmitCardPageClient() {
                 </article>
               ))}
             </div>
+
+            <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
+
+            {isLoadingMore ? (
+              <div className="border-t border-blue-100 bg-white/90 px-3 py-2 text-center text-[12px] font-semibold text-blue-700">
+                Loading 20 more results...
+              </div>
+            ) : null}
+
+            {!hasMore && rows.length > 0 ? (
+              <div className="border-t border-slate-200 bg-white/90 px-3 py-2 text-center text-[12px] font-semibold text-slate-600">
+                You have reached the end.
+              </div>
+            ) : null}
           </section>
         )}
-
-        {loadError && rows.length === 0 ? (
-          <p className="px-1 text-[12px] font-semibold text-rose-600">{loadError}</p>
-        ) : null}
-
-        {isLoading ? (
-          <div className="rounded-xl border border-blue-100 bg-white/90 px-3 py-2 text-center text-[12px] font-semibold text-blue-700">
-            Loading admit cards...
-          </div>
-        ) : null}
-
-        {!hasMore && rows.length > 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-center text-[12px] font-semibold text-slate-600">
-            You have reached the end.
-          </div>
-        ) : null}
 
         <section className="rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-3 shadow-[0_12px_32px_rgba(15,23,42,0.08)] sm:p-4">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-blue-800">Related Sections</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Link href="/latest-job" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
-              Latest Govt Jobs 2026 Notifications
+              Latest Govt Jobs Updates
             </Link>
-            <Link href="/result" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
-              Latest Sarkari Result and Selection List Updates
+            <Link href="/admit-card" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+              Latest Admit Card Download
             </Link>
           </div>
         </section>
@@ -277,17 +215,17 @@ export default function AdmitCardPageClient() {
             More Govt Posts by Category
           </h2>
           <p className="mt-1 text-[11px] text-slate-600">
-            Explore high-demand government recruitment categories and switch quickly between exam streams to track admit cards, applications, and result flow in one place.
+            Explore high-demand government recruitment categories with quick navigation for SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU updates.
           </p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
             <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-800">
-              Quick category shortcuts
+              Daily refreshed listings
             </p>
             <p className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-800">
-              Admit card journey support
+              Official notification focused
             </p>
             <p className="rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-800">
-              Better exam update coverage
+              Faster category discovery
             </p>
           </div>
           <ul className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
@@ -317,8 +255,6 @@ export default function AdmitCardPageClient() {
             </li>
           </ul>
         </section>
-
-        <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
       </section>
     </main>
   );

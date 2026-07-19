@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Velora Studio premium rich 2026 interface";
+export const alt = "Sarkari Global Result latest government jobs, admit cards, and results";
 export const size = {
   width: 1200,
-  height: 600,
+  height: 630,
 };
 
 export const contentType = "image/png";
@@ -16,45 +16,88 @@ export default function TwitterImage() {
           display: "flex",
           width: "100%",
           height: "100%",
-          padding: "64px",
+          padding: "56px",
           background:
-            "radial-gradient(72% 90% at 18% -10%, rgba(56,240,184,0.24), transparent), linear-gradient(155deg, #060b15 0%, #0a1220 57%, #070b14 100%)",
-          color: "#e7edf8",
-          justifyContent: "center",
-          alignItems: "center",
-          border: "1px solid rgba(255,255,255,0.1)",
+            "radial-gradient(72% 90% at 10% -10%, rgba(14,165,233,0.28), transparent), radial-gradient(56% 70% at 95% 0%, rgba(37,99,235,0.24), transparent), linear-gradient(150deg, #081023 0%, #0d1a34 58%, #0a1427 100%)",
+          color: "#e8eefc",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          border: "1px solid rgba(255,255,255,0.12)",
         }}
       >
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: 16,
-            textAlign: "center",
             alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              height: 44,
+              width: 44,
+              borderRadius: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#ffffff",
+              background: "linear-gradient(160deg, #2563eb 0%, #06b6d4 100%)",
+              boxShadow: "0 12px 24px rgba(37,99,235,0.34)",
+            }}
+          >
+            S
+          </div>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 26,
+              letterSpacing: "0.14em",
+              color: "#7dd3fc",
+              textTransform: "uppercase",
+            }}
+          >
+            Sarkari Global Result
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
           }}
         >
           <p
             style={{
               margin: 0,
-              fontSize: 24,
-              letterSpacing: "0.18em",
-              color: "#38f0b8",
-              textTransform: "uppercase",
+              fontSize: 56,
+              maxWidth: "18ch",
+              fontWeight: 700,
+              lineHeight: 1.04,
             }}
           >
-            Velora Studio
+            Latest Govt Jobs, Admit Cards, and Results.
           </p>
           <p
             style={{
               margin: 0,
-              fontSize: 58,
-              maxWidth: "19ch",
-              fontWeight: 700,
-              lineHeight: 1.05,
+              fontSize: 28,
+              color: "#a7b7d8",
             }}
           >
-            Premium digital products engineered to company standards.
+            Trusted updates from official notifications.
+          </p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 22,
+              color: "#c6d4ef",
+              letterSpacing: "0.04em",
+            }}
+          >
+            sarkariglobalresult.com
           </p>
         </div>
       </div>

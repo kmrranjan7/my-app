@@ -3,11 +3,14 @@ import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
-  description: "Important disclaimer about SarkariGlobalResult content and verification from official sources.",
+  description: "Important disclaimer about Sarkari Global Result content and verification from official sources.",
   keywords: [
     ...DEFAULT_SEO_KEYWORDS,
     "sarkari result disclaimer",
     "government job information disclaimer",
+    "information accuracy disclaimer",
+    "verify from official website",
+    "exam notification disclaimer",
   ],
   alternates: {
     canonical: "/disclaimer",
@@ -25,7 +28,7 @@ export default function DisclaimerPage() {
 
         <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
           <p>
-            SarkariGlobalResult is an informational platform and is not an official government
+            Sarkari Global Result is an informational platform and is not an official government
             website.
           </p>
           <p>

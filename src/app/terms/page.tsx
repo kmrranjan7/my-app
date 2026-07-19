@@ -3,11 +3,14 @@ import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description: "Read terms and conditions for using SarkariGlobalResult services and content.",
+  description: "Read terms and conditions for using Sarkari Global Result services and content.",
   keywords: [
     ...DEFAULT_SEO_KEYWORDS,
     "terms and conditions",
     "sarkari result terms",
+    "website terms of use",
+    "government jobs content terms",
+    "user agreement",
   ],
   alternates: {
     canonical: "/terms",
@@ -25,7 +28,7 @@ export default function TermsPage() {
 
         <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
           <p>
-            By accessing and using SarkariGlobalResult, you agree to comply with these terms and
+            By accessing and using Sarkari Global Result, you agree to comply with these terms and
             applicable laws.
           </p>
           <p>

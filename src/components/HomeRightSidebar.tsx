@@ -1,11 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { useCallback } from "react";
+import { type RefObject } from "react";
 import { type RightSideItem } from "@/data/sidebarContent";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 
+const PAGE_SIZE = 10;
 const ADMIT_CARDS_API_URL =
-  `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 const RESULTS_API_URL =
-  `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
 type PublicJobsApiItem = Readonly<{
   readonly createdAt?: string;
@@ -144,9 +150,9 @@ function mapAdmitApiItem(item: PublicJobsApiItem): RightSideItem {
   };
 }
 
-async function fetchAdmitCards(): Promise<RightSideItem[]> {
+async function fetchAdmitCardsPage(page: number): Promise<RightSideItem[]> {
   try {
-    const response = await fetch(ADMIT_CARDS_API_URL, {
+    const response = await fetch(`${ADMIT_CARDS_API_URL}&page=${page}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -175,9 +181,9 @@ function mapResultApiItem(item: PublicJobsApiItem): RightSideItem {
   };
 }
 
-async function fetchResults(): Promise<RightSideItem[]> {
+async function fetchResultsPage(page: number): Promise<RightSideItem[]> {
   try {
-    const response = await fetch(RESULTS_API_URL, {
+    const response = await fetch(`${RESULTS_API_URL}&page=${page}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -194,10 +200,24 @@ async function fetchResults(): Promise<RightSideItem[]> {
   }
 }
 
-function SidebarCard({ title, badge, rows }: Readonly<{
+function SidebarCard({
+  title,
+  badge,
+  rows,
+  hasMore,
+  isLoadingMore,
+  sentinelRef,
+  loadingLabel,
+  endLabel,
+}: Readonly<{
   title: string;
   badge: string;
-  rows: RightSideItem[];
+  rows: readonly RightSideItem[];
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  sentinelRef: RefObject<HTMLDivElement | null>;
+  loadingLabel: string;
+  endLabel: string;
 }>) {
   return (
     <section className="overflow-hidden rounded-xl border-2 border-indigo-200/90 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.1)] ring-1 ring-indigo-100/80">
@@ -249,20 +269,78 @@ function SidebarCard({ title, badge, rows }: Readonly<{
               </article>
             </li>
           ))}
+
+          <div ref={sentinelRef} className="h-1" aria-hidden="true" />
+
+          {isLoadingMore ? (
+            <li className="rounded-md border border-indigo-100 bg-indigo-50/70 px-2 py-1 text-center text-[9px] font-semibold text-indigo-700">
+              {loadingLabel}
+            </li>
+          ) : null}
+
+          {!hasMore && rows.length > 0 ? (
+            <li className="text-center text-[8px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+              {endLabel}
+            </li>
+          ) : null}
         </ul>
       </div>
     </section>
   );
 }
 
-export default async function HomeRightSidebar() {
-  const admitRows = await fetchAdmitCards();
-  const resultRows = await fetchResults();
+export default function HomeRightSidebar() {
+  const {
+    items: admitRows,
+    hasMore: hasMoreAdmit,
+    isLoadingMore: isLoadingAdmit,
+    sentinelRef: admitSentinelRef,
+  } = useInfinitePagedFeed<RightSideItem>({
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchAdmitCardsPage,
+    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    rootMargin: "240px 0px",
+    loadFirstPageOnMount: true,
+  });
+
+  const {
+    items: resultRows,
+    hasMore: hasMoreResult,
+    isLoadingMore: isLoadingResult,
+    sentinelRef: resultSentinelRef,
+  } = useInfinitePagedFeed<RightSideItem>({
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchResultsPage,
+    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    rootMargin: "240px 0px",
+    loadFirstPageOnMount: true,
+  });
+
+  const admitRowsSafe = useCallback(() => admitRows, [admitRows]);
+  const resultRowsSafe = useCallback(() => resultRows, [resultRows]);
 
   return (
     <aside className="w-full space-y-2.5 max-md:max-w-none md:ml-auto md:max-w-[272px] lg:sticky lg:self-start">
-      <SidebarCard title="Admit Card" badge="New" rows={admitRows} />
-      <SidebarCard title="Result" badge="Hot" rows={resultRows} />
+      <SidebarCard
+        title="Admit Card"
+        badge="New"
+        rows={admitRowsSafe()}
+        hasMore={hasMoreAdmit}
+        isLoadingMore={isLoadingAdmit}
+        sentinelRef={admitSentinelRef}
+        loadingLabel="Loading 20 more admit cards..."
+        endLabel="Latest admit cards loaded."
+      />
+      <SidebarCard
+        title="Result"
+        badge="Hot"
+        rows={resultRowsSafe()}
+        hasMore={hasMoreResult}
+        isLoadingMore={isLoadingResult}
+        sentinelRef={resultSentinelRef}
+        loadingLabel="Loading 20 more results..."
+        endLabel="Latest results loaded."
+      />
     </aside>
   );
 }

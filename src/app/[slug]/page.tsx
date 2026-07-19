@@ -23,6 +23,7 @@ type ApiPostItem = Readonly<{
 	postTitle?: string;
 	postSlug?: string;
 	imageUrl?: string;
+	imageUrls?: string;
 	contentHtml?: string;
 	department?: string;
 	organization?: string;
@@ -136,7 +137,12 @@ function buildFaqJsonLd(rawFaqSchemaJson: string | undefined): Record<string, un
 }
 
 function getPrimaryImageUrl(item: ApiPostItem): string | null {
-	const raw = toText(item.imageUrl);
+	const firstFromImageUrls = toText(item.imageUrls)
+		.split(",")
+		.map((value) => value.trim())
+		.find((value) => value.length > 0);
+
+	const raw = firstFromImageUrls || toText(item.imageUrl);
 	if (!raw) {
 		return null;
 	}
@@ -149,7 +155,11 @@ function getPrimaryImageUrl(item: ApiPostItem): string | null {
 		return `${normalizedSiteUrl}${raw}`;
 	}
 
-	return `${normalizedSiteUrl}/${raw}`;
+	if (raw.toLowerCase().startsWith("uploads/")) {
+		return `${normalizedSiteUrl}/${raw}`;
+	}
+
+	return `${normalizedSiteUrl}/uploads/${raw}`;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -183,7 +193,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	return {
 		title,
 		description,
+		applicationName: "Sarkari Global Result",
 		keywords: Array.from(keywordSet),
+		creator: "Sarkari Global Result",
+		publisher: "Sarkari Global Result",
 		alternates: {
 			canonical: `/${slug}`,
 		},
@@ -191,7 +204,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 			title,
 			description,
 			url: canonicalUrl,
-			siteName: "SarkariGlobalResult",
+			siteName: "Sarkari Global Result",
 			type: "article",
 			images: imageUrl
 				? [
@@ -248,11 +261,11 @@ export default async function SlugPage({ params }: PageProps) {
 		mainEntityOfPage: canonicalUrl,
 		author: {
 			"@type": "Organization",
-			name: "SarkariGlobalResult",
+			name: "Sarkari Global Result",
 		},
 		publisher: {
 			"@type": "Organization",
-			name: "SarkariGlobalResult",
+			name: "Sarkari Global Result",
 			logo: {
 				"@type": "ImageObject",
 				url: `${normalizedSiteUrl}/favicon.ico`,

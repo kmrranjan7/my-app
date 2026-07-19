@@ -14,7 +14,87 @@ import {
   Heart,
 } from "lucide-react";
 import type { LatestJob } from "@/data/sidebarContent";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { parseDateSafe, toDateOnly } from "@/lib/dateStatus";
+import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import { SITE_URL } from "@/lib/seo";
+
+const PAGE_SIZE = 20;
+
+type JobsApiContentItem = Readonly<{
+  readonly applicationId?: string;
+  readonly createdAt?: string;
+  readonly organization?: string;
+  readonly postSlug?: string;
+  readonly postTitle?: string;
+  readonly startDate?: string;
+  readonly endDate?: string;
+  readonly stateName?: string;
+  readonly vacancies?: number;
+}>;
+
+type JobsApiResponse = Readonly<{
+  readonly data?: {
+    readonly content?: JobsApiContentItem[];
+  };
+}>;
+
+const HOME_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+
+function toRelativeTime(value?: string): string {
+  if (!value) return "Recently posted";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently posted";
+
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs <= 0) return "Just now";
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
+  return {
+    badge: item.organization || item.applicationId || "JOB",
+    postName: item.postTitle || "Untitled Job",
+    qualification: "Graduate",
+    seats:
+      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
+        ? item.vacancies.toLocaleString("en-IN")
+        : "N/A",
+    state: item.stateName || "All India",
+    startDate: item.startDate || "",
+    lastDate: item.endDate || "",
+    postedTime: toRelativeTime(item.createdAt),
+    href: item.postSlug || "",
+  };
+}
+
+async function fetchJobsPage(page: number): Promise<LatestJob[]> {
+  try {
+    const response = await fetch(`${HOME_JOBS_API_URL}&page=${page}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as JobsApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapApiJobToExplorerJob);
+  } catch {
+    return [];
+  }
+}
 
 const qualificationOptions = [
   "Below 10th Pass",
@@ -110,62 +190,6 @@ function getOrgBadge(postName: string) {
   return { label, style };
 }
 
-function parseDateSafe(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  if (trimmed.toLowerCase() === "null") return null;
-
-  // JSON API format: yyyy-mm-dd
-  const yyyyMmDd = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-  const ymdMatch = yyyyMmDd.exec(trimmed);
-  if (ymdMatch) {
-    const year = Number.parseInt(ymdMatch[1], 10);
-    const month = Number.parseInt(ymdMatch[2], 10);
-    const day = Number.parseInt(ymdMatch[3], 10);
-    const normalized = new Date(year, month - 1, day);
-
-    if (
-      Number.isNaN(normalized.getTime()) ||
-      normalized.getFullYear() !== year ||
-      normalized.getMonth() !== month - 1 ||
-      normalized.getDate() !== day
-    ) {
-      return null;
-    }
-
-    return normalized;
-  }
-
-  // Support dd-mm-yyyy and dd/mm/yyyy if data source changes format.
-  const ddMmYyyy = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
-  const dmyMatch = ddMmYyyy.exec(trimmed);
-  if (dmyMatch) {
-    const day = Number.parseInt(dmyMatch[1], 10);
-    const month = Number.parseInt(dmyMatch[2], 10);
-    const year = Number.parseInt(dmyMatch[3], 10);
-    const normalized = new Date(year, month - 1, day);
-
-    if (
-      Number.isNaN(normalized.getTime()) ||
-      normalized.getFullYear() !== year ||
-      normalized.getMonth() !== month - 1 ||
-      normalized.getDate() !== day
-    ) {
-      return null;
-    }
-
-    return normalized;
-  }
-
-  const parsed = new Date(trimmed);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed;
-  }
-
-  return null;
-}
-
 function formatDateDdMmYyyy(value: string) {
   const parsed = parseDateSafe(value);
   if (!parsed) return value;
@@ -174,10 +198,6 @@ function formatDateDdMmYyyy(value: string) {
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
   const year = parsed.getFullYear();
   return `${day}-${month}-${year}`;
-}
-
-function getDateOnly(value: Date): Date {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
 function getDaysLeftFromLastDate(startDate: string, lastDate: string) {
@@ -189,8 +209,8 @@ function getDaysLeftFromLastDate(startDate: string, lastDate: string) {
     return null;
   }
 
-  const startDateOnly = getDateOnly(start);
-  const endDateOnly = getDateOnly(end);
+  const startDateOnly = toDateOnly(start);
+  const endDateOnly = toDateOnly(end);
 
   // Invalid payload guard.
   if (startDateOnly.getTime() > endDateOnly.getTime()) {
@@ -198,7 +218,7 @@ function getDaysLeftFromLastDate(startDate: string, lastDate: string) {
   }
 
   // After lastDate passes, card should show Closed.
-  const today = getDateOnly(new Date());
+  const today = toDateOnly(new Date());
   if (today.getTime() > endDateOnly.getTime()) {
     return -1;
   }
@@ -255,9 +275,20 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
   const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
   const [copiedShareKey, setCopiedShareKey] = useState<string | null>(null);
+  const {
+    items: allJobs,
+    hasMore,
+    isLoadingMore,
+    sentinelRef,
+  } = useInfinitePagedFeed<LatestJob>({
+    initialItems: jobs,
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchJobsPage,
+    getKey: (job) => `${job.href}|${job.postName}|${job.startDate}|${job.lastDate}`,
+  });
 
   const indexedJobs = useMemo(() => {
-    return jobs.map((job) => {
+    return allJobs.map((job) => {
       const searchCorpus = [
         job.postName,
         job.badge,
@@ -277,11 +308,11 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         normalizedSearchCorpus: searchCorpus.replace(/[\s,.-]/g, ""),
       };
     });
-  }, [jobs]);
+  }, [allJobs]);
 
   const badgeOptions = useMemo(() => {
-    return Array.from(new Set(jobs.map((job) => job.badge))).sort((a, b) => a.localeCompare(b));
-  }, [jobs]);
+    return Array.from(new Set(allJobs.map((job) => job.badge))).sort((a, b) => a.localeCompare(b));
+  }, [allJobs]);
 
   const filteredJobs = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -290,7 +321,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     const hasDirectFilters = badgeFilter !== "all" || stateFilter !== "all" || qualificationFilter !== "all";
 
     if (!hasSearch && !hasDirectFilters && !closingWeekOnly) {
-      return jobs;
+      return allJobs;
     }
 
     return indexedJobs
@@ -314,14 +345,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         return true;
       })
       .map(({ job }) => job);
-  }, [jobs, indexedJobs, searchTerm, badgeFilter, stateFilter, qualificationFilter, closingWeekOnly]);
+  }, [allJobs, indexedJobs, searchTerm, badgeFilter, stateFilter, qualificationFilter, closingWeekOnly]);
 
   const closingThisWeekCount = useMemo(() => {
-    return jobs.filter((job) => {
+    return allJobs.filter((job) => {
       const effectiveDaysLeft = getDaysLeftFromLastDate(job.startDate, job.lastDate);
       return effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
     }).length;
-  }, [jobs]);
+  }, [allJobs]);
 
   const hasActiveFilters =
     searchTerm.length > 0 ||
@@ -616,6 +647,20 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               <div className="col-span-full rounded-xl border border-dashed border-cyan-200 bg-cyan-50/40 px-4 py-8 text-center">
                 <p className="text-sm font-semibold text-slate-700">No jobs found for selected filters</p>
                 <p className="mt-1 text-xs text-slate-500">Try clearing filters or changing search keywords.</p>
+              </div>
+            )}
+
+            <div ref={sentinelRef} className="col-span-full h-2" aria-hidden="true" />
+
+            {isLoadingMore && (
+              <div className="col-span-full rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-center text-[11px] font-semibold text-cyan-800">
+                Loading 20 more jobs...
+              </div>
+            )}
+
+            {!hasMore && allJobs.length > 0 && (
+              <div className="col-span-full text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                You have reached the latest available jobs.
               </div>
             )}
           </div>

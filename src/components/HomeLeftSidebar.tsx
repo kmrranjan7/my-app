@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useCallback } from "react";
 import { type LatestUpdate, type UpcomingExam } from "@/data/sidebarContent";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 
+const PAGE_SIZE = 10;
 const LATEST_UPDATES_API_URL =
-  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 const EXAMS_API_URL =
-  `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&page=0&size=20&sortBy=createdAt&sortDir=desc`;
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
 type PublicJobsApiItem = Readonly<{
   readonly createdAt?: string;
@@ -93,9 +98,9 @@ function mapLatestUpdateApiItem(item: PublicJobsApiItem): LatestUpdate {
   };
 }
 
-async function fetchLatestUpdates(): Promise<LatestUpdate[]> {
+async function fetchLatestUpdatesPage(page: number): Promise<LatestUpdate[]> {
   try {
-    const response = await fetch(LATEST_UPDATES_API_URL, {
+    const response = await fetch(`${LATEST_UPDATES_API_URL}&page=${page}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -138,9 +143,9 @@ function mapExamApiItem(item: PublicJobsApiItem): UpcomingExam {
   };
 }
 
-async function fetchUpcomingExams(): Promise<UpcomingExam[]> {
+async function fetchUpcomingExamsPage(page: number): Promise<UpcomingExam[]> {
   try {
-    const response = await fetch(EXAMS_API_URL, {
+    const response = await fetch(`${EXAMS_API_URL}&page=${page}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -260,9 +265,35 @@ function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?
   );
 }
 
-export default async function HomeLeftSidebar() {
-  const updateRows = await fetchLatestUpdates();
-  const examRows = await fetchUpcomingExams();
+export default function HomeLeftSidebar() {
+  const {
+    items: updateRows,
+    hasMore: hasMoreUpdates,
+    isLoadingMore: isLoadingUpdates,
+    sentinelRef: updatesSentinelRef,
+  } = useInfinitePagedFeed<LatestUpdate>({
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchLatestUpdatesPage,
+    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    rootMargin: "240px 0px",
+    loadFirstPageOnMount: true,
+  });
+
+  const {
+    items: examRows,
+    hasMore: hasMoreExams,
+    isLoadingMore: isLoadingExams,
+    sentinelRef: examsSentinelRef,
+  } = useInfinitePagedFeed<UpcomingExam>({
+    pageSize: PAGE_SIZE,
+    fetchPage: fetchUpcomingExamsPage,
+    getKey: (item) => `${item.href}|${item.title}|${item.date}`,
+    rootMargin: "240px 0px",
+    loadFirstPageOnMount: true,
+  });
+
+  const updatesRowsSafe = useCallback(() => updateRows, [updateRows]);
+  const examsRowsSafe = useCallback(() => examRows, [examRows]);
 
   return (
     <aside className="w-full space-y-2.5 max-md:max-w-none md:max-w-[272px] lg:sticky lg:self-start">
@@ -285,7 +316,7 @@ export default async function HomeLeftSidebar() {
 
         <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
           <ul className="space-y-1" aria-label="Latest updates list">
-            {updateRows.map((item, index) => (
+            {updatesRowsSafe().map((item, index) => (
               <li key={`${item.title}-${index}`}>
                 <article className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300">
                   <div className="flex items-start justify-between gap-2">
@@ -322,6 +353,20 @@ export default async function HomeLeftSidebar() {
                 </article>
               </li>
             ))}
+
+            <div ref={updatesSentinelRef} className="h-1" aria-hidden="true" />
+
+            {isLoadingUpdates ? (
+              <li className="rounded-md border border-indigo-100 bg-indigo-50/70 px-2 py-1 text-center text-[9px] font-semibold text-indigo-700">
+                Loading 20 more updates...
+              </li>
+            ) : null}
+
+            {!hasMoreUpdates && updateRows.length > 0 ? (
+              <li className="text-center text-[8px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                Latest updates loaded.
+              </li>
+            ) : null}
           </ul>
         </div>
       </section>
@@ -345,7 +390,7 @@ export default async function HomeLeftSidebar() {
 
         <div className="max-h-[280px] overflow-y-auto bg-gradient-to-b from-white to-indigo-50/20 p-1.5 [content-visibility:auto] [contain-intrinsic-size:360px] [scrollbar-color:#a5b4fc_transparent] [scrollbar-width:thin]">
           <ul className="space-y-1" aria-label="Upcoming exams list">
-            {examRows.map((item, index) => (
+            {examsRowsSafe().map((item, index) => (
               <li key={`${item.title}-${index}`}>
                 <article className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300">
                   <div className="flex items-start justify-between gap-2">
@@ -375,6 +420,20 @@ export default async function HomeLeftSidebar() {
                 </article>
               </li>
             ))}
+
+            <div ref={examsSentinelRef} className="h-1" aria-hidden="true" />
+
+            {isLoadingExams ? (
+              <li className="rounded-md border border-indigo-100 bg-indigo-50/70 px-2 py-1 text-center text-[9px] font-semibold text-indigo-700">
+                Loading 20 more exams...
+              </li>
+            ) : null}
+
+            {!hasMoreExams && examRows.length > 0 ? (
+              <li className="text-center text-[8px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                Latest exams loaded.
+              </li>
+            ) : null}
           </ul>
         </div>
       </section>
