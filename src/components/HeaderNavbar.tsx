@@ -3,11 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Bell, CircleDot, X } from "lucide-react";
 
 type NavItem = {
   label: string;
   href: string;
 };
+
+type SavedJobRecord = Readonly<{
+  key: string;
+  title: string;
+  href: string;
+  badge?: string;
+  dateLabel?: string;
+  savedAt: number;
+}>;
+
+const SAVED_JOBS_STORAGE_KEY = "saved-jobs-records";
 
 const navItems: NavItem[] = [
   { label: "Home", href: "/" },
@@ -28,7 +40,50 @@ export default function HeaderNavbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [savedJobsCount, setSavedJobsCount] = useState(0);
+  const [savedJobs, setSavedJobs] = useState<SavedJobRecord[]>([]);
+  const [isBellOpen, setIsBellOpen] = useState(false);
+  const [isSavedBellRinging, setIsSavedBellRinging] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
+  const bellMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const handleClearAllSavedJobs = () => {
+    if (typeof globalThis === "undefined") {
+      return;
+    }
+
+    globalThis.localStorage?.setItem(SAVED_JOBS_STORAGE_KEY, JSON.stringify([]));
+    globalThis.localStorage?.setItem("saved-jobs-count", "0");
+
+    setSavedJobs([]);
+    setSavedJobsCount(0);
+
+    globalThis.dispatchEvent(
+      new CustomEvent("saved-jobs-count-changed", {
+        detail: { count: 0, increased: false, records: [] },
+      }),
+    );
+  };
+
+  const handleDeleteSavedJob = (jobKey: string) => {
+    if (typeof globalThis === "undefined") {
+      return;
+    }
+
+    const nextRecords = savedJobs.filter((job) => job.key !== jobKey);
+
+    globalThis.localStorage?.setItem(SAVED_JOBS_STORAGE_KEY, JSON.stringify(nextRecords));
+    globalThis.localStorage?.setItem("saved-jobs-count", String(nextRecords.length));
+
+    setSavedJobs(nextRecords);
+    setSavedJobsCount(nextRecords.length);
+
+    globalThis.dispatchEvent(
+      new CustomEvent("saved-jobs-count-changed", {
+        detail: { count: nextRecords.length, increased: false, records: nextRecords },
+      }),
+    );
+  };
 
   const hideHeader =
     pathname === "/login" ||
@@ -68,11 +123,16 @@ export default function HeaderNavbar() {
       if (moreMenuRef.current && !moreMenuRef.current.contains(target)) {
         setIsMoreOpen(false);
       }
+
+      if (bellMenuRef.current && !bellMenuRef.current.contains(target)) {
+        setIsBellOpen(false);
+      }
     };
 
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMoreOpen(false);
+        setIsBellOpen(false);
       }
     };
 
@@ -87,7 +147,90 @@ export default function HeaderNavbar() {
 
   useEffect(() => {
     setIsMoreOpen(false);
+    setIsBellOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const readSavedCount = () => {
+      const rawCount = globalThis.localStorage?.getItem("saved-jobs-count");
+      const parsed = Number(rawCount ?? 0);
+      setSavedJobsCount(Number.isFinite(parsed) && parsed >= 0 ? parsed : 0);
+    };
+
+    const readSavedJobs = () => {
+      const raw = globalThis.localStorage?.getItem(SAVED_JOBS_STORAGE_KEY);
+
+      if (!raw) {
+        setSavedJobs([]);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw) as SavedJobRecord[];
+        const safeRecords = Array.isArray(parsed)
+          ? parsed.filter((record) => {
+              return (
+                typeof record?.key === "string" &&
+                typeof record?.title === "string" &&
+                typeof record?.href === "string" &&
+                (record?.badge === undefined || typeof record?.badge === "string") &&
+                (record?.dateLabel === undefined || typeof record?.dateLabel === "string") &&
+                typeof record?.savedAt === "number"
+              );
+            })
+          : [];
+
+        setSavedJobs(safeRecords);
+      } catch {
+        setSavedJobs([]);
+      }
+    };
+
+    const onSavedCountChanged = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        count?: number;
+        increased?: boolean;
+        records?: SavedJobRecord[];
+      }>;
+      const nextCount = Number(customEvent.detail?.count ?? 0);
+
+      setSavedJobsCount(Number.isFinite(nextCount) && nextCount >= 0 ? nextCount : 0);
+
+      const records = customEvent.detail?.records;
+      if (Array.isArray(records)) {
+        setSavedJobs(records);
+      } else {
+        readSavedJobs();
+      }
+
+      if (customEvent.detail?.increased) {
+        setIsSavedBellRinging(true);
+        globalThis.setTimeout(() => {
+          setIsSavedBellRinging(false);
+        }, 850);
+      }
+    };
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "saved-jobs-count") {
+        readSavedCount();
+      }
+
+      if (event.key === SAVED_JOBS_STORAGE_KEY) {
+        readSavedJobs();
+      }
+    };
+
+    readSavedCount();
+    readSavedJobs();
+    globalThis.addEventListener("saved-jobs-count-changed", onSavedCountChanged as EventListener);
+    globalThis.addEventListener("storage", onStorage);
+
+    return () => {
+      globalThis.removeEventListener("saved-jobs-count-changed", onSavedCountChanged as EventListener);
+      globalThis.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
   if (hideHeader) {
     return null;
@@ -106,7 +249,7 @@ export default function HeaderNavbar() {
         <div className="mx-auto w-[min(1240px,96vw)] px-2 sm:px-3 lg:px-4">
           <div className="pointer-events-none hidden h-[2px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
 
-          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[62px] lg:grid-cols-[auto_1fr] lg:gap-4">
+          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[62px] lg:grid-cols-[auto_1fr_auto] lg:gap-4">
             <div className="inline-flex min-w-0 items-center gap-1.5 lg:gap-2">
               <Link
                 href="/"
@@ -139,7 +282,7 @@ export default function HeaderNavbar() {
             </div>
 
             <nav
-              className="hidden min-w-0 items-center justify-center gap-1 overflow-visible whitespace-nowrap lg:flex lg:origin-center lg:scale-95 xl:scale-100"
+              className="hidden min-w-0 items-center justify-end gap-1 overflow-visible whitespace-nowrap lg:flex lg:origin-center lg:scale-95 xl:scale-100"
               aria-label="Primary"
             >
               {navItems.map((item) => {
@@ -209,7 +352,110 @@ export default function HeaderNavbar() {
                   })}
                 </div>
               </div>
+
             </nav>
+
+            <div ref={bellMenuRef} className="relative ml-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBellOpen((prev) => !prev);
+                }}
+                className={`relative inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-2 text-sky-700 transition-transform hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 ${
+                  isSavedBellRinging ? "animate-bounce" : ""
+                }`}
+                aria-live="polite"
+                aria-label={`Saved jobs ${savedJobsCount}`}
+                title={`Saved jobs: ${savedJobsCount}`}
+                aria-haspopup="menu"
+                aria-expanded={isBellOpen}
+                aria-controls="saved-jobs-menu"
+              >
+                <Bell className="size-4" aria-hidden="true" />
+                {savedJobsCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex min-w-[16px] items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-4 text-white">
+                    {savedJobsCount}
+                  </span>
+                ) : null}
+              </button>
+
+              <div
+                id="saved-jobs-menu"
+                className={[
+                  "absolute right-0 top-[calc(100%+8px)] z-20 w-[290px] rounded-2xl border border-indigo-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                  isBellOpen
+                    ? "pointer-events-auto visible opacity-100"
+                    : "pointer-events-none invisible opacity-0",
+                ].join(" ")}
+                role="menu"
+                aria-label="Saved job notifications"
+              >
+                <div className="mb-1 flex items-center justify-between gap-2 px-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-700">
+                    Saved Jobs ({savedJobs.length})
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleClearAllSavedJobs}
+                    className="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                  >
+                    Clear All
+                  </button>
+                </div>
+
+                <div className="max-h-72 space-y-1 overflow-y-auto pr-0.5">
+                  {savedJobs.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-[11px] text-slate-500">
+                      No saved jobs yet.
+                    </p>
+                  ) : (
+                    savedJobs.map((job) => (
+                      <article
+                        key={job.key}
+                        className="group rounded-xl border border-indigo-100/80 bg-white px-1.5 py-1.5 transition-colors hover:border-indigo-200 hover:bg-indigo-50/40"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 items-start gap-1.5">
+                            <span className="mt-0.5 inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                              <CircleDot className="h-2.5 w-2.5" aria-hidden="true" />
+                            </span>
+                            <div className="min-w-0">
+                              <Link
+                                href={job.href}
+                                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+                              >
+                                <p className="line-clamp-1 text-[11px] font-semibold leading-4 text-slate-800 group-hover:text-indigo-800">
+                                  {job.title}
+                                </p>
+                                <p className="text-[10px] leading-4 text-slate-500">
+                                  {job.dateLabel || new Date(job.savedAt).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  })}
+                                </p>
+                              </Link>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleDeleteSavedJob(job.key);
+                            }}
+                            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                            aria-label={`Delete saved job ${job.title}`}
+                            title="Delete"
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>

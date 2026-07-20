@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
   Filter,
@@ -301,6 +301,46 @@ type HomeJobsExplorerProps = Readonly<{
   jobs: LatestJob[];
 }>;
 
+type SavedJobRecord = Readonly<{
+  key: string;
+  title: string;
+  href: string;
+  badge?: string;
+  dateLabel?: string;
+  savedAt: number;
+}>;
+
+const SAVED_JOBS_STORAGE_KEY = "saved-jobs-records";
+
+function getSavedJobKeys(records: readonly SavedJobRecord[]): string[] {
+  return records.map((record) => record.key);
+}
+
+function areStringArraysEqual(current: readonly string[], next: readonly string[]): boolean {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  for (let i = 0; i < current.length; i += 1) {
+    if (current[i] !== next[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function formatSavedJobDateLabel(job: LatestJob) {
+  const primaryDate = parseDateSafe(job.lastDate) ?? parseDateSafe(job.startDate);
+  const effectiveDate = primaryDate ?? new Date();
+
+  return effectiveDate.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [badgeFilter, setBadgeFilter] = useState("all");
@@ -308,7 +348,10 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
   const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
+  const [savedJobRecords, setSavedJobRecords] = useState<SavedJobRecord[]>([]);
   const [copiedShareKey, setCopiedShareKey] = useState<string | null>(null);
+  const previousSavedCountRef = useRef(0);
+  const hasHydratedSavedJobsRef = useRef(false);
   const {
     items,
     hasMore,
@@ -473,7 +516,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     }
   };
 
-  const toggleSavedJob = (jobKey: string) => {
+  const toggleSavedJob = (jobKey: string, job: LatestJob) => {
     setSavedJobKeys((previous) => {
       if (previous.includes(jobKey)) {
         return previous.filter((key) => key !== jobKey);
@@ -481,7 +524,133 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       return [...previous, jobKey];
     });
+
+    setSavedJobRecords((previous) => {
+      const exists = previous.some((record) => record.key === jobKey);
+      if (exists) {
+        return previous.filter((record) => record.key !== jobKey);
+      }
+
+      const href = job.href.startsWith("/") ? job.href : `/${job.href}`;
+      return [
+        {
+          key: jobKey,
+          title: job.postName,
+          href,
+          badge: job.badge,
+          dateLabel: formatSavedJobDateLabel(job),
+          savedAt: Date.now(),
+        },
+        ...previous,
+      ];
+    });
   };
+
+  useEffect(() => {
+    if (typeof globalThis === "undefined" || hasHydratedSavedJobsRef.current) {
+      return;
+    }
+
+    const raw = globalThis.localStorage?.getItem(SAVED_JOBS_STORAGE_KEY);
+
+    if (!raw) {
+      previousSavedCountRef.current = 0;
+      hasHydratedSavedJobsRef.current = true;
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as SavedJobRecord[];
+      const safeRecords = Array.isArray(parsed)
+        ? parsed.filter((record) => {
+            return (
+              typeof record?.key === "string" &&
+              typeof record?.title === "string" &&
+              typeof record?.href === "string" &&
+              (record?.badge === undefined || typeof record?.badge === "string") &&
+              (record?.dateLabel === undefined || typeof record?.dateLabel === "string") &&
+              typeof record?.savedAt === "number"
+            );
+          })
+        : [];
+
+      setSavedJobRecords(safeRecords);
+      setSavedJobKeys(safeRecords.map((record) => record.key));
+      previousSavedCountRef.current = safeRecords.length;
+    } catch {
+      previousSavedCountRef.current = 0;
+    }
+
+    hasHydratedSavedJobsRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (typeof globalThis === "undefined" || !hasHydratedSavedJobsRef.current) {
+      return;
+    }
+
+    const uniqueRecords = savedJobRecords.filter((record, index, arr) => {
+      return arr.findIndex((candidate) => candidate.key === record.key) === index;
+    });
+
+    globalThis.localStorage?.setItem(SAVED_JOBS_STORAGE_KEY, JSON.stringify(uniqueRecords));
+
+    const nextCount = uniqueRecords.length;
+    const increased = nextCount > previousSavedCountRef.current;
+
+    globalThis.localStorage?.setItem("saved-jobs-count", String(nextCount));
+    globalThis.dispatchEvent(
+      new CustomEvent("saved-jobs-count-changed", {
+        detail: { count: nextCount, increased, records: uniqueRecords },
+      }),
+    );
+
+    previousSavedCountRef.current = nextCount;
+  }, [savedJobRecords]);
+
+  useEffect(() => {
+    if (typeof globalThis === "undefined") {
+      return;
+    }
+
+    const onSavedCountChanged = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        count?: number;
+        records?: SavedJobRecord[];
+      }>;
+
+      const count = Number(customEvent.detail?.count ?? 0);
+      const records = customEvent.detail?.records;
+
+      // When navbar Clear All is clicked, immediately reset all heart states.
+      if (count === 0 && Array.isArray(records) && records.length === 0) {
+        setSavedJobRecords((previous) => (previous.length === 0 ? previous : []));
+        setSavedJobKeys((previous) => (previous.length === 0 ? previous : []));
+        previousSavedCountRef.current = 0;
+        return;
+      }
+
+      if (Array.isArray(records)) {
+        const nextKeys = getSavedJobKeys(records);
+        setSavedJobRecords((previous) => {
+          const previousKeys = getSavedJobKeys(previous);
+          return areStringArraysEqual(previousKeys, nextKeys) ? previous : records;
+        });
+
+        setSavedJobKeys((previous) => {
+          return areStringArraysEqual(previous, nextKeys) ? previous : nextKeys;
+        });
+
+        previousSavedCountRef.current = nextKeys.length;
+      }
+    };
+
+    globalThis.addEventListener("saved-jobs-count-changed", onSavedCountChanged as EventListener);
+
+    return () => {
+      globalThis.removeEventListener("saved-jobs-count-changed", onSavedCountChanged as EventListener);
+    };
+  }, []);
 
   return (
     <section className="relative block w-full min-w-0 max-w-full overflow-x-hidden">
@@ -663,7 +832,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
                       <button
                         type="button"
-                        onClick={() => toggleSavedJob(jobKey)}
+                        onClick={() => toggleSavedJob(jobKey, job)}
                         className={[
                           "inline-flex size-4 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98]",
                           isSaved
