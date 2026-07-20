@@ -35,7 +35,7 @@ export default function AdmitCardPageClient({
   return (
     <main className="w-full py-3 sm:py-4">
       <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
-        <section className="rounded-2xl border border-indigo-100/90 bg-white/95 p-3 shadow-[0_12px_26px_rgba(15,23,42,0.07)] sm:p-4">
+        <section >
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Admit Card</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
             Welcome to Sarkari Global Result Admit Card Updates
