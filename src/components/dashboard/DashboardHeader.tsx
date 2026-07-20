@@ -54,34 +54,34 @@ export default function DashboardHeader(props: DashboardHeaderProps) {
       ].join(" ")}
     >
       <div className="w-full px-0">
-        <div className="grid min-h-14 grid-cols-1 items-center gap-2 py-2 sm:grid-cols-[auto_1fr_auto] sm:gap-2.5 sm:py-0">
-          <div className="inline-flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/85 px-2.5 py-1.5 text-slate-900 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="grid min-h-14 grid-cols-1 items-center gap-2 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-2.5 sm:py-0 xl:grid-cols-[auto_1fr_auto]">
+          <div className="inline-flex min-w-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/85 px-2.5 py-1.5 text-slate-900 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
             <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-500 text-[11px] font-black tracking-[0.12em] text-white shadow-[0_8px_20px_rgba(14,116,144,0.35)]">
-              SGS
+              <span>SGS</span>
               <span className="absolute -bottom-1 -right-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/60 bg-slate-950 text-white dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900">
                 <ShieldCheck size={10} aria-hidden="true" />
               </span>
             </span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-extrabold tracking-tight sm:text-[15px]">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] font-extrabold tracking-tight sm:text-[15px]">
                 SGS Recruitment Dashboard
               </span>
-              <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              <span className="hidden truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:block dark:text-slate-400">
                 Secure Talent Command
               </span>
             </span>
           </div>
 
-          <div aria-hidden="true" className="hidden sm:block" />
+          <div aria-hidden="true" className="hidden xl:block" />
 
           <div className="flex items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
-              className="inline-flex h-9 items-center gap-2 rounded-full border border-slate-300 bg-white px-2.5 text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="inline-flex h-9 max-w-[46vw] items-center gap-2 rounded-full border border-slate-300 bg-white px-2.5 text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 sm:max-w-[190px] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               aria-label="User profile"
             >
               <UserCircle2 size={18} aria-hidden="true" />
-              <span className="max-w-[130px] truncate text-xs font-semibold">
+              <span className="truncate text-xs font-semibold">
                 {props.dashboardUsername}
               </span>
             </button>
@@ -92,10 +92,10 @@ export default function DashboardHeader(props: DashboardHeaderProps) {
                 void handleLogout();
               }}
               disabled={isLoggingOut}
-              className="inline-flex h-9 items-center gap-1 rounded-xl border border-rose-300 bg-white px-2.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
+              className="inline-flex h-9 items-center gap-1 rounded-xl border border-rose-300 bg-white px-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-2.5 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
             >
               <LogOut size={15} aria-hidden="true" />
-              {isLoggingOut ? "Logging out..." : "Logout"}
+              <span className="hidden sm:inline">{isLoggingOut ? "Logging out..." : "Logout"}</span>
             </button>
           </div>
         </div>

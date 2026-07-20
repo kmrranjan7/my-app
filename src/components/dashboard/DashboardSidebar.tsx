@@ -60,8 +60,8 @@ export default function DashboardSidebar({
                 onSelectKey?.(item.key);
               }}
               className={[
-                "group flex w-full items-center rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition",
-                collapsed ? "justify-center" : "gap-3",
+                "group flex min-h-10 shrink-0 items-center rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition xl:w-full xl:shrink",
+                collapsed ? "justify-center" : "gap-2.5",
                 active
                   ? "border-blue-300 bg-blue-50 text-blue-800 shadow-[0_8px_20px_rgba(37,99,235,0.14)] dark:border-blue-900 dark:bg-blue-950/35 dark:text-blue-200"
                   : "border-transparent text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/70",
@@ -93,7 +93,7 @@ export default function DashboardSidebar({
       <div
         className={[
           "mb-3 rounded-xl border border-emerald-300/60 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200",
-          collapsed ? "flex justify-center" : "flex items-center justify-between gap-2",
+          collapsed ? "hidden xl:flex xl:justify-center" : "hidden items-center justify-between gap-2 xl:flex",
         ].join(" ")}
       >
         <span className={collapsed ? "inline-flex" : "inline-flex items-center gap-2"}>
@@ -106,14 +106,14 @@ export default function DashboardSidebar({
           </span>
         ) : null}
       </div>
-      <ul className="space-y-1">
+      <ul className="flex gap-1 overflow-x-auto pb-1 xl:block xl:space-y-1 xl:overflow-visible xl:pb-0">
         {itemElements}
         <li>
           <button
             type="button"
             onClick={onToggleCollapse}
             className={[
-              "group flex w-full items-center rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/70",
+              "group hidden w-full items-center rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/70 xl:flex",
               collapsed ? "justify-center" : "gap-3",
             ].join(" ")}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

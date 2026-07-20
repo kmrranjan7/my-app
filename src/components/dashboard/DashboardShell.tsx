@@ -271,7 +271,7 @@ export default function DashboardShell(props: DashboardShellProps) {
           }}
         />
 
-        <div className="space-y-3">{renderActivePanel(data)}</div>
+        <div className="min-w-0 space-y-3">{renderActivePanel(data)}</div>
       </section>
     </div>
   );
