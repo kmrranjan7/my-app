@@ -25,7 +25,9 @@ const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 type JobsApiContentItem = Readonly<{
   readonly applicationId?: string;
   readonly createdAt?: string;
+  readonly isFeatured?: boolean;
   readonly organization?: string;
+  readonly priorityScore?: number;
   readonly postSlug?: string;
   readonly postTitle?: string;
   readonly startDate?: string;
@@ -75,7 +77,38 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
     lastDate: item.endDate || "",
     postedTime: toRelativeTime(item.createdAt),
     href: item.postSlug || "",
+    isFeatured: item.isFeatured === true,
+    priorityScore:
+      typeof item.priorityScore === "number" && Number.isFinite(item.priorityScore)
+        ? item.priorityScore
+        : 0,
+    createdAt: item.createdAt,
   };
+}
+
+function toTimestamp(value?: string): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function compareJobsByRanking(a: LatestJob, b: LatestJob): number {
+  const featuredDiff = Number(b.isFeatured === true) - Number(a.isFeatured === true);
+  if (featuredDiff !== 0) {
+    return featuredDiff;
+  }
+
+  const aPriority = typeof a.priorityScore === "number" ? a.priorityScore : 0;
+  const bPriority = typeof b.priorityScore === "number" ? b.priorityScore : 0;
+  const priorityDiff = bPriority - aPriority;
+  if (priorityDiff !== 0) {
+    return priorityDiff;
+  }
+
+  return toTimestamp(b.createdAt) - toTimestamp(a.createdAt);
 }
 
 async function fetchJobsPage(page: number): Promise<LatestJob[]> {
@@ -277,7 +310,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
   const [copiedShareKey, setCopiedShareKey] = useState<string | null>(null);
   const {
-    items: allJobs,
+    items,
     hasMore,
     isLoadingMore,
     sentinelRef,
@@ -287,6 +320,10 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     fetchPage: fetchJobsPage,
     getKey: (job) => `${job.href}|${job.postName}|${job.startDate}|${job.lastDate}`,
   });
+
+  const allJobs = useMemo(() => {
+    return [...items].sort(compareJobsByRanking);
+  }, [items]);
 
   const indexedJobs = useMemo(() => {
     return allJobs.map((job) => {

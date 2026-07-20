@@ -17,6 +17,8 @@ type FrontendBody = Readonly<{
   readonly applicationId?: string;
   readonly department?: string;
   readonly organization?: string;
+  readonly qualification?: string;
+  readonly vacancies?: number | null;
   readonly startDate?: string;
   readonly endDate?: string;
   readonly stateName?: string;
@@ -27,6 +29,8 @@ type FrontendBody = Readonly<{
   readonly postStatus?: PostStatus;
   readonly scheduledAt?: string;
   readonly postType?: PostType;
+  readonly isFeatured?: boolean;
+  readonly priorityScore?: number;
 }>;
 
 type BackendPostRecord = Readonly<{
@@ -38,6 +42,8 @@ type BackendPostRecord = Readonly<{
   readonly applicationId: string;
   readonly department: string;
   readonly organization: string;
+  readonly qualification: string;
+  readonly vacancies: number;
   readonly startDate: string;
   readonly endDate: string;
   readonly stateName: string;
@@ -48,6 +54,8 @@ type BackendPostRecord = Readonly<{
   readonly postStatus: PostStatus;
   readonly scheduledAt: string;
   readonly postType: PostType;
+  readonly isFeatured: boolean;
+  readonly priorityScore: number;
   readonly updatedAt: string;
 }>;
 
@@ -93,6 +101,28 @@ function toPostType(input: unknown): PostType {
   return "Job";
 }
 
+function toBoolean(input: unknown): boolean {
+  return input === true;
+}
+
+function toPriorityScore(input: unknown): number {
+  if (typeof input !== "number" || !Number.isFinite(input)) {
+    return 0;
+  }
+
+  const rounded = Math.trunc(input);
+  return Math.min(Math.max(rounded, 0), 100);
+}
+
+function toVacancies(input: unknown): number {
+  if (typeof input !== "number" || !Number.isFinite(input)) {
+    return 0;
+  }
+
+  const rounded = Math.trunc(input);
+  return Math.max(rounded, 0);
+}
+
 function normalizeRecord(record: Partial<BackendPostRecord>): BackendPostRecord {
   return {
     id: toNonEmpty(record.id),
@@ -103,6 +133,8 @@ function normalizeRecord(record: Partial<BackendPostRecord>): BackendPostRecord 
     applicationId: toNonEmpty(record.applicationId),
     department: toNonEmpty(record.department),
     organization: toNonEmpty(record.organization),
+    qualification: toNonEmpty(record.qualification),
+    vacancies: toVacancies(record.vacancies),
     startDate: toNonEmpty(record.startDate),
     endDate: toNonEmpty(record.endDate),
     stateName: toNonEmpty(record.stateName),
@@ -113,6 +145,8 @@ function normalizeRecord(record: Partial<BackendPostRecord>): BackendPostRecord 
     postStatus: toPostStatus(record.postStatus),
     scheduledAt: toNonEmpty(record.scheduledAt),
     postType: toPostType(record.postType),
+    isFeatured: toBoolean(record.isFeatured),
+    priorityScore: toPriorityScore(record.priorityScore),
     updatedAt: toNonEmpty(record.updatedAt),
   };
 }
@@ -125,6 +159,8 @@ function mapFrontendToBackendPayload(body: FrontendBody) {
     applicationId: toNonEmpty(body.applicationId),
     department: toNonEmpty(body.department),
     organization: toNonEmpty(body.organization),
+    qualification: toNonEmpty(body.qualification),
+    vacancies: body.vacancies == null ? null : toVacancies(body.vacancies),
     startDate: toNonEmpty(body.startDate) || null,
     endDate: toNonEmpty(body.endDate) || null,
     stateName: toNonEmpty(body.stateName),
@@ -135,6 +171,8 @@ function mapFrontendToBackendPayload(body: FrontendBody) {
     postStatus: toPostStatus(body.postStatus),
     scheduledAt: toNonEmpty(body.scheduledAt) || null,
     postType: toPostType(body.postType),
+    isFeatured: toBoolean(body.isFeatured),
+    priorityScore: toPriorityScore(body.priorityScore),
   };
 }
 
@@ -268,6 +306,8 @@ export async function PATCH(request: Request) {
     applicationId: body.applicationId ?? current.applicationId,
     department: body.department ?? current.department,
     organization: body.organization ?? current.organization,
+    qualification: body.qualification ?? current.qualification,
+    vacancies: body.vacancies ?? current.vacancies,
     startDate: body.startDate ?? current.startDate,
     endDate: body.endDate ?? current.endDate,
     stateName: body.stateName ?? current.stateName,
@@ -278,6 +318,8 @@ export async function PATCH(request: Request) {
     postStatus: body.postStatus ?? current.postStatus,
     scheduledAt: body.scheduledAt ?? current.scheduledAt,
     postType: body.postType ?? current.postType,
+    isFeatured: body.isFeatured ?? current.isFeatured,
+    priorityScore: body.priorityScore ?? current.priorityScore,
   };
 
   const response = await fetch(`${BACKEND_POSTS_BASE}/${encodeURIComponent(id)}`, {

@@ -97,6 +97,8 @@ type DraftSnapshot = Readonly<{
   readonly scheduledAt: string;
   readonly postType: PostType;
   readonly postCategory: PostCategory;
+  readonly isFeatured: boolean;
+  readonly priorityScore: number;
 }>;
 
 function categoryFromPostType(postType: PostType): PostCategory {
@@ -154,6 +156,8 @@ export type NewPostPrefillRecord = Readonly<{
   readonly postStatus: PostStatus;
   readonly scheduledAt: string;
   readonly postType: PostType;
+  readonly isFeatured?: boolean;
+  readonly priorityScore?: number;
 }>;
 
 type NewPostPanelProps = Readonly<{
@@ -217,6 +221,10 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         scheduledAt: prefillRecord.scheduledAt,
         postType: prefillRecord.postType,
         postCategory: categoryFromPostType(prefillRecord.postType),
+        isFeatured: Boolean(prefillRecord.isFeatured),
+        priorityScore: Number.isFinite(prefillRecord.priorityScore)
+          ? Math.min(100, Math.max(0, Number(prefillRecord.priorityScore)))
+          : 0,
       }
     : null;
 
@@ -241,6 +249,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [postStatus, setPostStatus] = useState<PostStatus>(startingDraft?.postStatus ?? "Draft");
   const [scheduledAt, setScheduledAt] = useState(startingDraft?.scheduledAt ?? "");
   const [postType, setPostType] = useState<PostType>(startingDraft?.postType ?? "Job");
+  const [isFeatured, setIsFeatured] = useState(startingDraft?.isFeatured ?? false);
+  const [priorityScore, setPriorityScore] = useState(startingDraft?.priorityScore ?? 0);
   const [postCategory, setPostCategory] = useState<PostCategory>(
     startingDraft?.postCategory ?? categoryFromPostType(startingDraft?.postType ?? "Job"),
   );
@@ -403,6 +413,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         scheduledAt,
         postType,
         postCategory,
+        isFeatured,
+        priorityScore,
       };
 
       window.localStorage.setItem(NEW_POST_DRAFT_KEY, JSON.stringify(snapshot));
@@ -432,6 +444,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     vacancies,
     postType,
     postCategory,
+    isFeatured,
+    priorityScore,
   ]);
 
   const templates = dashboardPostTemplates;
@@ -603,6 +617,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setPostStatus(initialDraft.postStatus);
     setScheduledAt(initialDraft.scheduledAt);
     setPostType(initialDraft.postType ?? "Job");
+    setIsFeatured(initialDraft.isFeatured ?? false);
+    setPriorityScore(initialDraft.priorityScore ?? 0);
     setPostCategory(initialDraft.postCategory ?? categoryFromPostType(initialDraft.postType ?? "Job"));
     setApplicationDetailsErrors({});
     setHasRecoverableDraft(false);
@@ -685,6 +701,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setPostStatus("Draft");
     setScheduledAt("");
     setPostType("Job");
+    setIsFeatured(false);
+    setPriorityScore(0);
     setPostCategory("Recruitment");
     setSelectedTemplateId("recruitment-notice");
     setLastAutosaveAt(null);
@@ -725,6 +743,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
       scheduledAt,
       postType,
       postCategory,
+      isFeatured,
+      priorityScore,
     };
 
     if (typeof window !== "undefined") {
@@ -772,6 +792,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         postStatus: finalStatus,
         scheduledAt,
         postType,
+        isFeatured,
+        priorityScore,
       };
 
       const response = await fetch("/api/posts", {
@@ -1712,6 +1734,44 @@ height: 500,
                     <option value="Scheduled">Scheduled</option>
                     <option value="Published">Published</option>
                   </select>
+                </div>
+
+                <div className="mt-2 space-y-1.5">
+                  <label className="inline-flex items-center gap-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={isFeatured}
+                      onChange={(event) => setIsFeatured(event.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Mark as Featured Job
+                  </label>
+                </div>
+
+                <div className="mt-2 space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    Priority Score (0 to 100)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={priorityScore}
+                    onChange={(event) => {
+                      const nextValue = Number.parseInt(event.target.value, 10);
+                      if (Number.isNaN(nextValue)) {
+                        setPriorityScore(0);
+                        return;
+                      }
+
+                      setPriorityScore(Math.min(100, Math.max(0, nextValue)));
+                    }}
+                    className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  />
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Sorting uses Featured first, then higher priority, then latest created date.
+                  </p>
                 </div>
 
                 {postStatus === "Scheduled" ? (

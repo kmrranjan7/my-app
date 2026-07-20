@@ -25,6 +25,8 @@ type SavedPostRecord = Readonly<{
   readonly postStatus: "Draft" | "Pending Review" | "Scheduled" | "Published";
   readonly scheduledAt: string;
   readonly postType: "Job" | "Admit" | "Exam" | "Result";
+  readonly isFeatured?: boolean;
+  readonly priorityScore?: number;
 }>;
 
 type SavedJobsPanelProps = Readonly<{
@@ -275,6 +277,8 @@ export default function SavedJobsPanel({
       postStatus: record.postStatus,
       scheduledAt: record.scheduledAt,
       postType: record.postType,
+      isFeatured: record.isFeatured ?? false,
+      priorityScore: record.priorityScore ?? 0,
     });
     startEditing(record);
   };
@@ -441,6 +445,9 @@ export default function SavedJobsPanel({
                       Category
                     </th>
                     <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 dark:text-slate-300">
+                      Priority
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 dark:text-slate-300">
                       Created
                     </th>
                     <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 dark:text-slate-300">
@@ -486,6 +493,9 @@ export default function SavedJobsPanel({
                       </td>
                       <td className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                         {getCategoryLabel(record.postType)}
+                      </td>
+                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        {record.priorityScore ?? 0}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
                         {new Date(record.createdAt).toLocaleString()}
@@ -613,6 +623,9 @@ export default function SavedJobsPanel({
                       </p>
                       <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                         Category: {getCategoryLabel(record.postType)}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                        Priority Score: {record.priorityScore ?? 0}
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span

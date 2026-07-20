@@ -27,6 +27,8 @@ type JobsApiContentItem = Readonly<{
   readonly postStatus?: string;
   readonly postTitle?: string;
   readonly postType?: string;
+  readonly isFeatured?: boolean;
+  readonly priorityScore?: number;
   readonly startDate?: string;
   readonly endDate?: string;
   readonly stateName?: string;
@@ -79,6 +81,12 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
     lastDate: item.endDate || "",
     postedTime: toRelativeTime(item.createdAt),
     href: item.postSlug || "",
+    isFeatured: item.isFeatured === true,
+    priorityScore:
+      typeof item.priorityScore === "number" && Number.isFinite(item.priorityScore)
+        ? item.priorityScore
+        : 0,
+    createdAt: item.createdAt,
   };
 }
 

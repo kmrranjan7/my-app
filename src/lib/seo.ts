@@ -210,7 +210,7 @@ export function getWebsiteJsonLd(): Record<string, unknown> {
     url: SITE_URL,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${SITE_URL}/latest-job?search={search_term_string}`,
+      target: `${SITE_URL}/api/jobs?search={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
