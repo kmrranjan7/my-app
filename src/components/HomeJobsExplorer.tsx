@@ -654,7 +654,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   return (
     <section className="relative block w-full min-w-0 max-w-full overflow-x-hidden">
-      <div className="relative mx-1 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:mx-0 sm:px-2.5">
+      <div className="relative z-10 mx-1 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:mx-0 sm:px-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
@@ -687,25 +687,25 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+          <label className="group inline-flex min-h-9 min-w-0 items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100 touch-manipulation">
             <Search className="size-3 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-[12px] font-normal text-slate-700 placeholder:text-slate-400 outline-none"
+              className="w-full bg-transparent text-[16px] font-normal text-slate-700 placeholder:text-slate-400 outline-none sm:text-[12px]"
             />
           </label>
 
           <div className="space-y-1 sm:contents">
             <div className="grid grid-cols-2 gap-1 sm:contents">
-              <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-indigo-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
+              <label className="inline-flex min-h-9 min-w-0 items-center gap-1 rounded-md border border-indigo-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] touch-manipulation sm:min-w-0 sm:shrink sm:flex-1">
               <Filter className="size-3 text-indigo-500" aria-hidden="true" />
               <select
                 value={badgeFilter}
                 onChange={(event) => handleBadgeFilterChange(event.target.value)}
                 onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                className="w-full min-w-0 bg-transparent text-[16px] font-normal text-slate-700 outline-none sm:text-[12px]"
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -716,13 +716,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               </select>
             </label>
 
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-emerald-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex min-h-9 min-w-0 items-center gap-1 rounded-md border border-emerald-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] touch-manipulation sm:min-w-0 sm:shrink sm:flex-1">
               <MapPin className="size-3 text-emerald-500" aria-hidden="true" />
               <select
                 value={stateFilter}
                 onChange={(event) => handleStateFilterChange(event.target.value)}
                 onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                className="w-full min-w-0 bg-transparent text-[16px] font-normal text-slate-700 outline-none sm:text-[12px]"
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -736,13 +736,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </div>
 
             <div className="flex items-center gap-1 sm:contents">
-            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-md border border-violet-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex min-h-9 w-full min-w-0 flex-1 items-center gap-1 rounded-md border border-violet-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] touch-manipulation sm:min-w-0 sm:shrink sm:flex-1">
               <GraduationCap className="size-3 text-violet-500" aria-hidden="true" />
               <select
                 value={qualificationFilter}
                 onChange={(event) => handleQualificationFilterChange(event.target.value)}
                 onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                className="w-full min-w-0 bg-transparent text-[16px] font-normal text-slate-700 outline-none sm:text-[12px]"
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (
@@ -818,10 +818,10 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 touch-manipulation sm:size-4"
                         aria-label={`Share ${job.postName}`}
                       >
-                        <Share2 className="size-2" aria-hidden="true" />
+                        <Share2 className="size-3 sm:size-2" aria-hidden="true" />
                       </button>
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
@@ -834,14 +834,14 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                         type="button"
                         onClick={() => toggleSavedJob(jobKey, job)}
                         className={[
-                          "inline-flex size-4 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98]",
+                          "inline-flex size-7 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] touch-manipulation sm:size-4",
                           isSaved
                             ? "border-rose-300 bg-rose-50/90 text-rose-600"
                             : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-100",
                         ].join(" ")}
                         aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
                       >
-                        <Heart className={isSaved ? "size-2.5 fill-current" : "size-2.5"} aria-hidden="true" />
+                        <Heart className={isSaved ? "size-3.5 fill-current sm:size-2.5" : "size-3.5 sm:size-2.5"} aria-hidden="true" />
                       </button>
                     </div>
                   </div>
