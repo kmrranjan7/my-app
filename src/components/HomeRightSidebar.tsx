@@ -289,18 +289,30 @@ function SidebarCard({
   );
 }
 
-export default function HomeRightSidebar() {
+type HomeRightSidebarProps = Readonly<{
+  initialAdmitCards?: readonly RightSideItem[];
+  initialResults?: readonly RightSideItem[];
+}>;
+
+const EMPTY_INITIAL_ADMIT_CARDS: readonly RightSideItem[] = [];
+const EMPTY_INITIAL_RESULTS: readonly RightSideItem[] = [];
+
+export default function HomeRightSidebar({
+  initialAdmitCards = EMPTY_INITIAL_ADMIT_CARDS,
+  initialResults = EMPTY_INITIAL_RESULTS,
+}: HomeRightSidebarProps) {
   const {
     items: admitRows,
     hasMore: hasMoreAdmit,
     isLoadingMore: isLoadingAdmit,
     sentinelRef: admitSentinelRef,
   } = useInfinitePagedFeed<RightSideItem>({
+    initialItems: initialAdmitCards,
     pageSize: PAGE_SIZE,
     fetchPage: fetchAdmitCardsPage,
     getKey: (item) => `${item.href}|${item.title}|${item.time}`,
     rootMargin: "240px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: initialAdmitCards.length === 0,
   });
 
   const {
@@ -309,11 +321,12 @@ export default function HomeRightSidebar() {
     isLoadingMore: isLoadingResult,
     sentinelRef: resultSentinelRef,
   } = useInfinitePagedFeed<RightSideItem>({
+    initialItems: initialResults,
     pageSize: PAGE_SIZE,
     fetchPage: fetchResultsPage,
     getKey: (item) => `${item.href}|${item.title}|${item.time}`,
     rootMargin: "240px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: initialResults.length === 0,
   });
 
   const admitRowsSafe = useCallback(() => admitRows, [admitRows]);

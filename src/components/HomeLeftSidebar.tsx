@@ -265,18 +265,30 @@ function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?
   );
 }
 
-export default function HomeLeftSidebar() {
+type HomeLeftSidebarProps = Readonly<{
+  initialUpdates?: readonly LatestUpdate[];
+  initialExams?: readonly UpcomingExam[];
+}>;
+
+const EMPTY_INITIAL_UPDATES: readonly LatestUpdate[] = [];
+const EMPTY_INITIAL_EXAMS: readonly UpcomingExam[] = [];
+
+export default function HomeLeftSidebar({
+  initialUpdates = EMPTY_INITIAL_UPDATES,
+  initialExams = EMPTY_INITIAL_EXAMS,
+}: HomeLeftSidebarProps) {
   const {
     items: updateRows,
     hasMore: hasMoreUpdates,
     isLoadingMore: isLoadingUpdates,
     sentinelRef: updatesSentinelRef,
   } = useInfinitePagedFeed<LatestUpdate>({
+    initialItems: initialUpdates,
     pageSize: PAGE_SIZE,
     fetchPage: fetchLatestUpdatesPage,
     getKey: (item) => `${item.href}|${item.title}|${item.time}`,
     rootMargin: "240px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: initialUpdates.length === 0,
   });
 
   const {
@@ -285,11 +297,12 @@ export default function HomeLeftSidebar() {
     isLoadingMore: isLoadingExams,
     sentinelRef: examsSentinelRef,
   } = useInfinitePagedFeed<UpcomingExam>({
+    initialItems: initialExams,
     pageSize: PAGE_SIZE,
     fetchPage: fetchUpcomingExamsPage,
     getKey: (item) => `${item.href}|${item.title}|${item.date}`,
     rootMargin: "240px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: initialExams.length === 0,
   });
 
   const updatesRowsSafe = useCallback(() => updateRows, [updateRows]);

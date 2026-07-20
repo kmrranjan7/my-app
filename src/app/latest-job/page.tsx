@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import LatestJobPageClient from "./LatestJobPageClient";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchLatestJobsFirstPage } from "./latestJobData";
 
 export const metadata: Metadata = {
   title: "Latest Govt Jobs 2026 - Sarkari Job Notifications",
@@ -65,6 +66,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LatestJobPage() {
-  return <LatestJobPageClient />;
+export default async function LatestJobPage() {
+  const initialRows = await fetchLatestJobsFirstPage();
+  return <LatestJobPageClient initialRows={initialRows} />;
 }

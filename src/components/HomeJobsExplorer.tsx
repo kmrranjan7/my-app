@@ -447,7 +447,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   return (
     <section className="relative block w-full min-w-0 max-w-full overflow-x-hidden">
-
       <div className="relative mx-1 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:mx-0 sm:px-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-1.5">
@@ -481,25 +480,25 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200/90 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+          <label className="group inline-flex min-w-0 items-center gap-1 rounded-lg border border-slate-200/90 bg-white/95 px-2 py-1.5 text-[12px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
             <Search className="size-3.5 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-[16px] font-medium text-slate-700 placeholder:text-slate-400 outline-none md:text-[13px]"
+              className="w-full bg-transparent text-[13px] font-normal text-slate-700 placeholder:text-slate-400 outline-none"
             />
           </label>
 
           <div className="space-y-1 sm:contents">
             <div className="grid grid-cols-2 gap-1 sm:contents">
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+              <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-indigo-100 bg-white/95 px-2 py-1.5 text-[12px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <Filter className="size-3.5 text-indigo-500" aria-hidden="true" />
               <select
                 value={badgeFilter}
                 onChange={(event) => handleBadgeFilterChange(event.target.value)}
                 onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-normal text-slate-700 outline-none"
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -510,13 +509,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               </select>
             </label>
 
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex min-w-0 items-center gap-1 rounded-lg border border-emerald-100 bg-white/95 px-2 py-1.5 text-[12px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <MapPin className="size-3.5 text-emerald-500" aria-hidden="true" />
               <select
                 value={stateFilter}
                 onChange={(event) => handleStateFilterChange(event.target.value)}
                 onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-normal text-slate-700 outline-none"
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -530,13 +529,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
             </div>
 
             <div className="flex items-center gap-1 sm:contents">
-            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[10px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
+            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-lg border border-violet-100 bg-white/95 px-2 py-1.5 text-[12px] font-medium text-slate-600 shadow-[0_4px_12px_rgba(15,23,42,0.08)] sm:min-w-0 sm:shrink sm:flex-1">
               <GraduationCap className="size-3.5 text-violet-500" aria-hidden="true" />
               <select
                 value={qualificationFilter}
                 onChange={(event) => handleQualificationFilterChange(event.target.value)}
                 onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[16px] font-semibold text-slate-700 outline-none md:text-[13px]"
+                className="w-full min-w-0 bg-transparent text-[13px] font-normal text-slate-700 outline-none"
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (

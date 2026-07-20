@@ -1,154 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { formatDate, getStatus, getStatusClasses } from "@/lib/dateStatus";
+import { getStatusClasses } from "@/lib/dateStatus";
+import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
+import {
+  ADMIT_CARD_PAGE_SIZE,
+  fetchAdmitCardsPage,
+  getAdmitRowKey,
+  type AdmitRow,
+} from "./admitCardData";
 
-const PAGE_SIZE = 20;
-
-type ApiAdmitItem = Readonly<{
-  readonly applicationId?: string;
-  readonly organization?: string;
-  readonly postSlug?: string;
-  readonly postTitle?: string;
-  readonly startDate?: string;
-  readonly endDate?: string;
-  readonly stateName?: string;
-  readonly vacancies?: number;
+type AdmitCardPageClientProps = Readonly<{
+  initialRows?: readonly AdmitRow[];
 }>;
 
-type ApiResponse = Readonly<{
-  readonly data?: {
-    readonly content?: ApiAdmitItem[];
-  };
-}>;
-
-type AdmitRow = Readonly<{
-  readonly id: string;
-  readonly title: string;
-  readonly href: string;
-  readonly badge: string;
-  readonly state: string;
-  readonly seats: string;
-  readonly startDate: string;
-  readonly lastDate: string;
-  readonly status: string;
-}>;
-
-function buildApiUrl(page: number): string {
-  return `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&page=${page}&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
-}
-
-
-function mapToRow(item: ApiAdmitItem, index: number, page: number): AdmitRow {
-  const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Admit Card").trim();
-
-  return {
-    id: item.applicationId?.trim() || slug || `admit-${page}-${index + 1}`,
-    title,
-    href: slug ? `/${slug}` : "/admit-card",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "ADMIT",
-    state: item.stateName?.trim() || "All India",
-    seats:
-      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
-        ? item.vacancies.toLocaleString("en-IN")
-        : "N/A",
-    startDate: formatDate(item.startDate),
-    lastDate: formatDate(item.endDate),
-    status: getStatus(item.startDate, item.endDate),
-  };
-}
-
-async function fetchAdmitPage(page: number): Promise<AdmitRow[]> {
-  try {
-    const response = await fetch(buildApiUrl(page), {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as ApiResponse;
-    const content = payload.data?.content ?? [];
-    return content.map((item, index) => mapToRow(item, index, page));
-  } catch {
-    return [];
-  }
-}
-
-export default function AdmitCardPageClient() {
-  const [rows, setRows] = useState<AdmitRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const isFetchingRef = useRef(false);
-  const nextPageRef = useRef(0);
-  const hasMoreRef = useRef(true);
-
-  const loadNextPage = useCallback(async () => {
-    if (isFetchingRef.current || !hasMoreRef.current) return;
-
-    isFetchingRef.current = true;
-    setIsLoading(true);
-    setLoadError(null);
-
-    const page = nextPageRef.current;
-    const newRows = await fetchAdmitPage(page);
-
-    if (newRows.length === 0) {
-      hasMoreRef.current = false;
-      setHasMore(false);
-    } else {
-      setRows((prev) => [...prev, ...newRows]);
-      nextPageRef.current = page + 1;
-      if (newRows.length < PAGE_SIZE) {
-        hasMoreRef.current = false;
-        setHasMore(false);
-      }
-    }
-
-    if (!isFirstLoadDone) {
-      setIsFirstLoadDone(true);
-      if (newRows.length === 0) {
-        setLoadError("No admit cards available right now.");
-      }
-    }
-
-    setIsLoading(false);
-    isFetchingRef.current = false;
-  }, [isFirstLoadDone]);
-
-  useEffect(() => {
-    void loadNextPage();
-  }, [loadNextPage]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting) {
-          void loadNextPage();
-        }
-      },
-      { rootMargin: "420px 0px" },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [loadNextPage]);
+const EMPTY_INITIAL_ROWS: readonly AdmitRow[] = [];
+export default function AdmitCardPageClient({
+  initialRows = EMPTY_INITIAL_ROWS,
+}: AdmitCardPageClientProps) {
+  const {
+    items: rows,
+    hasMore,
+    isLoadingMore,
+    sentinelRef,
+  } = useInfinitePagedFeed<AdmitRow>({
+    initialItems: initialRows,
+    pageSize: ADMIT_CARD_PAGE_SIZE,
+    fetchPage: fetchAdmitCardsPage,
+    getKey: getAdmitRowKey,
+    rootMargin: "340px 0px",
+    loadFirstPageOnMount: initialRows.length === 0,
+  });
 
   return (
     <main className="w-full py-3 sm:py-4">
@@ -170,7 +52,7 @@ export default function AdmitCardPageClient() {
           </div>
         </section>
 
-        {rows.length === 0 && isFirstLoadDone ? (
+        {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
             <p className="text-base font-bold text-slate-800">No admit cards available right now</p>
             <p className="mt-1 text-sm text-slate-500">Please verify API response and published records.</p>
@@ -244,13 +126,9 @@ export default function AdmitCardPageClient() {
           </section>
         )}
 
-        {loadError && rows.length === 0 ? (
-          <p className="px-1 text-[12px] font-semibold text-rose-600">{loadError}</p>
-        ) : null}
-
-        {isLoading ? (
+        {isLoadingMore ? (
           <div className="rounded-xl border border-blue-100 bg-white/90 px-3 py-2 text-center text-[12px] font-semibold text-blue-700">
-            Loading admit cards...
+            Loading 20 more admit cards...
           </div>
         ) : null}
 

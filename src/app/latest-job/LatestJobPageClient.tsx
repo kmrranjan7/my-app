@@ -1,42 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { formatDate, getStatus, getStatusClasses } from "@/lib/dateStatus";
+import { getStatusClasses } from "@/lib/dateStatus";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
+import {
+  fetchLatestJobsPage,
+  getLatestJobRowKey,
+  LATEST_JOB_PAGE_SIZE,
+  type LatestJobRow,
+} from "./latestJobData";
 
-const PAGE_SIZE = 20;
-const LATEST_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
-
-type ApiJobItem = Readonly<{
-  readonly applicationId?: string;
-  readonly createdAt?: string;
-  readonly organization?: string;
-  readonly postSlug?: string;
-  readonly postTitle?: string;
-  readonly startDate?: string;
-  readonly endDate?: string;
-  readonly stateName?: string;
-  readonly vacancies?: number;
+type LatestJobPageClientProps = Readonly<{
+  initialRows?: readonly LatestJobRow[];
 }>;
 
-type ApiResponse = Readonly<{
-  readonly data?: {
-    readonly content?: ApiJobItem[];
-  };
-}>;
-
-type LatestJobRow = Readonly<{
-  readonly id: string;
-  readonly title: string;
-  readonly href: string;
-  readonly badge: string;
-  readonly state: string;
-  readonly seats: string;
-  readonly startDate: string;
-  readonly lastDate: string;
-  readonly status: string;
-}>;
+const EMPTY_INITIAL_ROWS: readonly LatestJobRow[] = [];
 
 type QuickLink = Readonly<{
   readonly label: string;
@@ -65,57 +43,21 @@ const STATE_WISE_LINKS: readonly QuickLink[] = [
   { label: "West Bengal Jobs", href: "/latest-job?search=West%20Bengal" },
 ] as const;
 
-function mapToRow(item: ApiJobItem, index: number, page: number): LatestJobRow {
-  const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Job").trim();
-
-  return {
-    id: item.applicationId?.trim() || slug || `row-${page}-${index + 1}`,
-    title,
-    href: slug ? `/${slug}` : "/latest-job",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "JOB",
-    state: item.stateName?.trim() || "All India",
-    seats:
-      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
-        ? item.vacancies.toLocaleString("en-IN")
-        : "N/A",
-    startDate: formatDate(item.startDate),
-    lastDate: formatDate(item.endDate),
-    status: getStatus(item.startDate, item.endDate),
-  };
-}
-
-async function fetchLatestJobsPage(page: number): Promise<LatestJobRow[]> {
-  try {
-    const response = await fetch(`${LATEST_JOBS_API_URL}&page=${page}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as ApiResponse;
-    const content = payload.data?.content ?? [];
-    return content.map((item, index) => mapToRow(item, index, page));
-  } catch {
-    return [];
-  }
-}
-
-export default function LatestJobPageClient() {
+export default function LatestJobPageClient({
+  initialRows = EMPTY_INITIAL_ROWS,
+}: LatestJobPageClientProps) {
   const {
     items: rows,
     hasMore,
     isLoadingMore,
     sentinelRef,
   } = useInfinitePagedFeed<LatestJobRow>({
-    pageSize: PAGE_SIZE,
+    initialItems: initialRows,
+    pageSize: LATEST_JOB_PAGE_SIZE,
     fetchPage: fetchLatestJobsPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.startDate}|${item.lastDate}`,
+    getKey: getLatestJobRowKey,
     rootMargin: "340px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: initialRows.length === 0,
   });
 
   return (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ResultPageClient from "./ResultPageClient";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchResultsFirstPage } from "./resultData";
 
 export const metadata: Metadata = {
   title: "Latest Sarkari Results 2026 - Government Exam Results",
@@ -48,6 +49,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ResultPage() {
-  return <ResultPageClient />;
+export default async function ResultPage() {
+  const initialRows = await fetchResultsFirstPage();
+  return <ResultPageClient initialRows={initialRows} />;
 }

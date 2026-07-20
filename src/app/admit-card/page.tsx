@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdmitCardPageClient from "./AdmitCardPageClient";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchAdmitCardsFirstPage } from "./admitCardData";
 
 export const metadata: Metadata = {
   title: "Admit Card - Download Latest Government Exam Hall Tickets",
@@ -47,6 +48,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AdmitCardPage() {
-  return <AdmitCardPageClient />;
+export default async function AdmitCardPage() {
+  const initialRows = await fetchAdmitCardsFirstPage();
+  return <AdmitCardPageClient initialRows={initialRows} />;
 }

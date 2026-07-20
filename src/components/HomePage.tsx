@@ -2,11 +2,20 @@ import Link from "next/link";
 import HomeJobsExplorer from "@/components/HomeJobsExplorer";
 import HomeLeftSidebar from "@/components/HomeLeftSidebar";
 import HomeRightSidebar from "@/components/HomeRightSidebar";
-import type { LatestJob } from "@/data/sidebarContent";
+import type { LatestJob, LatestUpdate, RightSideItem, UpcomingExam } from "@/data/sidebarContent";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 
 const HOME_JOBS_PAYLOAD_LIMIT = 48;
+const SIDEBAR_PAGE_SIZE = 10;
 const JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&page=0&size=20`;
+const LATEST_UPDATES_API_URL =
+  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&page=0&size=${SIDEBAR_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const EXAMS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&page=0&size=${SIDEBAR_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const ADMIT_CARDS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&page=0&size=${SIDEBAR_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const RESULTS_API_URL =
+  `${API_PUBLIC_BASE_URL}/jobs?postType=Result&postStatus=Published&page=0&size=${SIDEBAR_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
 type JobsApiContentItem = Readonly<{
   readonly applicationId?: string;
@@ -25,6 +34,12 @@ type JobsApiContentItem = Readonly<{
 }>;
 
 type JobsApiResponse = Readonly<{
+  readonly data?: {
+    readonly content?: JobsApiContentItem[];
+  };
+}>;
+
+type SidebarApiResponse = Readonly<{
   readonly data?: {
     readonly content?: JobsApiContentItem[];
   };
@@ -66,6 +81,60 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
   };
 }
 
+function mapApiLatestUpdate(item: JobsApiContentItem): LatestUpdate {
+  return {
+    title: item.postTitle || "Untitled Update",
+    time: toRelativeTime(item.createdAt),
+    type: item.postType || "Update",
+    href: item.postSlug ? `/${item.postSlug}` : "/updates",
+  };
+}
+
+function formatExamDate(value?: string): string {
+  if (!value) return "Date TBA";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Date TBA";
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function mapApiUpcomingExam(item: JobsApiContentItem): UpcomingExam {
+  const examDate = item.startDate || item.endDate || item.createdAt;
+
+  return {
+    title: item.postTitle || "Untitled Exam",
+    date: formatExamDate(examDate),
+    category: "Exam",
+    badge: item.organization || "Exam",
+    href: item.postSlug ? `/${item.postSlug}` : "/exams",
+  };
+}
+
+function mapApiAdmitCard(item: JobsApiContentItem): RightSideItem {
+  return {
+    title: item.postTitle || "Untitled Admit Card",
+    time: toRelativeTime(item.createdAt),
+    category: "Admit Card",
+    badge: item.organization || "Admit",
+    href: item.postSlug ? `/${item.postSlug}` : "/admit-card",
+  };
+}
+
+function mapApiResult(item: JobsApiContentItem): RightSideItem {
+  return {
+    title: item.postTitle || "Untitled Result",
+    time: toRelativeTime(item.createdAt),
+    category: "Result",
+    badge: item.organization || "Result",
+    href: item.postSlug ? `/results/${item.postSlug}` : "/results",
+  };
+}
+
 async function fetchHomeJobs(): Promise<LatestJob[]> {
   try {
     const response = await fetch(JOBS_API_URL, {
@@ -85,21 +154,103 @@ async function fetchHomeJobs(): Promise<LatestJob[]> {
   }
 }
 
+async function fetchLatestUpdatesFirstPage(): Promise<LatestUpdate[]> {
+  try {
+    const response = await fetch(LATEST_UPDATES_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as SidebarApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapApiLatestUpdate);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchUpcomingExamsFirstPage(): Promise<UpcomingExam[]> {
+  try {
+    const response = await fetch(EXAMS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as SidebarApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapApiUpcomingExam);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchAdmitCardsFirstPage(): Promise<RightSideItem[]> {
+  try {
+    const response = await fetch(ADMIT_CARDS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as SidebarApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapApiAdmitCard);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchResultsFirstPage(): Promise<RightSideItem[]> {
+  try {
+    const response = await fetch(RESULTS_API_URL, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as SidebarApiResponse;
+    const content = payload.data?.content ?? [];
+    return content.map(mapApiResult);
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const jobs = await fetchHomeJobs();
+  const [jobs, initialUpdates, initialExams, initialAdmitCards, initialResults] = await Promise.all([
+    fetchHomeJobs(),
+    fetchLatestUpdatesFirstPage(),
+    fetchUpcomingExamsFirstPage(),
+    fetchAdmitCardsFirstPage(),
+    fetchResultsFirstPage(),
+  ]);
   const jobsForExplorer = jobs.slice(0, HOME_JOBS_PAYLOAD_LIMIT);
 
   return (
     <main className="w-full min-w-0 overflow-x-hidden py-3 sm:py-4">
       <section className="grid w-full min-w-0 grid-cols-1 gap-2 px-0 [&>*]:min-w-0 lg:grid-cols-[272px_minmax(0,1fr)_272px] lg:gap-4">
         <div className="hidden lg:block">
-          <HomeLeftSidebar />
+          <HomeLeftSidebar initialUpdates={initialUpdates} initialExams={initialExams} />
         </div>
 
         <HomeJobsExplorer jobs={jobsForExplorer} />
 
         <div className="hidden lg:block">
-          <HomeRightSidebar />
+          <HomeRightSidebar initialAdmitCards={initialAdmitCards} initialResults={initialResults} />
         </div>
       </section>
 
