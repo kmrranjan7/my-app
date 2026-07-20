@@ -26,6 +26,10 @@ const HelpSupportPanel = dynamic(() => import("@/components/dashboard/HelpSuppor
 
 const SKELETON_CARD_KEYS = ["a", "b", "c", "d", "e", "f"] as const;
 
+type DashboardShellProps = Readonly<{
+  readonly dashboardUsername: string;
+}>;
+
 function DashboardSkeleton() {
   return (
     <div className="space-y-3" aria-hidden="true">
@@ -43,19 +47,16 @@ function DashboardSkeleton() {
   );
 }
 
-export default function DashboardShell() {
+export default function DashboardShell(props: DashboardShellProps) {
   const {
     loading,
     creating,
     errorMessage,
     data,
     query,
-    language,
     addApplicationFromJob,
     fetchDashboardData,
     markNotificationRead,
-    setLanguage,
-    setQuery,
   } = useDashboardStore((state) => state);
   const [activeMenuKey, setActiveMenuKey] = useState("Dashboard");
   const [prefillRecord, setPrefillRecord] = useState<NewPostPrefillRecord | null>(null);
@@ -247,11 +248,7 @@ export default function DashboardShell() {
   return (
     <div className="space-y-3 pb-6">
       <DashboardHeader
-        query={query}
-        language={language}
-        unreadCount={data.notifications.filter((item) => item.isNew).length}
-        onQueryChange={setQuery}
-        onLanguageChange={setLanguage}
+        dashboardUsername={props.dashboardUsername}
       />
 
       <section

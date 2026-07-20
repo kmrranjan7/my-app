@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { getAuthCookieConfig } from "@/lib/auth";
+import { getAuthCookieConfig, getAuthUsernameCookieConfig } from "@/lib/auth";
 
 type LoginBody = {
   readonly username?: string;
@@ -61,7 +61,9 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ success: true });
   const cookie = getAuthCookieConfig();
+  const usernameCookie = getAuthUsernameCookieConfig(username);
   response.cookies.set(cookie.name, cookie.value, cookie.options);
+  response.cookies.set(usernameCookie.name, usernameCookie.value, usernameCookie.options);
 
   return response;
 }

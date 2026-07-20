@@ -1,12 +1,27 @@
 import type { NextRequest } from "next/server";
 
 export const AUTH_COOKIE_NAME = "gov_portal_auth";
+export const AUTH_USERNAME_COOKIE_NAME = "gov_portal_user";
 const AUTH_COOKIE_VALUE = "authenticated";
 
 export function getAuthCookieConfig() {
   return {
     name: AUTH_COOKIE_NAME,
     value: AUTH_COOKIE_VALUE,
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    },
+  };
+}
+
+export function getAuthUsernameCookieConfig(username: string) {
+  return {
+    name: AUTH_USERNAME_COOKIE_NAME,
+    value: username,
     options: {
       httpOnly: true,
       sameSite: "lax" as const,

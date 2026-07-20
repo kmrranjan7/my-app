@@ -1,15 +1,11 @@
 "use client";
 
-import { Bell, LogOut, Search, ShieldCheck, UserCircle2 } from "lucide-react";
+import { LogOut, ShieldCheck, UserCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type DashboardHeaderProps = Readonly<{
-  readonly query: string;
-  readonly language: "EN" | "HI";
-  readonly unreadCount: number;
-  readonly onQueryChange: (query: string) => void;
-  readonly onLanguageChange: (language: "EN" | "HI") => void;
+  readonly dashboardUsername: string;
 }>;
 
 export default function DashboardHeader(props: DashboardHeaderProps) {
@@ -51,57 +47,43 @@ export default function DashboardHeader(props: DashboardHeaderProps) {
   return (
     <header
       className={[
-        "sticky top-0 z-50 border-b-2 border-blue-600/70 bg-white/92 backdrop-blur-xl transition-all duration-300 dark:border-blue-900 dark:bg-slate-950/92",
+        "sticky top-0 z-50 border-b border-slate-200/80 bg-white/92 backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950/92",
         isScrolled
           ? "shadow-[0_10px_30px_rgba(2,6,23,0.12)]"
           : "shadow-[0_4px_16px_rgba(2,6,23,0.06)]",
       ].join(" ")}
     >
       <div className="w-full px-0">
-        <div className="grid min-h-14 grid-cols-1 items-center gap-2 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-2.5 sm:py-0">
-          <div className="inline-flex items-center gap-2 rounded-md px-1 py-1 text-slate-900">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-white text-blue-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-blue-300">
-              <ShieldCheck size={16} aria-hidden="true" />
+        <div className="grid min-h-14 grid-cols-1 items-center gap-2 py-2 sm:grid-cols-[auto_1fr_auto] sm:gap-2.5 sm:py-0">
+          <div className="inline-flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/85 px-2.5 py-1.5 text-slate-900 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+            <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-500 text-[11px] font-black tracking-[0.12em] text-white shadow-[0_8px_20px_rgba(14,116,144,0.35)]">
+              SGS
+              <span className="absolute -bottom-1 -right-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/60 bg-slate-950 text-white dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900">
+                <ShieldCheck size={10} aria-hidden="true" />
+              </span>
             </span>
-            <span className="truncate text-sm font-extrabold tracking-tight sm:text-[15px]">
-              Recruitment Dashboard
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-extrabold tracking-tight sm:text-[15px]">
+                SGS Recruitment Dashboard
+              </span>
+              <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                Secure Talent Command
+              </span>
             </span>
           </div>
 
-          <label className="relative block min-w-0">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              value={props.query}
-              onChange={(event) => props.onQueryChange(event.target.value)}
-              placeholder="Search jobs, departments, application IDs"
-              className="h-9 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-              aria-label="Search jobs"
-            />
-          </label>
+          <div aria-hidden="true" className="hidden sm:block" />
 
           <div className="flex items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-              aria-label="Notifications"
-            >
-              <Bell size={17} aria-hidden="true" />
-              <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white">
-                {props.unreadCount}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="inline-flex h-9 items-center gap-2 rounded-full border border-slate-300 bg-white px-2.5 text-slate-700 transition hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               aria-label="User profile"
             >
               <UserCircle2 size={18} aria-hidden="true" />
+              <span className="max-w-[130px] truncate text-xs font-semibold">
+                {props.dashboardUsername}
+              </span>
             </button>
 
             <button
@@ -115,36 +97,6 @@ export default function DashboardHeader(props: DashboardHeaderProps) {
               <LogOut size={15} aria-hidden="true" />
               {isLoggingOut ? "Logging out..." : "Logout"}
             </button>
-
-            <div className="inline-flex items-center rounded-xl border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
-              <button
-                type="button"
-                onClick={() => props.onLanguageChange("EN")}
-                className={[
-                  "rounded-lg px-2 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
-                  props.language === "EN"
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
-                ].join(" ")}
-                aria-pressed={props.language === "EN"}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onLanguageChange("HI")}
-                className={[
-                  "rounded-lg px-2 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
-                  props.language === "HI"
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
-                ].join(" ")}
-                aria-pressed={props.language === "HI"}
-              >
-                HI
-              </button>
-              <span className="sr-only">Current language: {props.language}</span>
-            </div>
           </div>
         </div>
       </div>
