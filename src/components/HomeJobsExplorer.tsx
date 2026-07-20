@@ -266,34 +266,34 @@ function getDeadlineChip(startDate: string, lastDate: string) {
   if (days === null) {
     return {
       text: "To Be Announced",
-      style: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      style: "border-emerald-200 bg-emerald-50 text-emerald-700",
     };
   }
 
   if (days < 0) {
     return {
       text: "Closed",
-      style: "bg-slate-100 text-slate-500 ring-1 ring-slate-200",
+      style: "border-slate-200 bg-slate-100 text-slate-500",
     };
   }
 
   if (days <= 7) {
     return {
       text: `${days}d left`,
-      style: "bg-rose-200 text-rose-950 ring-1 ring-rose-400 animate-pulse",
+      style: "border-rose-300 bg-rose-50 text-rose-700",
     };
   }
 
   if (days <= 15) {
     return {
       text: `${days}d left`,
-      style: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+      style: "border-amber-200 bg-amber-50 text-amber-700",
     };
   }
 
   return {
     text: `${days}d left`,
-    style: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    style: "border-emerald-200 bg-emerald-50 text-emerald-700",
   };
 }
 
@@ -622,50 +622,52 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                   className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex min-w-0 items-center">
-                      <p className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] text-cyan-800">
-                        {badge.label}
-                      </p>
+                    <div className="flex min-w-0 items-start gap-1.5">
+                      <span className="relative mt-0.5 inline-flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
+                        <Sparkles className="size-2.5" aria-hidden="true" />
+                        <span className="absolute -bottom-2.5 left-1/2 h-2 w-px -translate-x-1/2 bg-indigo-200/80" aria-hidden="true" />
+                      </span>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1">
+                          <span className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] text-cyan-800">
+                            {badge.label}
+                          </span>
+                          <span className={`rounded-full border px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${deadlineChip.style}`}>
+                            {deadlineChip.text}
+                          </span>
+                        </div>
+
+                        <Link href={job.href} className="mt-1 block truncate text-[10px] font-semibold text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 hover:underline">
+                          {job.postName}
+                        </Link>
+
+                        <p className="text-[9px] font-medium text-slate-500">
+                          {job.state} • Seats {job.seats}
+                        </p>
+                        <p className="text-[9px] font-medium text-slate-500">
+                          Start {formattedStartDate} • Last {hasLastDate ? formattedLastDate : "TBA"}
+                        </p>
+                      </div>
                     </div>
 
-                    <span className={`shrink-0 rounded-full px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${deadlineChip.style}`}>{deadlineChip.text}</span>
-                  </div>
-
-                  {copiedShareKey === jobKey && <p className="text-[8px] font-semibold text-emerald-700">Link copied</p>}
-
-                  <Link href={job.href} className="mt-1 block text-[10px] font-semibold leading-4 text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 hover:underline">
-                    <span className="line-clamp-2">{job.postName}</span>
-                  </Link>
-
-                  <div className="mt-1 grid grid-cols-2 gap-1 text-[9px] leading-4 text-slate-600">
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
-                      <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
+                    <div className="mt-0.5 flex shrink-0 items-start gap-1">
                       <button
                         type="button"
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+                        className="inline-flex size-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
                         aria-label={`Share ${job.postName}`}
                       >
                         <Share2 className="size-2.5" aria-hidden="true" />
                       </button>
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
-                      <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
+
                       <button
                         type="button"
                         onClick={() => toggleSavedJob(jobKey)}
                         className={[
-                          "inline-flex size-5 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98]",
+                          "inline-flex size-5 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98]",
                           isSaved
                             ? "border-rose-300 bg-rose-50/90 text-rose-600"
                             : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-100",
@@ -676,6 +678,10 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                       </button>
                     </div>
                   </div>
+
+                  {copiedShareKey === jobKey ? (
+                    <p className="mt-1 text-[8px] font-semibold text-emerald-700">Link copied</p>
+                  ) : null}
                 </article>
               );
             })}
