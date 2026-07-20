@@ -605,7 +605,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       </div>
 
       <div className="mt-3 w-full min-w-0">
-        <div className="overflow-visible pr-0 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
+        <div className="overflow-visible pr-0 lg:max-h-[82vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
           <div className="min-w-0 grid grid-cols-1 gap-1.5 px-1 sm:grid-cols-2 sm:px-0 lg:gap-1.5 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
