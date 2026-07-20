@@ -606,7 +606,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       <div className="mt-3 w-full min-w-0">
         <div className="overflow-visible pr-0 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="min-w-0 grid grid-cols-1 gap-1.5 px-1 sm:grid-cols-2 sm:px-0 lg:gap-1.5 xl:grid-cols-3">
+          <div className="min-w-0 grid grid-cols-1 gap-1 px-1 sm:grid-cols-2 sm:px-0 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
               const badge = getOrgBadge(job.badge);
@@ -619,48 +619,48 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="rounded-xl border border-slate-200/90 bg-white p-2 shadow-[0_10px_24px_rgba(15,23,42,0.08),0_2px_6px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-[0_16px_34px_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)] active:-translate-y-0.5 active:border-cyan-200 active:shadow-[0_16px_34px_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)]"
+                  className="group rounded-lg border border-indigo-100/80 bg-white/85 px-1.5 py-1 shadow-[0_10px_18px_rgba(15,23,42,0.07)] transition-all duration-200 hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-white hover:shadow-[0_14px_26px_rgba(99,102,241,0.14)] focus-within:border-indigo-300"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-center">
-                      <p className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
+                      <p className="max-w-full truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] text-cyan-800">
                         {badge.label}
                       </p>
                     </div>
 
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${deadlineChip.style}`}>{deadlineChip.text}</span>
+                    <span className={`shrink-0 rounded-full px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.08em] ${deadlineChip.style}`}>{deadlineChip.text}</span>
                   </div>
 
-                  {copiedShareKey === jobKey && <p className="text-[9px] font-semibold text-emerald-700">Link copied</p>}
+                  {copiedShareKey === jobKey && <p className="text-[8px] font-semibold text-emerald-700">Link copied</p>}
 
-                  <Link href={job.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
+                  <Link href={job.href} className="mt-1 block text-[10px] font-semibold leading-4 text-slate-800 underline-offset-2 transition-colors hover:text-indigo-700 hover:underline">
                     <span className="line-clamp-2">{job.postName}</span>
                   </Link>
 
-                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] leading-4 text-slate-600">
+                  <div className="mt-1 grid grid-cols-2 gap-1 text-[9px] leading-4 text-slate-600">
                     <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
+                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
                       <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
+                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Seats:</span> <span className="font-medium tabular-nums">{job.seats}</span></p>
                       <button
                         type="button"
                         onClick={() => {
                           void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
                         }}
-                        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
                         aria-label={`Share ${job.postName}`}
                       >
                         <Share2 className="size-2.5" aria-hidden="true" />
                       </button>
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
+                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
                       <span className="inline-flex size-5 shrink-0" aria-hidden="true" />
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
+                      <p className="min-w-0 truncate"><span className="font-semibold text-slate-700">Last:</span> <span className="font-medium tabular-nums text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
                       <button
                         type="button"
                         onClick={() => toggleSavedJob(jobKey)}
