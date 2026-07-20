@@ -4,34 +4,29 @@ import { Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
-type LoginFormProps = Readonly<{
-  readonly demoEmail: string;
-  readonly demoPassword: string;
-}>;
-
-export default function LoginForm({ demoEmail, demoPassword }: LoginFormProps) {
+export default function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
 
   const redirectTarget = useMemo(() => {
     const nextParam = params.get("next");
 
-    if (!nextParam || !nextParam.startsWith("/")) {
+    if (!nextParam?.startsWith("/")) {
       return "/dashboard";
     }
 
     return nextParam;
   }, [params]);
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
+  const canSubmit = username.trim().length > 0 && password.length > 0 && !submitting;
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSubmit) {
@@ -47,7 +42,7 @@ export default function LoginForm({ demoEmail, demoPassword }: LoginFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
@@ -87,7 +82,7 @@ export default function LoginForm({ demoEmail, demoPassword }: LoginFormProps) {
         <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
           <label className="block">
             <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">
-              Email Address
+              Username
             </span>
             <span className="relative block">
               <Mail
@@ -96,12 +91,12 @@ export default function LoginForm({ demoEmail, demoPassword }: LoginFormProps) {
                 aria-hidden="true"
               />
               <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="email"
+                type="text"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="username"
                 className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                placeholder="name@department.gov.in"
+                placeholder="Enter your username"
                 required
               />
             </span>
@@ -158,12 +153,6 @@ export default function LoginForm({ demoEmail, demoPassword }: LoginFormProps) {
             )}
           </button>
         </form>
-
-        <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2.5 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
-          <p className="font-semibold text-slate-700 dark:text-slate-200">Demo Credentials</p>
-          <p className="mt-1">Email: {demoEmail}</p>
-          <p>Password: {demoPassword}</p>
-        </div>
       </div>
     </section>
   );

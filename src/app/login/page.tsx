@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import LoginForm from "@/components/auth/LoginForm";
 import {
   AUTH_COOKIE_NAME,
-  getDemoCredentials,
   isAuthenticatedCookieValue,
 } from "@/lib/auth";
 
@@ -25,8 +24,6 @@ export default async function LoginPage() {
   if (isAuthenticatedCookieValue(authCookie)) {
     redirect("/dashboard");
   }
-
-  const demoCredentials = getDemoCredentials();
 
   return (
     <main className="relative overflow-hidden py-8 sm:py-12">
@@ -74,10 +71,7 @@ export default async function LoginPage() {
           </div>
         </article>
 
-        <LoginForm
-          demoEmail={demoCredentials.email}
-          demoPassword={demoCredentials.password}
-        />
+        <LoginForm />
       </section>
     </main>
   );

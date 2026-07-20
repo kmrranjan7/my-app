@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { getAuthCookieConfig, isValidDemoLogin } from "@/lib/auth";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
+import { getAuthCookieConfig } from "@/lib/auth";
 
 type LoginBody = {
-  readonly email?: string;
+  readonly username?: string;
   readonly password?: string;
 };
 
@@ -19,20 +20,42 @@ export async function POST(request: Request) {
     );
   }
 
-  const email = body.email?.trim() ?? "";
+  const username = body.username?.trim() ?? "";
   const password = body.password ?? "";
 
-  if (!email || !password) {
+  if (!username || !password) {
     return NextResponse.json(
-      { message: "Email and password are required." },
+      { message: "Username and password are required." },
       { status: 400 },
     );
   }
 
-  if (!isValidDemoLogin(email, password)) {
+  let backendResponse: Response;
+
+  try {
+    backendResponse = await fetch(`${API_PUBLIC_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+      cache: "no-store",
+    });
+  } catch {
     return NextResponse.json(
-      { message: "Invalid credentials. Please try again." },
-      { status: 401 },
+      { message: "Authentication service is unavailable." },
+      { status: 503 },
+    );
+  }
+
+  if (!backendResponse.ok) {
+    const backendPayload = (await backendResponse.json().catch(() => null)) as {
+      message?: string;
+    } | null;
+
+    return NextResponse.json(
+      { message: backendPayload?.message ?? "Invalid credentials. Please try again." },
+      { status: backendResponse.status },
     );
   }
 
