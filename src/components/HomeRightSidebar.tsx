@@ -8,6 +8,7 @@ import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 
 const PAGE_SIZE = 10;
+const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 const ADMIT_CARDS_API_URL =
   `${API_PUBLIC_BASE_URL}/jobs?postType=Admit&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 const RESULTS_API_URL =
@@ -154,7 +155,7 @@ async function fetchAdmitCardsPage(page: number): Promise<RightSideItem[]> {
   try {
     const response = await fetch(`${ADMIT_CARDS_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -185,7 +186,7 @@ async function fetchResultsPage(page: number): Promise<RightSideItem[]> {
   try {
     const response = await fetch(`${RESULTS_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {

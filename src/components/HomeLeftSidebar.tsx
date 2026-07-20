@@ -7,6 +7,7 @@ import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 
 const PAGE_SIZE = 10;
+const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 const LATEST_UPDATES_API_URL =
   `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 const EXAMS_API_URL =
@@ -102,7 +103,7 @@ async function fetchLatestUpdatesPage(page: number): Promise<LatestUpdate[]> {
   try {
     const response = await fetch(`${LATEST_UPDATES_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -147,7 +148,7 @@ async function fetchUpcomingExamsPage(page: number): Promise<UpcomingExam[]> {
   try {
     const response = await fetch(`${EXAMS_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {

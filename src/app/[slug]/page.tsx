@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
@@ -10,6 +11,7 @@ const siteUrl =
 		: "https://www.sarkariglobalresult.com";
 
 const normalizedSiteUrl = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
+const SLUG_REVALIDATE_SECONDS = 60;
 
 type PageProps = Readonly<{
 	params: Promise<{
@@ -105,11 +107,11 @@ function statusClasses(status: string): string {
 	return "border-slate-200 bg-slate-100 text-slate-700";
 }
 
-async function fetchBySlug(slug: string): Promise<ApiPostItem | null> {
+const fetchBySlug = cache(async (slug: string): Promise<ApiPostItem | null> => {
 	try {
 		const response = await fetch(`${API_PUBLIC_BASE_URL}/${encodeURIComponent(slug)}`, {
 			method: "GET",
-			cache: "no-store",
+			next: { revalidate: SLUG_REVALIDATE_SECONDS },
 		});
 
 		if (!response.ok) {
@@ -121,7 +123,7 @@ async function fetchBySlug(slug: string): Promise<ApiPostItem | null> {
 	} catch {
 		return null;
 	}
-}
+});
 
 function buildFaqJsonLd(rawFaqSchemaJson: string | undefined): Record<string, unknown> | null {
 	const value = toText(rawFaqSchemaJson);

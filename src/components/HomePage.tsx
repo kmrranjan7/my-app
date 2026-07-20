@@ -7,6 +7,7 @@ import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 
 const HOME_JOBS_PAYLOAD_LIMIT = 48;
 const SIDEBAR_PAGE_SIZE = 10;
+const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 const JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&page=0&size=20`;
 const LATEST_UPDATES_API_URL =
   `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&page=0&size=${SIDEBAR_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
@@ -139,7 +140,7 @@ async function fetchHomeJobs(): Promise<LatestJob[]> {
   try {
     const response = await fetch(JOBS_API_URL, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -158,7 +159,7 @@ async function fetchLatestUpdatesFirstPage(): Promise<LatestUpdate[]> {
   try {
     const response = await fetch(LATEST_UPDATES_API_URL, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -177,7 +178,7 @@ async function fetchUpcomingExamsFirstPage(): Promise<UpcomingExam[]> {
   try {
     const response = await fetch(EXAMS_API_URL, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -196,7 +197,7 @@ async function fetchAdmitCardsFirstPage(): Promise<RightSideItem[]> {
   try {
     const response = await fetch(ADMIT_CARDS_API_URL, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
@@ -215,7 +216,7 @@ async function fetchResultsFirstPage(): Promise<RightSideItem[]> {
   try {
     const response = await fetch(RESULTS_API_URL, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {

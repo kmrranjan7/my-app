@@ -20,6 +20,7 @@ import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import { SITE_URL } from "@/lib/seo";
 
 const PAGE_SIZE = 20;
+const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 
 type JobsApiContentItem = Readonly<{
   readonly applicationId?: string;
@@ -81,7 +82,7 @@ async function fetchJobsPage(page: number): Promise<LatestJob[]> {
   try {
     const response = await fetch(`${HOME_JOBS_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {

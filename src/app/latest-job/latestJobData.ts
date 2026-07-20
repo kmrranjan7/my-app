@@ -2,6 +2,7 @@ import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { formatDate, getStatus } from "@/lib/dateStatus";
 
 export const LATEST_JOB_PAGE_SIZE = 20;
+const PUBLIC_REVALIDATE_SECONDS = 60;
 
 const LATEST_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&size=${LATEST_JOB_PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
@@ -58,7 +59,7 @@ export async function fetchLatestJobsPage(page: number): Promise<LatestJobRow[]>
   try {
     const response = await fetch(`${LATEST_JOBS_API_URL}&page=${page}`, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: PUBLIC_REVALIDATE_SECONDS },
     });
 
     if (!response.ok) {
