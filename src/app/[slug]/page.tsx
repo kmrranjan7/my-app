@@ -338,7 +338,7 @@ export default async function SlugPage({ params }: PageProps) {
 			<article className="relative mx-auto w-[min(1160px,96vw)] space-y-3">
 				<section>
 					<div>
-						<div className="fixed bottom-4 right-3 z-30 sm:bottom-6 sm:right-6">
+						<div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.25rem)] right-3 z-[70] sm:bottom-6 sm:right-6">
 							<div>
 								<ShareActionButton
 									title={title}
