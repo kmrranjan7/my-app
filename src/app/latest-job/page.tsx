@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     canonical: "/latest-job",
   },
   openGraph: {
-    title: "Latest Govt Jobs 2026 - Sarkari Job Notifications",
+    title: "Latest Govt Jobs 2026 - Sarkari Global Result Job Notifications",
     description:
-      "Browse latest SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
+      "Latest Government Jobs, SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
     url: "/latest-job",
     siteName: SITE_NAME,
     images: [
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Latest Govt Jobs 2026 - Sarkari Job Notifications",
+    title: "Latest Govt Jobs 2026 - Sarkari Global Result Job Notifications",
     description:
-      "Browse latest SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
+      "Latest Government Jobs, SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
     images: ["/twitter-image"],
   },
 };

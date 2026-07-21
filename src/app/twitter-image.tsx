@@ -9,7 +9,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function TwitterImage() {
-    const response = await fetch(`${SITE_URL}/next.png`, {
+    const response = await fetch(`${SITE_URL}/opengraph.png`, {
       cache: "force-cache",
     });
   
