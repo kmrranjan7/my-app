@@ -23,13 +23,28 @@ type ShareActionButtonProps = Readonly<{
   copiedText?: string;
 }>;
 
+function iconForDetail(label: string): string {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("post") || normalized.includes("title")) return "📝";
+  if (normalized.includes("state") || normalized.includes("location")) return "📍";
+  if (normalized.includes("organization") || normalized.includes("org")) return "🏢";
+  if (normalized.includes("seat") || normalized.includes("vacanc")) return "👥";
+  if (normalized.includes("start")) return "📅";
+  if (normalized.includes("last") || normalized.includes("end")) return "⏰";
+  if (normalized.includes("qualif")) return "🎓";
+
+  return "•";
+}
+
 function toAbsoluteUrl(href: string): string {
   if (href.startsWith("http://") || href.startsWith("https://")) {
     return href;
   }
 
+  const runtimeOrigin = globalThis.location?.origin || SITE_URL;
   const normalizedHref = href.startsWith("/") ? href : `/${href}`;
-  return `${SITE_URL}${normalizedHref}`;
+  return `${runtimeOrigin}${normalizedHref}`;
 }
 
 export default function ShareActionButton({
@@ -59,16 +74,15 @@ export default function ShareActionButton({
   const handleShare = async () => {
     const shareUrl = toAbsoluteUrl(href);
 
-    const text = [
-      `Sarkari Global Result - ${contextLabel}`,
-      `Post Name: ${title}`,
-      ...details.map((detail) => `${detail.label}: ${detail.value}`),
-      `Link: ${shareUrl}`,
-    ].join("\n");
+    // const text = [
+    //   `Sarkari Global Result - ${contextLabel}`,
+    //   `📝 Post Name: ${title}`,
+    //   ...details.map((detail) => `${iconForDetail(detail.label)} ${detail.label}: ${detail.value}`),
+    //   `🔗 Link: ${shareUrl}`,
+    // ].join("\n");
 
     const payload = {
       title: `${title} | Sarkari Global Result`,
-      text,
       url: shareUrl,
     };
 

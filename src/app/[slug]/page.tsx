@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import ShareActionButton from "@/components/common/ShareActionButton";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 
@@ -245,6 +246,9 @@ export default async function SlugPage({ params }: PageProps) {
 	const publishedAt = toText(item.createdAt);
 	const modifiedAt = toText(item.updatedAt);
 	const faqJsonLd = buildFaqJsonLd(item.faqSchemaJson);
+	const organization = toText(item.organization);
+	const stateName = toText(item.stateName);
+	const vacancies = toNumber(item.vacancies);
 
 	const webPageJsonLd = {
 		"@context": "https://schema.org",
@@ -332,9 +336,24 @@ export default async function SlugPage({ params }: PageProps) {
 			/>
 
 			<article className="relative mx-auto w-[min(1160px,96vw)] space-y-3">
-
 				<section>
 					<div>
+						<div className="fixed bottom-4 right-3 z-30 sm:bottom-6 sm:right-6">
+							<div>
+								<ShareActionButton
+									title={title}
+									href={`/${slug}`}
+									contextLabel="Post Detail"
+									details={[
+										...(organization ? [{ label: "Organization", value: organization }] : []),
+										...(stateName ? [{ label: "State", value: stateName }] : []),
+										...(vacancies !== null ? [{ label: "Seats", value: vacancies.toLocaleString("en-IN") }] : []),
+										{ label: "Start Date", value: formatDate(item.startDate) },
+										{ label: "Last Date", value: formatDate(item.endDate) },
+									]}
+								/>
+							</div>
+						</div>
 						<div dangerouslySetInnerHTML={{ __html: contentHtml }} />
 					</div>
 				</section>
