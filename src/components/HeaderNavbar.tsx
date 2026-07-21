@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { label: "Latest Jobs", href: "/latest-job" },
   { label: "Admit Card", href: "/admit-card" },
   { label: "Results", href: "/result" },
+  { label: "Image Compress", href: "/image-compress" },
   { label: "Admission", href: "/admission" },
   { label: "Syllabus", href: "/syllabus" },
   { label: "Answer Key", href: "/answer-key" },
