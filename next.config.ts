@@ -1,9 +1,26 @@
 import type { NextConfig } from "next";
 
-const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const isProduction = process.env.NODE_ENV === "production";
+
+const parseCsvEnv = (value?: string) =>
+  value
+    ?.split(",")
+    .map((item) => item.trim())
+    .filter(Boolean) ?? [];
+
+const allowedDevOrigins = Array.from(
+  new Set(parseCsvEnv(process.env.NEXT_ALLOWED_DEV_ORIGINS)),
+);
+
+const sitemapApiOrigin =
+  process.env.SITEMAP_API_ORIGIN?.trim() ??
+  (!isProduction ? "http://localhost:8080" : undefined);
+
+if (!sitemapApiOrigin) {
+  throw new Error(
+    "SITEMAP_API_ORIGIN must be set in production to generate sitemap rewrites.",
+  );
+}
 
 const securityHeaders = [
   {
@@ -31,20 +48,24 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  allowedDevOrigins,
+  ...(allowedDevOrigins.length ? { allowedDevOrigins } : {}),
   async rewrites() {
     return [
       {
         source: "/post-sitemap.xml",
-        destination: "http://localhost:8080/api/site/post-sitemap.xml",
+        destination: `${sitemapApiOrigin}/api/site/post-sitemap.xml`,
       },
       {
         source: String.raw`/post-sitemap:page(\d+).xml`,
-        destination: "http://localhost:8080/api/site/post-sitemap:page.xml",
+        destination: `${sitemapApiOrigin}/api/site/post-sitemap:page.xml`,
       },
     ];
   },
   async headers() {
+    if (process.env.NODE_ENV !== "production") {
+      return [];
+    }
+
     return [
       {
         source: "/:path*",
