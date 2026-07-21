@@ -1,4 +1,5 @@
 import {
+  Sparkles,
   CalendarClock,
   ChevronDown,
   ChevronUp,
@@ -17,6 +18,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import type { Editor as TinyMCEEditor } from "tinymce";
 import { useEffect, useRef, useState } from "react";
 
+import { buildAiAutofillPatch } from "@/components/dashboard/newPostAi";
 import { Card, GhostButton, SectionHeading } from "@/components/dashboard/ui";
 import { dashboardPostTemplates } from "@/components/dashboard/postTemplates";
 import { useDashboardStore } from "@/stores/dashboardStore";
@@ -267,6 +269,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [saveRecordError, setSaveRecordError] = useState<string | null>(null);
+  const [aiFillError, setAiFillError] = useState<string | null>(null);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [postBasicsErrors, setPostBasicsErrors] = useState<PostBasicsErrors>({});
   const [applicationDetailsErrors, setApplicationDetailsErrors] = useState<ApplicationDetailsErrors>({});
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
@@ -708,6 +712,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setLastAutosaveAt(null);
     setPublishError(null);
     setSaveRecordError(null);
+    setAiFillError(null);
     setPostBasicsErrors({});
     setApplicationDetailsErrors({});
     setHasRecoverableDraft(false);
@@ -719,6 +724,70 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(NEW_POST_DRAFT_KEY);
+    }
+  };
+
+  const handleAIFillFromTitle = async () => {
+    const title = postTitle.trim();
+
+    if (!title) {
+      setPostBasicsErrors((current) => ({
+        ...current,
+        postTitle: "Post title is required for AI autofill.",
+      }));
+      return;
+    }
+
+    setAiFillError(null);
+    setIsAiGenerating(true);
+
+    try {
+      const patch = await buildAiAutofillPatch({
+        title,
+        currentContentHtml: contentHtml,
+        currentPostSlug: postSlug,
+        isSlugManuallyEdited,
+        qualificationOptions,
+        stateOptions,
+      });
+
+      if (typeof patch.postTitle === "string") setPostTitle(patch.postTitle);
+      if (typeof patch.postSlug === "string") setPostSlug(patch.postSlug);
+
+      if (typeof patch.contentHtml === "string" && patch.contentHtml) {
+        setContentHtml(patch.contentHtml);
+        if (editorRef.current) {
+          editorRef.current.setContent(patch.contentHtml);
+        }
+      }
+
+      if (typeof patch.applicationId === "string") setApplicationId(patch.applicationId);
+      if (typeof patch.department === "string") setDepartment(patch.department);
+      if (typeof patch.organization === "string") setOrganization(patch.organization);
+      if (typeof patch.qualification === "string") setQualification(patch.qualification);
+      if (typeof patch.vacancies === "number") setVacancies(patch.vacancies);
+      if (typeof patch.startDate === "string") setStartDate(patch.startDate);
+      if (typeof patch.endDate === "string") setEndDate(patch.endDate);
+      if (typeof patch.stateName === "string") setStateName(patch.stateName);
+      if (typeof patch.faqSchemaJson === "string") setFaqSchemaJson(patch.faqSchemaJson);
+      if (typeof patch.seoTitle === "string") setSeoTitle(patch.seoTitle);
+      if (typeof patch.seoDescription === "string") setSeoDescription(patch.seoDescription);
+      if (typeof patch.seoFocusKeyword === "string") setSeoFocusKeyword(patch.seoFocusKeyword);
+      if (typeof patch.postStatus === "string") setPostStatus(patch.postStatus);
+      if (typeof patch.scheduledAt === "string") setScheduledAt(patch.scheduledAt);
+
+      if (typeof patch.postType === "string") {
+        setPostType(patch.postType);
+        setPostCategory(categoryFromPostType(patch.postType));
+      }
+
+      if (typeof patch.isFeatured === "boolean") setIsFeatured(patch.isFeatured);
+      if (typeof patch.priorityScore === "number") setPriorityScore(patch.priorityScore);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to autofill from AI.";
+      setAiFillError(message);
+    } finally {
+      setIsAiGenerating(false);
     }
   };
 
@@ -1128,9 +1197,21 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
                     : "border-slate-300 focus:border-blue-500 focus:ring-blue-400/35"
                 }`}
               />
+              <button
+                type="button"
+                onClick={() => void handleAIFillFromTitle()}
+                disabled={isAiGenerating}
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-blue-600 bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Sparkles size={13} aria-hidden="true" />
+                {isAiGenerating ? "Generating..." : "AI Fill"}
+              </button>
             </div>
             {postBasicsErrors.postTitle ? (
               <p className="mt-1 text-[11px] text-rose-600">{postBasicsErrors.postTitle}</p>
+            ) : null}
+            {aiFillError ? (
+              <p className="mt-1 text-[11px] text-rose-600">{aiFillError}</p>
             ) : null}
 
             <label
