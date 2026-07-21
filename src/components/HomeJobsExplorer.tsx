@@ -10,14 +10,13 @@ import {
   MapPin,
   Sparkles,
   X,
-  Share2,
   Heart,
 } from "lucide-react";
 import type { LatestJob } from "@/data/sidebarContent";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { parseDateSafe, toDateOnly } from "@/lib/dateStatus";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
-import { SITE_URL } from "@/lib/seo";
+import ShareActionButton from "@/components/common/ShareActionButton";
 
 const PAGE_SIZE = 20;
 const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
@@ -349,7 +348,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
   const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
   const [savedJobRecords, setSavedJobRecords] = useState<SavedJobRecord[]>([]);
-  const [copiedShareKey, setCopiedShareKey] = useState<string | null>(null);
   const [badgeColorSeed, setBadgeColorSeed] = useState(0);
   const previousSavedCountRef = useRef(0);
   const hasHydratedSavedJobsRef = useRef(false);
@@ -461,60 +459,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   const handleQualificationFilterChange = (value: string) => {
     setQualificationFilter(value as QualificationFilter);
-  };
-
-  const buildSharePayload = (job: LatestJob, formattedStartDate: string, formattedLastDate: string, hasLastDate: boolean) => {
-    const normalizedHref = job.href.startsWith("/") ? job.href : `/${job.href}`;
-    const applyLink = job.href.startsWith("http") ? job.href : `${SITE_URL}${normalizedHref}`;
-
-    const text = [
-      "Sarkari Global Result - Job Alert",
-      `Post Name: ${job.postName}`,
-      `Organization: ${job.badge}`,
-      `State: ${job.state}`,
-      `Qualification: ${job.qualification}`,
-      `Seats: ${job.seats}`,
-      `Start Date: ${formattedStartDate}`,
-      `Last Date: ${hasLastDate ? formattedLastDate : "To Be Announced"}`,
-      `Apply Link: ${applyLink}`,
-    ].join("\n");
-
-    return {
-      title: `${job.postName} | Sarkari Global Result`,
-      text,
-      url: applyLink,
-    };
-  };
-
-  const handleShare = async (
-    shareKey: string,
-    job: LatestJob,
-    formattedStartDate: string,
-    formattedLastDate: string,
-    hasLastDate: boolean,
-  ) => {
-    const payload = buildSharePayload(job, formattedStartDate, formattedLastDate, hasLastDate);
-
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      try {
-        await navigator.share(payload);
-        return;
-      } catch {
-        // Fall back to clipboard copy if share sheet is canceled/unavailable.
-      }
-    }
-
-    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(payload.url);
-        setCopiedShareKey(shareKey);
-        globalThis.setTimeout(() => {
-          setCopiedShareKey((current) => (current === shareKey ? null : current));
-        }, 1600);
-      } catch {
-        // Ignore clipboard errors silently.
-      }
-    }
   };
 
   const toggleSavedJob = (jobKey: string, job: LatestJob) => {
@@ -811,8 +755,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                   </div>
 
-                  {copiedShareKey === jobKey && <p className="text-[8px] font-semibold text-emerald-700">Link copied</p>}
-
                   <Link href={job.href} className="mt-0.5 block text-[11px] font-bold leading-4 text-slate-900">
                     <span className="line-clamp-2">{job.postName}</span>
                   </Link>
@@ -824,16 +766,23 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-bold tabular-nums text-emerald-800">{job.seats}</span></p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleShare(jobKey, job, formattedStartDate, formattedLastDate, hasLastDate);
-                        }}
-                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                        aria-label={`Share ${job.postName}`}
-                      >
-                        <Share2 className="size-2" aria-hidden="true" />
-                      </button>
+                      <ShareActionButton
+                        title={job.postName}
+                        href={job.href}
+                        contextLabel="Job Alert"
+                        details={[
+                          { label: "Organization", value: job.badge },
+                          { label: "State", value: job.state },
+                          { label: "Qualification", value: job.qualification },
+                          { label: "Seats", value: job.seats },
+                          { label: "Start Date", value: formattedStartDate },
+                          { label: "Last Date", value: hasLastDate ? formattedLastDate : "To Be Announced" },
+                        ]}
+                        showLabel={false}
+                        buttonClassName="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        iconClassName="size-2"
+                        copiedTextClassName="text-[8px] font-semibold text-emerald-700"
+                      />
                     </div>
                     <div className="flex min-w-0 items-center justify-between gap-1">
                       <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
