@@ -48,28 +48,6 @@ type SidebarApiResponse = Readonly<{
   };
 }>;
 
-function toRelativeTime(value?: string): string {
-  if (!value) return "Recently posted";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently posted";
-
-  const diffMs = Date.now() - date.getTime();
-  if (diffMs <= 0) return "Just now";
-
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
   return {
     badge: item.organization || item.applicationId || "JOB",
@@ -82,21 +60,19 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
     state: item.stateName || "All India",
     startDate: item.startDate || "",
     lastDate: item.endDate || "",
-    postedTime: toRelativeTime(item.createdAt),
     href: item.postSlug || "",
     isFeatured: item.isFeatured === true,
     priorityScore:
       typeof item.priorityScore === "number" && Number.isFinite(item.priorityScore)
         ? item.priorityScore
         : 0,
-    createdAt: item.createdAt,
   };
 }
 
 function mapApiLatestUpdate(item: JobsApiContentItem): LatestUpdate {
   return {
     title: item.postTitle || "Untitled Update",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     type: item.postType || "Update",
     href: item.postSlug ? `/${item.postSlug}` : "/updates",
   };
@@ -108,11 +84,11 @@ function formatExamDate(value?: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Date TBA";
 
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
 }
 
 function mapApiUpcomingExam(item: JobsApiContentItem): UpcomingExam {
@@ -130,7 +106,7 @@ function mapApiUpcomingExam(item: JobsApiContentItem): UpcomingExam {
 function mapApiAdmitCard(item: JobsApiContentItem): RightSideItem {
   return {
     title: item.postTitle || "Untitled Admit Card",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     category: "Admit Card",
     badge: item.organization || "Admit",
     href: item.postSlug ? `/${item.postSlug}` : "/admit-card",
@@ -140,7 +116,7 @@ function mapApiAdmitCard(item: JobsApiContentItem): RightSideItem {
 function mapApiResult(item: JobsApiContentItem): RightSideItem {
   return {
     title: item.postTitle || "Untitled Result",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     category: "Result",
     badge: item.organization || "Result",
     href: item.postSlug ? `/results/${item.postSlug}` : "/results",

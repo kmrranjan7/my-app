@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { getStatusClasses } from "@/lib/dateStatus";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import ShareActionButton from "@/components/common/ShareActionButton";
 import {
@@ -69,8 +68,7 @@ export default function ResultPageClient({
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Org</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">State</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Start</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Last</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Result Date</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Status</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Share</th>
                   </tr>
@@ -91,10 +89,9 @@ export default function ResultPageClient({
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
-                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.lastDate}</td>
                       <td className="px-2 py-2 align-top">
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(row.status)}`}>
-                          {row.status}
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                          Published
                         </span>
                       </td>
                       <td className="px-2 py-2 align-top">
@@ -107,7 +104,6 @@ export default function ResultPageClient({
                             { label: "State", value: row.state },
                             { label: "Seats", value: row.seats },
                             { label: "Start Date", value: row.startDate },
-                            { label: "Last Date", value: row.lastDate },
                           ]}
                         />
                       </td>
@@ -125,8 +121,8 @@ export default function ResultPageClient({
                       {row.badge}
                     </span>
                     <div className="flex items-center gap-1">
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(row.status)}`}>
-                        {row.status}
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                        Published
                       </span>
                       <ShareActionButton
                         title={row.title}
@@ -137,7 +133,6 @@ export default function ResultPageClient({
                           { label: "State", value: row.state },
                           { label: "Seats", value: row.seats },
                           { label: "Start Date", value: row.startDate },
-                          { label: "Last Date", value: row.lastDate },
                         ]}
                         showLabel={false}
                         buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
@@ -153,7 +148,6 @@ export default function ResultPageClient({
                     <p><span className="font-bold text-slate-700">State:</span> {row.state}</p>
                     <p><span className="font-bold text-slate-700">Seats:</span> {row.seats}</p>
                     <p><span className="font-bold text-slate-700">Start:</span> {row.startDate}</p>
-                    <p><span className="font-bold text-slate-700">Last:</span> {row.lastDate}</p>
                   </div>
                 </article>
               ))}

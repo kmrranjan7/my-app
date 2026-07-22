@@ -1,6 +1,6 @@
 export type LatestUpdate = {
   title: string;
-  time: string;
+  startDate: string;
   type: string;
   href: string;
 };
@@ -15,7 +15,7 @@ export type UpcomingExam = {
 
 export type RightSideItem = {
   title: string;
-  time: string;
+  startDate: string;
   category: "Admit Card" | "Result";
   badge: string;
   href: string;
@@ -29,10 +29,8 @@ export type LatestJob = {
   state: string;
   startDate: string;
   lastDate: string;
-  postedTime: string;
   href: string;
   isFeatured?: boolean;
   priorityScore?: number;
-  createdAt?: string;
 };
 

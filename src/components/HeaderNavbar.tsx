@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Bell, CircleDot, X } from "lucide-react";
+import { Heart, Bell, CircleDot, X } from "lucide-react";
+import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 
 type NavItem = {
   label: string;
@@ -19,7 +20,56 @@ type SavedJobRecord = Readonly<{
   savedAt: number;
 }>;
 
+type LatestUpdateRecord = Readonly<{
+  id: string;
+  title: string;
+  time: string;
+  type: string;
+  href: string;
+}>;
+
 const SAVED_JOBS_STORAGE_KEY = "saved-jobs-records";
+const PAGE_SIZE = 10;
+const LATEST_UPDATES_API_URL = `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+
+function getBadgeStyles(type: string): string {
+  const normalized = type.toLowerCase();
+  
+  if (normalized.includes("admit")) {
+    return "border-blue-200 bg-blue-50 text-blue-700";
+  }
+  
+  if (normalized.includes("result")) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  
+  if (normalized.includes("exam")) {
+    return "border-violet-200 bg-violet-50 text-violet-700";
+  }
+  
+  if (normalized.includes("answer")) {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  
+  if (normalized.includes("syllabus")) {
+    return "border-cyan-200 bg-cyan-50 text-cyan-700";
+  }
+  
+  if (normalized.includes("job")) {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+  
+  // Default colors based on text hash for consistency
+  const hash = Array.from(normalized).reduce((acc, char) => acc + (char.codePointAt(0) ?? 0), 0);
+  const colors = [
+    "border-purple-200 bg-purple-50 text-purple-700",
+    "border-pink-200 bg-pink-50 text-pink-700",
+    "border-orange-200 bg-orange-50 text-orange-700",
+    "border-indigo-200 bg-indigo-50 text-indigo-700",
+  ];
+  
+  return colors[hash % colors.length];
+}
 
 
 const navItems: NavItem[] = [
@@ -27,14 +77,15 @@ const navItems: NavItem[] = [
   { label: "Latest Jobs", href: "/latest-jobs" },
   { label: "Results", href: "/results" },
   { label: "Admit Cards", href: "/admit-cards" },
+  { label: "Exams", href: "/exams" },
+  { label: "Image Compressor", href: "/image-compress" },
   { label: "Answer Keys", href: "/answer-keys" },
 ];
 
 const moreItems: NavItem[] = [
   { label: "Syllabus", href: "/syllabus" },
   { label: "Admissions", href: "/admissions" },
-  { label: "Exams", href: "/exams" },
-  { label: "Image Compressor", href: "/image-compress" },
+  
   { label: "About Us", href: "/about" },
   { label: "Contact Us", href: "/contact" },
   { label: "Privacy Policy", href: "/privacy-policy" },
@@ -50,8 +101,12 @@ export default function HeaderNavbar() {
   const [savedJobs, setSavedJobs] = useState<SavedJobRecord[]>([]);
   const [isBellOpen, setIsBellOpen] = useState(false);
   const [isSavedBellRinging, setIsSavedBellRinging] = useState(false);
+  const [latestUpdates, setLatestUpdates] = useState<LatestUpdateRecord[]>([]);
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+  const [isLoadingUpdates, setIsLoadingUpdates] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const bellMenuRef = useRef<HTMLDivElement | null>(null);
+  const updatesMenuRef = useRef<HTMLDivElement | null>(null);
 
   const handleClearAllSavedJobs = () => {
     if (typeof globalThis === "undefined") {
@@ -133,12 +188,17 @@ export default function HeaderNavbar() {
       if (bellMenuRef.current && !bellMenuRef.current.contains(target)) {
         setIsBellOpen(false);
       }
+
+      if (updatesMenuRef.current && !updatesMenuRef.current.contains(target)) {
+        setIsUpdatesOpen(false);
+      }
     };
 
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMoreOpen(false);
         setIsBellOpen(false);
+        setIsUpdatesOpen(false);
       }
     };
 
@@ -154,7 +214,42 @@ export default function HeaderNavbar() {
   useEffect(() => {
     setIsMoreOpen(false);
     setIsBellOpen(false);
+    setIsUpdatesOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const fetchLatestUpdates = async () => {
+      if (!isUpdatesOpen || latestUpdates.length > 0) return;
+      
+      setIsLoadingUpdates(true);
+      try {
+        const response = await fetch(`${LATEST_UPDATES_API_URL}&page=0`, {
+          method: "GET",
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.data?.content || [];
+          
+          const updates: LatestUpdateRecord[] = content.map((item: any, index: number) => ({
+            id: item.postSlug || `update-${index}`,
+            title: item.postTitle || "Untitled Update",
+            time: item.startDate || "",
+            type: item.postType || "Update",
+            href: item.postSlug ? `/${item.postSlug}` : "/updates",
+          }));
+          
+          setLatestUpdates(updates);
+        }
+      } catch (error) {
+        console.error("Failed to fetch latest updates:", error);
+      } finally {
+        setIsLoadingUpdates(false);
+      }
+    };
+
+    fetchLatestUpdates();
+  }, [isUpdatesOpen, latestUpdates.length]);
 
   useEffect(() => {
     const readSavedCount = () => {
@@ -252,7 +347,7 @@ export default function HeaderNavbar() {
             : "shadow-[0_6px_18px_rgba(2,6,23,0.08)]",
         ].join(" ")}
       >
-        <div className="mx-auto w-[min(1240px,96vw)] px-2 sm:px-3 lg:px-4">
+        <div className="w-full px-2 sm:px-3 lg:px-4">
           <div className="pointer-events-none hidden h-[1.5px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
 
           <div className="grid h-11 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[52px] lg:grid-cols-[auto_1fr_auto] lg:gap-3">
@@ -394,13 +489,100 @@ export default function HeaderNavbar() {
 
             </nav>
 
-            <div ref={bellMenuRef} className="relative ml-1 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div ref={updatesMenuRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUpdatesOpen((prev) => !prev);
+                  }}
+                  className="relative inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-blue-600 transition-transform hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                  aria-live="polite"
+                  aria-label="Latest updates"
+                  title="Latest updates"
+                  aria-haspopup="menu"
+                  aria-expanded={isUpdatesOpen}
+                  aria-controls="updates-menu"
+                >
+                  <Bell className="size-3.5" aria-hidden="true" />
+                  <span className="absolute -right-0.5 -top-0.5 inline-flex h-2 w-2 rounded-full bg-blue-600" aria-hidden="true" />
+                </button>
+
+                <div
+                  id="updates-menu"
+                  className={[
+                    "absolute right-0 top-[calc(100%+8px)] z-20 w-[320px] rounded-2xl border border-blue-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                    isUpdatesOpen
+                      ? "pointer-events-auto visible opacity-100"
+                      : "pointer-events-none invisible opacity-0",
+                  ].join(" ")}
+                  role="menu"
+                  aria-label="Latest updates"
+                >
+                  <div className="mb-1 flex items-center justify-between gap-2 px-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-700">
+                      Latest Updates
+                    </p>
+                  </div>
+
+                  <div className="max-h-72 space-y-1 overflow-y-auto pr-0.5">
+                    {isLoadingUpdates && (
+                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-2 py-6 text-center text-[11px] text-slate-500">
+                        Loading updates...
+                      </div>
+                    )}
+                    
+                    {!isLoadingUpdates && latestUpdates.length === 0 && (
+                      <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-[11px] text-slate-500">
+                        No updates available.
+                      </p>
+                    )}
+                    
+                    {!isLoadingUpdates && latestUpdates.length > 0 && latestUpdates.map((update) => (
+                        <article
+                          key={update.id}
+                          className="group rounded-lg border border-slate-200/70 bg-white px-2.5 py-2 transition-all hover:border-slate-300 hover:shadow-sm"
+                        >
+                          <Link
+                            href={update.href}
+                            className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-slate-800 group-hover:text-slate-900">
+                                  {update.title}
+                                </p>
+                                <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                                  {(() => {
+                                    if (!update.time) return "Date TBA";
+                                    const date = new Date(update.time);
+                                    if (Number.isNaN(date.getTime())) return "Date TBA";
+                                    const day = String(date.getDate()).padStart(2, "0");
+                                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                                    const year = date.getFullYear();
+                                    return `${day}-${month}-${year}`;
+                                  })()}
+                                </p>
+                              </div>
+                              <span className={`inline-flex shrink-0 items-center rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider ${getBadgeStyles(update.type)}`}>
+                                {update.type}
+                              </span>
+                            </div>
+                          </Link>
+                        </article>
+                      ))
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div ref={bellMenuRef} className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   setIsBellOpen((prev) => !prev);
                 }}
-                className={`relative inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-1.5 text-sky-700 transition-transform hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 ${
+                className={`relative inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-1.5 text-rose-500 transition-transform hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 ${
                   isSavedBellRinging ? "animate-bounce" : ""
                 }`}
                 aria-live="polite"
@@ -410,7 +592,7 @@ export default function HeaderNavbar() {
                 aria-expanded={isBellOpen}
                 aria-controls="saved-jobs-menu"
               >
-                <Bell className="size-3.5" aria-hidden="true" />
+                <Heart className="size-3.5 fill-rose-500 text-rose-500" aria-hidden="true" />
                 {savedJobsCount > 0 ? (
                   <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[14px] items-center justify-center rounded-full bg-rose-600 px-0.5 text-[8px] font-bold leading-[14px] text-white">
                     {savedJobsCount}
@@ -421,7 +603,7 @@ export default function HeaderNavbar() {
               <div
                 id="saved-jobs-menu"
                 className={[
-                  "absolute right-0 top-[calc(100%+8px)] z-20 w-[290px] rounded-2xl border border-indigo-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                  "absolute right-0 top-[calc(100%+8px)] z-20 w-[290px] rounded-2xl border border-rose-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
                   isBellOpen
                     ? "pointer-events-auto visible opacity-100"
                     : "pointer-events-none invisible opacity-0",
@@ -451,27 +633,30 @@ export default function HeaderNavbar() {
                     savedJobs.map((job) => (
                       <article
                         key={job.key}
-                        className="group rounded-xl border border-indigo-100/80 bg-white px-1.5 py-1.5 transition-colors hover:border-indigo-200 hover:bg-indigo-50/40"
+                        className="group rounded-xl border border-rose-100/80 bg-white px-1.5 py-1.5 transition-colors hover:border-rose-200 hover:bg-rose-50/40"
                       >
+                        
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-start gap-1.5">
-                            <span className="mt-0.5 inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                            <span className="mt-0.5 inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
                               <CircleDot className="h-2.5 w-2.5" aria-hidden="true" />
                             </span>
                             <div className="min-w-0">
                               <Link
                                 href={job.href}
-                                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+                                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
                               >
-                                <p className="line-clamp-1 text-[11px] font-semibold leading-4 text-slate-800 group-hover:text-indigo-800">
+                                <p className="line-clamp-1 text-[11px] font-semibold leading-4 text-slate-800 group-hover:text-rose-800">
                                   {job.title}
                                 </p>
                                 <p className="text-[10px] leading-4 text-slate-500">
-                                  {job.dateLabel || new Date(job.savedAt).toLocaleDateString("en-GB", {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                  })}
+                                  {job.dateLabel || (() => {
+                                    const date = new Date(job.savedAt);
+                                    const day = String(date.getDate()).padStart(2, "0");
+                                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                                    const year = date.getFullYear();
+                                    return `${day}-${month}-${year}`;
+                                  })()}
                                 </p>
                               </Link>
                             </div>
@@ -493,6 +678,7 @@ export default function HeaderNavbar() {
                     ))
                   )}
                 </div>
+              </div>
               </div>
             </div>
 

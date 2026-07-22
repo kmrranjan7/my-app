@@ -69,34 +69,12 @@ function getExamBadgeStyles(badge: string) {
   return dynamicBadgePalettes[colorIndex];
 }
 
-function toRelativeTime(value?: string): string {
-  if (!value) return "Recently";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently";
-
-  const diffMs = Date.now() - date.getTime();
-  if (diffMs <= 0) return "Just now";
-
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 function mapLatestUpdateApiItem(item: PublicJobsApiItem): LatestUpdate {
   const slug = item.postSlug?.trim();
 
   return {
     title: item.postTitle?.trim() || "Untitled Update",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     type: item.postType?.trim() || "Update",
     href: slug ? `/${slug}` : "/updates",
   };
@@ -127,11 +105,11 @@ function formatExamDate(value?: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Date TBA";
 
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
 }
 
 function mapExamApiItem(item: PublicJobsApiItem): UpcomingExam {
@@ -290,7 +268,7 @@ export default function HomeLeftSidebar({
     initialItems: initialUpdates,
     pageSize: PAGE_SIZE,
     fetchPage: fetchLatestUpdatesPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
     rootMargin: "240px 0px",
     loadFirstPageOnMount: initialUpdates.length === 0,
   });
@@ -350,7 +328,7 @@ export default function HomeLeftSidebar({
                         >
                           {item.title}
                         </Link>
-                        <p className="text-[9px] font-medium text-slate-500">{item.time}</p>
+                        <p className="text-[9px] font-medium text-slate-500">{formatExamDate(item.startDate)}</p>
                       </div>
                     </div>
 

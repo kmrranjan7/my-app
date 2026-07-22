@@ -75,11 +75,11 @@ function formatDate(value?: string | null): string {
 		return "-";
 	}
 
-	return parsed.toLocaleDateString("en-IN", {
-		day: "2-digit",
-		month: "short",
-		year: "numeric",
-	});
+	const day = String(parsed.getDate()).padStart(2, "0");
+	const month = String(parsed.getMonth() + 1).padStart(2, "0");
+	const year = parsed.getFullYear();
+
+	return `${day}-${month}-${year}`;
 }
 
 function normalizeContentHtml(html: string): string {

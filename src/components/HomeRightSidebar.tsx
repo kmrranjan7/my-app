@@ -16,6 +16,7 @@ const RESULTS_API_URL =
 
 type PublicJobsApiItem = Readonly<{
   readonly createdAt?: string;
+  readonly startDate?: string;
   readonly organization?: string;
   readonly postSlug?: string;
   readonly postTitle?: string;
@@ -120,23 +121,17 @@ function UpdateTypeIcon({ type, className }: Readonly<{ type: string; className?
   );
 }
 
-function toRelativeTime(value?: string): string {
-  if (!value) return "Recently";
+function formatDate(value?: string): string {
+  if (!value) return "Date TBA";
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently";
+  if (Number.isNaN(date.getTime())) return "Date TBA";
 
-  const diffMs = Date.now() - date.getTime();
-  if (diffMs <= 0) return "Just now";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
 
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} day${days === 1 ? "" : "s"} ago`;
+  return `${day}-${month}-${year}`;
 }
 
 function mapAdmitApiItem(item: PublicJobsApiItem): RightSideItem {
@@ -144,7 +139,7 @@ function mapAdmitApiItem(item: PublicJobsApiItem): RightSideItem {
   const organization = item.organization?.trim();
   return {
     title: item.postTitle?.trim() || "Untitled Admit Card",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     category: "Admit Card",
     badge: organization || "Admit",
     href: slug ? `/${slug}` : "/admit-card",
@@ -175,7 +170,7 @@ function mapResultApiItem(item: PublicJobsApiItem): RightSideItem {
   const organization = item.organization?.trim();
   return {
     title: item.postTitle?.trim() || "Untitled Result",
-    time: toRelativeTime(item.createdAt),
+    startDate: item.startDate || item.createdAt || "",
     category: "Result",
     badge: organization || "Result",
     href: slug ? `/results/${slug}` : "/results",
@@ -257,7 +252,7 @@ function SidebarCard({
                       >
                         {item.title}
                       </Link>
-                      <p className="text-[9px] font-medium text-slate-500">{item.time}</p>
+                      <p className="text-[9px] font-medium text-slate-500">{formatDate(item.startDate)}</p>
                     </div>
                   </div>
 
@@ -311,7 +306,7 @@ export default function HomeRightSidebar({
     initialItems: initialAdmitCards,
     pageSize: PAGE_SIZE,
     fetchPage: fetchAdmitCardsPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
     rootMargin: "240px 0px",
     loadFirstPageOnMount: initialAdmitCards.length === 0,
   });
@@ -325,7 +320,7 @@ export default function HomeRightSidebar({
     initialItems: initialResults,
     pageSize: PAGE_SIZE,
     fetchPage: fetchResultsPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.time}`,
+    getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
     rootMargin: "240px 0px",
     loadFirstPageOnMount: initialResults.length === 0,
   });

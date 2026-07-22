@@ -42,6 +42,8 @@ type AdmissionRow = Readonly<{
   readonly state: string;
   readonly seats: string;
   readonly startDate: string;
+  readonly lastDate: string;
+  readonly daysLeft: string;
 }>;
 
 const PAGE_SIZE = 20;
@@ -51,6 +53,21 @@ const ADMISSION_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Admission&
 function mapToAdmissionRow(item: ApiAdmissionItem, index: number, page: number): AdmissionRow {
   const slug = (item.postSlug || "").trim();
   const title = (item.postTitle || "Untitled Admission Update").trim();
+
+  const lastDate = item.endDate || item.startDate;
+  const daysLeft = (() => {
+    if (!lastDate) return "N/A";
+    const endDate = new Date(lastDate);
+    if (Number.isNaN(endDate.getTime())) return "N/A";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    const diffTime = endDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return "Expired";
+    if (diffDays === 0) return "Today";
+    return `${diffDays}d left`;
+  })();
 
   return {
     id: item.applicationId?.trim() || slug || `admission-${page}-${index + 1}`,
@@ -63,7 +80,22 @@ function mapToAdmissionRow(item: ApiAdmissionItem, index: number, page: number):
         ? item.vacancies.toLocaleString("en-IN")
         : "N/A",
     startDate: formatDate(item.startDate),
+    lastDate: formatDate(lastDate),
+    daysLeft,
   };
+}
+
+function getStatusBadgeClasses(daysLeft: string): string {
+  if (daysLeft === "Expired") {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+  if (daysLeft === "Today") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  if (daysLeft === "N/A") {
+    return "border-slate-200 bg-slate-50 text-slate-700";
+  }
+  return "border-emerald-200 bg-emerald-50 text-emerald-700";
 }
 
 async function fetchAdmissionPage(page: number): Promise<AdmissionRow[]> {
@@ -134,7 +166,9 @@ export default function AdmissionPage() {
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Org</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">State</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Start</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Start Date</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Last Date</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Status</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Share</th>
                   </tr>
                 </thead>
@@ -154,6 +188,12 @@ export default function AdmissionPage() {
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
+                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.lastDate}</td>
+                      <td className="px-2 py-2 align-top">
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>
+                          {row.daysLeft}
+                        </span>
+                      </td>
                       <td className="px-2 py-2 align-top">
                         <ShareActionButton
                           title={row.title}
@@ -164,6 +204,7 @@ export default function AdmissionPage() {
                             { label: "State", value: row.state },
                             { label: "Seats", value: row.seats },
                             { label: "Start Date", value: row.startDate },
+                            { label: "Last Date", value: row.lastDate },
                           ]}
                         />
                       </td>
@@ -180,21 +221,27 @@ export default function AdmissionPage() {
                     <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
                       {row.badge}
                     </span>
-                    <ShareActionButton
-                      title={row.title}
-                      href={row.href}
-                      contextLabel="Admission"
-                      details={[
-                        { label: "Organization", value: row.badge },
-                        { label: "State", value: row.state },
-                        { label: "Seats", value: row.seats },
-                        { label: "Start Date", value: row.startDate },
-                      ]}
-                      showLabel={false}
-                      buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                      iconClassName="size-3"
-                      copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
-                    />
+                    <div className="flex items-center gap-1">
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>
+                        {row.daysLeft}
+                      </span>
+                      <ShareActionButton
+                        title={row.title}
+                        href={row.href}
+                        contextLabel="Admission"
+                        details={[
+                          { label: "Organization", value: row.badge },
+                          { label: "State", value: row.state },
+                          { label: "Seats", value: row.seats },
+                          { label: "Start Date", value: row.startDate },
+                          { label: "Last Date", value: row.lastDate },
+                        ]}
+                        showLabel={false}
+                        buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        iconClassName="size-3"
+                        copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
+                      />
+                    </div>
                   </div>
                   <Link href={row.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
                     {row.title}
@@ -203,6 +250,7 @@ export default function AdmissionPage() {
                     <p><span className="font-bold text-slate-700">State:</span> {row.state}</p>
                     <p><span className="font-bold text-slate-700">Seats:</span> {row.seats}</p>
                     <p><span className="font-bold text-slate-700">Start:</span> {row.startDate}</p>
+                    <p><span className="font-bold text-slate-700">Last:</span> {row.lastDate}</p>
                   </div>
                 </article>
               ))}

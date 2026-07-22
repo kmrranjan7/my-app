@@ -134,7 +134,8 @@ export default function AnswerKeyPage() {
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Org</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">State</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Start</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Answer Key Date</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Status</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Share</th>
                   </tr>
                 </thead>
@@ -154,6 +155,11 @@ export default function AnswerKeyPage() {
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
+                      <td className="px-2 py-2 align-top">
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                          Published
+                        </span>
+                      </td>
                       <td className="px-2 py-2 align-top">
                         <ShareActionButton
                           title={row.title}
@@ -180,21 +186,26 @@ export default function AnswerKeyPage() {
                     <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
                       {row.badge}
                     </span>
-                    <ShareActionButton
-                      title={row.title}
-                      href={row.href}
-                      contextLabel="Answer Key"
-                      details={[
-                        { label: "Organization", value: row.badge },
-                        { label: "State", value: row.state },
-                        { label: "Seats", value: row.seats },
-                        { label: "Start Date", value: row.startDate },
-                      ]}
-                      showLabel={false}
-                      buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                      iconClassName="size-3"
-                      copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
-                    />
+                    <div className="flex items-center gap-1">
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                        Published
+                      </span>
+                      <ShareActionButton
+                        title={row.title}
+                        href={row.href}
+                        contextLabel="Answer Key"
+                        details={[
+                          { label: "Organization", value: row.badge },
+                          { label: "State", value: row.state },
+                          { label: "Seats", value: row.seats },
+                          { label: "Start Date", value: row.startDate },
+                        ]}
+                        showLabel={false}
+                        buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        iconClassName="size-3"
+                        copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
+                      />
+                    </div>
                   </div>
                   <Link href={row.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
                     {row.title}

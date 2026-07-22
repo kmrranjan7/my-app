@@ -43,25 +43,6 @@ type JobsApiResponse = Readonly<{
 
 const HOME_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
-function toRelativeTime(value?: string): string {
-  if (!value) return "Recently posted";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently posted";
-
-  const diffMs = Date.now() - date.getTime();
-  if (diffMs <= 0) return "Just now";
-
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} day${days === 1 ? "" : "s"} ago`;
-}
-
 function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
   return {
     badge: item.organization || item.applicationId || "JOB",
@@ -74,14 +55,12 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
     state: item.stateName || "All India",
     startDate: item.startDate || "",
     lastDate: item.endDate || "",
-    postedTime: toRelativeTime(item.createdAt),
     href: item.postSlug || "",
     isFeatured: item.isFeatured === true,
     priorityScore:
       typeof item.priorityScore === "number" && Number.isFinite(item.priorityScore)
         ? item.priorityScore
         : 0,
-    createdAt: item.createdAt,
   };
 }
 
@@ -333,11 +312,11 @@ function formatSavedJobDateLabel(job: LatestJob) {
   const primaryDate = parseDateSafe(job.lastDate) ?? parseDateSafe(job.startDate);
   const effectiveDate = primaryDate ?? new Date();
 
-  return effectiveDate.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const day = String(effectiveDate.getDate()).padStart(2, "0");
+  const month = String(effectiveDate.getMonth() + 1).padStart(2, "0");
+  const year = effectiveDate.getFullYear();
+
+  return `${day}-${month}-${year}`;
 }
 
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
@@ -377,7 +356,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         job.seats,
         job.startDate,
         job.lastDate,
-        job.postedTime,
       ]
         .join(" ")
         .toLowerCase();
