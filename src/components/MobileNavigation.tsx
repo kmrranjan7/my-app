@@ -127,7 +127,7 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-t from-slate-50/30 via-transparent to-transparent pointer-events-none" />
           
-          <div className="relative grid w-full grid-cols-5 px-2 py-2">
+          <div className="relative grid w-full grid-cols-5 px-3 py-3">
             {mobileNavItems.map((item) => {
               const active = isActiveRoute(pathname, item.href);
               const Icon = item.icon;
@@ -137,7 +137,7 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className="group relative flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2"
+                  className="group relative flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-2xl px-2 text-center transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2"
                 >
                   {active && (
                     <span className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-10 rounded-xl bg-gradient-to-b from-blue-500/10 via-blue-500/5 to-transparent" />
@@ -176,7 +176,7 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
             <details ref={moreMenuRef} className="group relative">
               <summary
                 className={[
-                  "relative flex min-h-[60px] list-none flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 cursor-pointer",
+                  "relative flex min-h-[72px] list-none flex-col items-center justify-center gap-2 rounded-2xl px-2 text-center transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 cursor-pointer",
                 ].join(" ")}
               >
                 {isMoreActive && (
@@ -260,7 +260,7 @@ export default function MobileNavigation({ pathname }: MobileNavigationProps) {
         </div>
       </nav>
 
-      <div aria-hidden="true" className="h-[88px] lg:hidden" />
+      <div aria-hidden="true" className="h-[96px] lg:hidden" />
     </>
   );
 }
