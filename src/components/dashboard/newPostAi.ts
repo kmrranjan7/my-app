@@ -1,10 +1,10 @@
 import { API_BASE_URL } from "@/lib/apiConfig";
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
-type PostType = "Job" | "Admit" | "Exam" | "Result";
+type PostType = "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
 
 const POST_STATUS_OPTIONS = ["Draft", "Pending Review", "Scheduled", "Published"] as const;
-const POST_TYPE_OPTIONS = ["Job", "Admit", "Exam", "Result"] as const;
+const POST_TYPE_OPTIONS = ["Job", "Admit", "Exam", "Result", "Admission", "Syllabus", "Answer_Key"] as const;
 
 type OpenAiSendApiResponse = Readonly<{
   readonly message?: string;

@@ -24,14 +24,14 @@ type SavedPostRecord = Readonly<{
   readonly faqSchemaJson: string;
   readonly postStatus: "Draft" | "Pending Review" | "Scheduled" | "Published";
   readonly scheduledAt: string;
-  readonly postType: "Job" | "Admit" | "Exam" | "Result";
+  readonly postType: "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
   readonly isFeatured?: boolean;
   readonly priorityScore?: number;
 }>;
 
 type SavedJobsPanelProps = Readonly<{
   readonly onEditInNewPost?: (record: NewPostPrefillRecord) => void;
-  readonly postTypeFilter?: "Job" | "Admit" | "Exam" | "Result";
+  readonly postTypeFilter?: "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
   readonly title?: string;
   readonly subtitle?: string;
   readonly refreshToken?: number;

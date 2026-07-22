@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { API_CONTACT_BASE_URL } from "@/lib/apiConfig";
+
+function getStringField(formData: FormData, key: string): string {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
 
 export default function ContactForm() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event: { preventDefault: () => void; currentTarget: HTMLFormElement }) {
+  async function handleSubmit(event: { preventDefault: () => void; currentTarget: HTMLFormElement }) {
     event.preventDefault();
     const form = event.currentTarget;
 
@@ -14,106 +22,228 @@ export default function ContactForm() {
       return;
     }
 
-    setIsOpen(true);
-    form.reset();
+    const formData = new FormData(form);
+    const payload = {
+      fullName: getStringField(formData, "fullName"),
+      email: getStringField(formData, "email"),
+      phone: getStringField(formData, "phone"),
+      inquiryType: getStringField(formData, "inquiryType"),
+      subject: getStringField(formData, "subject"),
+      message: getStringField(formData, "message"),
+    };
+
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(API_CONTACT_BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => null);
+      const success = Boolean(responseData?.success);
+
+      if (!response.ok || !success) {
+        throw new Error(responseData?.message || "Unable to send your message right now.");
+      }
+
+      setIsOpen(true);
+      form.reset();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to send your message right now.";
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <>
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-6">
-        <h2 className="text-lg font-bold text-slate-900">Contact Form</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Fill in the form below and our team will get back to you shortly.
-        </p>
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-bold text-slate-900">Contact Form</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Fill in the form below and our team will get back to you shortly.
+          </p>
 
-        <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit} noValidate>
-          <label className="grid gap-1.5 text-sm text-slate-700">
-            <span>Full Name</span>
-            <input
-              type="text"
-              name="fullName"
-              required
-              className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Enter your full name"
-            />
-          </label>
+          <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit} noValidate>
+            <label className="grid gap-1.5 text-sm text-slate-700">
+              <span>Full Name</span>
+              <input
+                type="text"
+                name="fullName"
+                required
+                className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Enter your full name"
+              />
+            </label>
 
-          <label className="grid gap-1.5 text-sm text-slate-700">
-            <span>Email Address</span>
-            <input
-              type="email"
-              name="email"
-              required
-              className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="you@example.com"
-            />
-          </label>
+            <label className="grid gap-1.5 text-sm text-slate-700">
+              <span>Email Address</span>
+              <input
+                type="email"
+                name="email"
+                required
+                className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="you@example.com"
+              />
+            </label>
 
-          <label className="grid gap-1.5 text-sm text-slate-700">
-            <span>Mobile Number</span>
-            <input
-              type="text"
-              name="phone"
-              required
-              inputMode="numeric"
-              pattern="[0-9]{10}"
-              minLength={10}
-              maxLength={10}
-              title="Enter a valid 10-digit mobile number using digits only"
-              className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Enter 10-digit mobile number"
-            />
-          </label>
+            <label className="grid gap-1.5 text-sm text-slate-700">
+              <span>Mobile Number</span>
+              <input
+                type="text"
+                name="phone"
+                required
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                minLength={10}
+                maxLength={10}
+                title="Enter a valid 10-digit mobile number using digits only"
+                className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Enter 10-digit mobile number"
+              />
+            </label>
 
-          <label className="grid gap-1.5 text-sm text-slate-700">
-            <span>Inquiry Type</span>
-            <select
-              name="inquiryType"
-              defaultValue=""
-              required
-              className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="" disabled>
-                Select inquiry type
-              </option>
-              <option value="support">Support</option>
-              <option value="correction">Correction Request</option>
-              <option value="business">Business Inquiry</option>
-              <option value="advertising">Advertising</option>
-            </select>
-          </label>
+            <label className="grid gap-1.5 text-sm text-slate-700">
+              <span>Inquiry Type</span>
+              <select
+                name="inquiryType"
+                defaultValue=""
+                required
+                className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="" disabled>
+                  Select inquiry type
+                </option>
+                <option value="support">Support</option>
+                <option value="correction">Correction Request</option>
+                <option value="business">Business Inquiry</option>
+                <option value="advertising">Advertising</option>
+              </select>
+            </label>
 
-          <label className="grid gap-1.5 text-sm text-slate-700 sm:col-span-2">
-            <span>Subject</span>
-            <input
-              type="text"
-              name="subject"
-              required
-              className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Write a short subject"
-            />
-          </label>
+            <label className="grid gap-1.5 text-sm text-slate-700 sm:col-span-2">
+              <span>Subject</span>
+              <input
+                type="text"
+                name="subject"
+                required
+                className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Write a short subject"
+              />
+            </label>
 
-          <label className="grid gap-1.5 text-sm text-slate-700 sm:col-span-2">
-            <span>Message</span>
-            <textarea
-              name="message"
-              rows={5}
-              required
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Write your message here..."
-            />
-          </label>
+            <label className="grid gap-1.5 text-sm text-slate-700 sm:col-span-2">
+              <span>Message</span>
+              <textarea
+                name="message"
+                rows={5}
+                required
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Write your message here..."
+              />
+            </label>
 
-          <div className="sm:col-span-2">
-            <button
-              type="submit"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              Submit Message
-            </button>
+            <div className="sm:col-span-2">
+              {errorMessage ? (
+                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {errorMessage}
+                </p>
+              ) : null}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSubmitting ? "Sending..." : "Submit Message"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <aside>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="text-base font-bold text-slate-900">Contact & Social</h3>
+            <p className="mt-1 text-sm text-slate-600">Prefer email for support. Follow us for updates.</p>
+
+            <div className="mt-4 space-y-4">
+              <div className="flex gap-3">
+                <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 4h16v16H4z" stroke="none" />
+                    <path d="m4 7 8 6 8-6" />
+                  </svg>
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Email</p>
+                  <a href="mailto:sarkariglobalresult@gmail.com" className="text-sm text-slate-600 transition hover:text-blue-700">
+                    sarkariglobalresult@gmail.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="my-5 border-t border-slate-200" />
+
+            <p className="text-sm font-semibold text-slate-800">Follow Us</p>
+            <div className="mt-3 flex items-center gap-3">
+              <a
+                href="https://wa.me/7904736929"
+                aria-label="Follow on WhatsApp"
+                target="_blank"
+                rel="noreferrer"
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+              >
+                <span className="text-sm font-bold">W</span>
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                  WhatsApp
+                </span>
+              </a>
+              <a
+                href="https://facebook.com/sarkariglobalresult"
+                aria-label="Follow on Facebook"
+                target="_blank"
+                rel="noreferrer"
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+              >
+                <span className="text-sm font-bold">f</span>
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                  Facebook
+                </span>
+              </a>
+              <a
+                href="https://instagram.com/sarkariglobalresult"
+                aria-label="Follow on Instagram"
+                target="_blank"
+                rel="noreferrer"
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+              >
+                <span className="text-sm font-bold">i</span>
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                  Instagram
+                </span>
+              </a>
+              <a
+                href="https://youtube.com/@sarkariglobalresult"
+                aria-label="Follow on YouTube"
+                target="_blank"
+                rel="noreferrer"
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+              >
+                <span className="text-sm font-bold">Y</span>
+                <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                  YouTube
+                </span>
+              </a>
+            </div>
           </div>
-        </form>
+        </aside>
       </div>
 
       {isOpen ? (

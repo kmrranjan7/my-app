@@ -15,6 +15,9 @@ import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import StatsCards from "@/components/dashboard/StatsCards";
 import { SkeletonBlock } from "@/components/dashboard/ui";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import AdmissionPanel from "@/components/dashboard/AdmissionPanel";
+import SyllabusPanel from "@/components/dashboard/SyllabusPanel";
+import AnswerKeyPanel from "@/components/dashboard/AnswerKeyPanel";
 
 const NewPostPanel = dynamic(() => import("@/components/dashboard/NewPostPanel"));
 const SavedJobsPanel = dynamic(() => import("@/components/dashboard/SavedJobsPanel"));
@@ -167,6 +170,42 @@ export default function DashboardShell(props: DashboardShellProps) {
     if (activeMenuKey === "Saved Result") {
       return (
         <SavedResultPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Admission") {
+      return (
+        <AdmissionPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Syllabus") {
+      return (
+        <SyllabusPanel
+          refreshToken={savedRecordsVersion}
+          onEditInNewPost={(record) => {
+            setPrefillRecord(record);
+            setActiveMenuKey("New Post");
+          }}
+        />
+      );
+    }
+
+    if (activeMenuKey === "Answer Key") {
+      return (
+        <AnswerKeyPanel
           refreshToken={savedRecordsVersion}
           onEditInNewPost={(record) => {
             setPrefillRecord(record);

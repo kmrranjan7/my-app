@@ -27,8 +27,7 @@ import type { UserApplication } from "@/types/dashboard";
 const NEW_POST_DRAFT_KEY = "dashboard:new-post:draft:v1";
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
-type PostCategory = "Recruitment" | "Admit" | "Exam" | "Result";
-type PostType = "Job" | "Admit" | "Exam" | "Result";
+type PostType = "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
 
 const qualificationOptions = [
   "Below 10th Pass",
@@ -98,26 +97,9 @@ type DraftSnapshot = Readonly<{
   readonly postStatus: PostStatus;
   readonly scheduledAt: string;
   readonly postType: PostType;
-  readonly postCategory: PostCategory;
   readonly isFeatured: boolean;
   readonly priorityScore: number;
 }>;
-
-function categoryFromPostType(postType: PostType): PostCategory {
-  if (postType === "Admit") {
-    return "Admit";
-  }
-
-  if (postType === "Exam") {
-    return "Exam";
-  }
-
-  if (postType === "Result") {
-    return "Result";
-  }
-
-  return "Recruitment";
-}
 
 function slugify(input: string): string {
   return input
@@ -222,7 +204,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         postStatus: prefillRecord.postStatus,
         scheduledAt: prefillRecord.scheduledAt,
         postType: prefillRecord.postType,
-        postCategory: categoryFromPostType(prefillRecord.postType),
         isFeatured: Boolean(prefillRecord.isFeatured),
         priorityScore: Number.isFinite(prefillRecord.priorityScore)
           ? Math.min(100, Math.max(0, Number(prefillRecord.priorityScore)))
@@ -253,9 +234,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   const [postType, setPostType] = useState<PostType>(startingDraft?.postType ?? "Job");
   const [isFeatured, setIsFeatured] = useState(startingDraft?.isFeatured ?? false);
   const [priorityScore, setPriorityScore] = useState(startingDraft?.priorityScore ?? 0);
-  const [postCategory, setPostCategory] = useState<PostCategory>(
-    startingDraft?.postCategory ?? categoryFromPostType(startingDraft?.postType ?? "Job"),
-  );
   const [hasRecoverableDraft, setHasRecoverableDraft] = useState(Boolean(initialDraft));
   const [lastAutosaveAt, setLastAutosaveAt] = useState<string | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState("recruitment-notice");
@@ -307,7 +285,7 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     }));
   };
 
-  const isApplicationDetailsRequired = postCategory === "Recruitment";
+  const isApplicationDetailsRequired = postType === "Job";
 
   const validateApplicationDetails = (): ApplicationDetailsErrors => {
     const errors: Partial<ApplicationDetailsErrors> = {};
@@ -416,7 +394,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
         postStatus,
         scheduledAt,
         postType,
-        postCategory,
         isFeatured,
         priorityScore,
       };
@@ -447,7 +424,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     stateName,
     vacancies,
     postType,
-    postCategory,
     isFeatured,
     priorityScore,
   ]);
@@ -623,7 +599,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setPostType(initialDraft.postType ?? "Job");
     setIsFeatured(initialDraft.isFeatured ?? false);
     setPriorityScore(initialDraft.priorityScore ?? 0);
-    setPostCategory(initialDraft.postCategory ?? categoryFromPostType(initialDraft.postType ?? "Job"));
     setApplicationDetailsErrors({});
     setHasRecoverableDraft(false);
     setIsSlugManuallyEdited(true);
@@ -707,7 +682,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
     setPostType("Job");
     setIsFeatured(false);
     setPriorityScore(0);
-    setPostCategory("Recruitment");
     setSelectedTemplateId("recruitment-notice");
     setLastAutosaveAt(null);
     setPublishError(null);
@@ -778,7 +752,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
       if (typeof patch.postType === "string") {
         setPostType(patch.postType);
-        setPostCategory(categoryFromPostType(patch.postType));
       }
 
       if (typeof patch.isFeatured === "boolean") setIsFeatured(patch.isFeatured);
@@ -811,7 +784,6 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
       postStatus,
       scheduledAt,
       postType,
-      postCategory,
       isFeatured,
       priorityScore,
     };
@@ -1526,24 +1498,20 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
 
                   if (nextTemplate === "exam-update") {
                     setPostType("Exam");
-                    setPostCategory("Exam");
                     return;
                   }
 
                   if (nextTemplate === "admit-card-announcement") {
                     setPostType("Admit");
-                    setPostCategory("Admit");
                     return;
                   }
 
                   if (nextTemplate === "result-announcement") {
                     setPostType("Result");
-                    setPostCategory("Result");
                     return;
                   }
 
                   setPostType("Job");
-                  setPostCategory("Recruitment");
                 }}
                 className="h-7.5 rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-400/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               >
@@ -1932,9 +1900,8 @@ height: 500,
                   <input
                     type="radio"
                     name="post-category"
-                    checked={postCategory === "Recruitment"}
+                    checked={postType === "Job"}
                     onChange={() => {
-                      setPostCategory("Recruitment");
                       setPostType("Job");
                     }}
                     className="border-slate-300"
@@ -1945,9 +1912,8 @@ height: 500,
                   <input
                     type="radio"
                     name="post-category"
-                    checked={postCategory === "Admit"}
+                    checked={postType === "Admit"}
                     onChange={() => {
-                      setPostCategory("Admit");
                       setPostType("Admit");
                     }}
                     className="border-slate-300"
@@ -1958,9 +1924,8 @@ height: 500,
                   <input
                     type="radio"
                     name="post-category"
-                    checked={postCategory === "Exam"}
+                    checked={postType === "Exam"}
                     onChange={() => {
-                      setPostCategory("Exam");
                       setPostType("Exam");
                     }}
                     className="border-slate-300"
@@ -1971,14 +1936,49 @@ height: 500,
                   <input
                     type="radio"
                     name="post-category"
-                    checked={postCategory === "Result"}
+                    checked={postType === "Result"}
                     onChange={() => {
-                      setPostCategory("Result");
                       setPostType("Result");
                     }}
                     className="border-slate-300"
                   />
                   Result
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="post-category"
+                    checked={postType === "Admission"}
+                    onChange={() => {
+                      setPostType("Admission");
+                    }}
+                    className="border-slate-300"
+                  />
+                  Admission
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="post-category"
+                    checked={postType === "Syllabus"}
+                    onChange={() => {
+                      setPostType("Syllabus");
+                    }}
+                    className="border-slate-300"
+                  />
+                  Syllabus
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="post-category"
+                    checked={postType === "Answer_Key"}
+                    onChange={() => {
+                      setPostType("Answer_Key");
+                    }}
+                    className="border-slate-300"
+                  />
+                  Answer Key
                 </label>
               </div>
             ) : null}

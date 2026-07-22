@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 const BACKEND_POSTS_BASE = API_V1_POSTS_BASE_URL;
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
-type PostType = "Job" | "Admit" | "Exam" | "Result";
+type PostType = "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
 
 type FrontendBody = Readonly<{
   readonly id?: string;
@@ -94,7 +94,15 @@ function toPostStatus(input: unknown): PostStatus {
 }
 
 function toPostType(input: unknown): PostType {
-  if (input === "Job" || input === "Admit" || input === "Exam" || input === "Result") {
+  if (
+    input === "Job" ||
+    input === "Admit" ||
+    input === "Exam" ||
+    input === "Result" ||
+    input === "Admission" ||
+    input === "Syllabus" ||
+    input === "Answer_Key"
+  ) {
     return input;
   }
 

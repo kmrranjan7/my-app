@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 const BACKEND_POSTS_BASE = API_V1_POSTS_BASE_URL;
 
 type PostStatus = "Draft" | "Pending Review" | "Scheduled" | "Published";
-type PostType = "Job" | "Admit" | "Exam" | "Result";
+type PostType = "Job" | "Admit" | "Exam" | "Result" | "Admission" | "Syllabus" | "Answer_Key";
 
 type SavedPostRecord = Readonly<{
   readonly id: string;
@@ -56,7 +56,15 @@ function toPostStatus(input: unknown): PostStatus {
 }
 
 function toPostType(input: unknown): PostType {
-  if (input === "Job" || input === "Admit" || input === "Exam" || input === "Result") {
+  if (
+    input === "Job" ||
+    input === "Admit" ||
+    input === "Exam" ||
+    input === "Result" ||
+    input === "Admission" ||
+    input === "Syllabus" ||
+    input === "Answer_Key"
+  ) {
     return input;
   }
 
@@ -114,7 +122,7 @@ function buildNotifications(records: ReadonlyArray<SavedPostRecord>): ReadonlyAr
       : Math.floor((now - createdTs) / (1000 * 60 * 60 * 24));
 
     let kind: NotificationItem["kind"] = "Recruitment";
-    if (record.postType === "Exam") {
+    if (record.postType === "Exam" || record.postType === "Syllabus" || record.postType === "Answer_Key") {
       kind = "Exam";
     } else if (record.postType === "Result") {
       kind = "Result";
@@ -222,7 +230,7 @@ export async function GET() {
         acc[item.postType] += 1;
         return acc;
       },
-      { Job: 0, Admit: 0, Exam: 0, Result: 0 } satisfies Record<PostType, number>,
+      { Job: 0, Admit: 0, Exam: 0, Result: 0, Admission: 0, Syllabus: 0, Answer_Key: 0 } satisfies Record<PostType, number>,
     );
 
     const statusBuckets = records.reduce(
@@ -267,14 +275,14 @@ export async function GET() {
         {
           id: "admit",
           label: "Admit Card",
-          value: postTypeBuckets.Admit,
-          changeText: `${postTypeBuckets.Admit} admit updates`,
+          value: postTypeBuckets.Admit + postTypeBuckets.Admission,
+          changeText: `${postTypeBuckets.Admit + postTypeBuckets.Admission} admit updates`,
         },
         {
           id: "exam",
           label: "Exam",
-          value: postTypeBuckets.Exam,
-          changeText: `${postTypeBuckets.Exam} exam posts`,
+          value: postTypeBuckets.Exam + postTypeBuckets.Syllabus + postTypeBuckets.Answer_Key,
+          changeText: `${postTypeBuckets.Exam + postTypeBuckets.Syllabus + postTypeBuckets.Answer_Key} exam posts`,
         },
         {
           id: "results",
@@ -295,15 +303,15 @@ export async function GET() {
       applications,
       categories: [
         { id: "CAT-JOB", name: "Recruitment", openPositions: postTypeBuckets.Job },
-        { id: "CAT-ADM", name: "Admit", openPositions: postTypeBuckets.Admit },
-        { id: "CAT-EXM", name: "Exam", openPositions: postTypeBuckets.Exam },
+        { id: "CAT-ADM", name: "Admit", openPositions: postTypeBuckets.Admit + postTypeBuckets.Admission },
+        { id: "CAT-EXM", name: "Exam", openPositions: postTypeBuckets.Exam + postTypeBuckets.Syllabus + postTypeBuckets.Answer_Key },
         { id: "CAT-RSL", name: "Result", openPositions: postTypeBuckets.Result },
       ],
       notifications,
       categoryChart: [
         { category: "Recruitment", applications: postTypeBuckets.Job },
-        { category: "Admit", applications: postTypeBuckets.Admit },
-        { category: "Exam", applications: postTypeBuckets.Exam },
+        { category: "Admit", applications: postTypeBuckets.Admit + postTypeBuckets.Admission },
+        { category: "Exam", applications: postTypeBuckets.Exam + postTypeBuckets.Syllabus + postTypeBuckets.Answer_Key },
         { category: "Result", applications: postTypeBuckets.Result },
       ],
       statusChart: [
