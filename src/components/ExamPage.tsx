@@ -6,18 +6,18 @@ import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
 import { formatDate } from "@/lib/dateStatus";
 
-const ANSWER_KEY_CATEGORY_LINKS = [
-  { label: "SSC Answer Key", href: "/answer-key?search=SSC" },
-  { label: "UPSC Answer Key", href: "/answer-key?search=UPSC" },
-  { label: "Railway Answer Key", href: "/answer-key?search=Railway" },
-  { label: "Bank Answer Key", href: "/answer-key?search=Bank" },
-  { label: "Defence Answer Key", href: "/answer-key?search=Defence" },
-  { label: "Police Answer Key", href: "/answer-key?search=Police" },
-  { label: "Teaching Answer Key", href: "/answer-key?search=Teaching" },
-  { label: "State Exam Answer Key", href: "/answer-key?search=State" },
+const EXAM_CATEGORY_LINKS = [
+  { label: "SSC Exams", href: "/exam?search=SSC" },
+  { label: "UPSC Exams", href: "/exam?search=UPSC" },
+  { label: "Railway Exams", href: "/exam?search=Railway" },
+  { label: "Bank Exams", href: "/exam?search=Bank" },
+  { label: "Defence Exams", href: "/exam?search=Defence" },
+  { label: "Police Exams", href: "/exam?search=Police" },
+  { label: "Teaching Exams", href: "/exam?search=Teaching" },
+  { label: "State Exams", href: "/exam?search=State" },
 ] as const;
 
-type ApiAnswerKeyItem = Readonly<{
+type ApiExamItem = Readonly<{
   readonly applicationId?: string;
   readonly organization?: string;
   readonly postSlug?: string;
@@ -28,13 +28,13 @@ type ApiAnswerKeyItem = Readonly<{
   readonly vacancies?: number;
 }>;
 
-type ApiAnswerKeyResponse = Readonly<{
+type ApiExamResponse = Readonly<{
   readonly data?: {
-    readonly content?: ApiAnswerKeyItem[];
+    readonly content?: ApiExamItem[];
   };
 }>;
 
-type AnswerKeyRow = Readonly<{
+type ExamRow = Readonly<{
   readonly id: string;
   readonly title: string;
   readonly href: string;
@@ -46,17 +46,17 @@ type AnswerKeyRow = Readonly<{
 
 const PAGE_SIZE = 20;
 const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
-const ANSWER_KEY_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Answer_Key&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const EXAM_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
-function mapToAnswerKeyRow(item: ApiAnswerKeyItem, index: number, page: number): AnswerKeyRow {
+function mapToExamRow(item: ApiExamItem, index: number, page: number): ExamRow {
   const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Answer Key Update").trim();
+  const title = (item.postTitle || "Untitled Exam Update").trim();
 
   return {
-    id: item.applicationId?.trim() || slug || `answer-key-${page}-${index + 1}`,
+    id: item.applicationId?.trim() || slug || `exam-${page}-${index + 1}`,
     title,
-    href: slug ? `/${slug}` : "/answer-key",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "ANSWER_KEY",
+    href: slug ? `/${slug}` : "/exam",
+    badge: item.organization?.trim() || item.applicationId?.trim() || "EXAM",
     state: item.stateName?.trim() || "All India",
     seats:
       typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
@@ -66,9 +66,9 @@ function mapToAnswerKeyRow(item: ApiAnswerKeyItem, index: number, page: number):
   };
 }
 
-async function fetchAnswerKeyPage(page: number): Promise<AnswerKeyRow[]> {
+async function fetchExamPage(page: number): Promise<ExamRow[]> {
   try {
-    const response = await fetch(`${ANSWER_KEY_POSTS_API_URL}&page=${page}`, {
+    const response = await fetch(`${EXAM_POSTS_API_URL}&page=${page}`, {
       method: "GET",
       next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
@@ -77,23 +77,23 @@ async function fetchAnswerKeyPage(page: number): Promise<AnswerKeyRow[]> {
       return [];
     }
 
-    const payload = (await response.json()) as ApiAnswerKeyResponse;
+    const payload = (await response.json()) as ApiExamResponse;
     const content = payload.data?.content ?? [];
-    return content.map((item, index) => mapToAnswerKeyRow(item, index, page));
+    return content.map((item, index) => mapToExamRow(item, index, page));
   } catch {
     return [];
   }
 }
 
-export default function AnswerKeyPage() {
+export default function ExamPage() {
   const {
     items: rows,
     hasMore,
     isLoadingMore,
     sentinelRef,
-  } = useInfinitePagedFeed<AnswerKeyRow>({
+  } = useInfinitePagedFeed<ExamRow>({
     pageSize: PAGE_SIZE,
-    fetchPage: fetchAnswerKeyPage,
+    fetchPage: fetchExamPage,
     getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
     rootMargin: "340px 0px",
     loadFirstPageOnMount: true,
@@ -103,26 +103,26 @@ export default function AnswerKeyPage() {
     <main className="w-full py-3 sm:py-4">
       <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
         <section className="rounded-2xl border border-indigo-100/90 bg-white/95 p-3 shadow-[0_12px_26px_rgba(15,23,42,0.07)] sm:p-4">
-          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Answer Key</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Exam</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
-            Welcome to Sarkari Global Result Answer Key Updates
+            Welcome to Sarkari Global Result Exam Updates
           </h2>
           <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
-            Track provisional and final answer key notifications for major government and competitive exams across India.
-            This section is refreshed regularly so you can verify responses and challenge windows on time.
+            Track latest exam notifications, schedule updates, and important announcements from official published records.
+            This section is refreshed regularly so you do not miss key exam timelines.
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">Official Keys</span>
-            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-700">Objection Window</span>
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Exam-wise Filter</span>
+            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">Exam Alerts</span>
+            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-700">Latest Notices</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Official Sources</span>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
           </div>
         </section>
 
         {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-            <p className="text-base font-bold text-slate-800">No answer key updates available right now</p>
-            <p className="mt-1 text-sm text-slate-500">Please verify API response and published answer key records.</p>
+            <p className="text-base font-bold text-slate-800">No exam updates available right now</p>
+            <p className="mt-1 text-sm text-slate-500">Please verify API response and published exam records.</p>
           </section>
         ) : (
           <section className="overflow-hidden rounded-2xl border border-cyan-100/90 bg-white/92 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
@@ -158,7 +158,7 @@ export default function AnswerKeyPage() {
                         <ShareActionButton
                           title={row.title}
                           href={row.href}
-                          contextLabel="Answer Key"
+                          contextLabel="Exam"
                           details={[
                             { label: "Organization", value: row.badge },
                             { label: "State", value: row.state },
@@ -183,7 +183,7 @@ export default function AnswerKeyPage() {
                     <ShareActionButton
                       title={row.title}
                       href={row.href}
-                      contextLabel="Answer Key"
+                      contextLabel="Exam"
                       details={[
                         { label: "Organization", value: row.badge },
                         { label: "State", value: row.state },
@@ -226,16 +226,16 @@ export default function AnswerKeyPage() {
 
         <section className="rounded-2xl border border-cyan-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
           <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
-            Answer Key by Exam Category
+            Exam by Category
           </h2>
           <p className="mt-1 text-[11px] text-slate-600">
-            Explore official answer key updates across SSC, UPSC, Railway, Banking, Defence, Police, and state-level exams.
+            Explore exam updates for SSC, UPSC, Railway, Banking, Defence, Police, Teaching, and state-level exams.
           </p>
           <p className="mt-1 text-[11px] font-semibold text-slate-500">
-            Showing records from Answer_Key-type published posts in your API.
+            Showing records from Exam-type published posts in your API.
           </p>
           <ul className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-            {ANSWER_KEY_CATEGORY_LINKS.map((item) => (
+            {EXAM_CATEGORY_LINKS.map((item) => (
               <li key={item.label}>
                 <Link
                   href={item.href}

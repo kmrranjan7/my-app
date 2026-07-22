@@ -30,6 +30,7 @@ type CategoryItem = {
 };
 
 const categoryItems: CategoryItem[] = [
+  { label: "Exam", href: "/exam" },
   { label: "Admission", href: "/admission" },
   { label: "Syllabus", href: "/syllabus" },
   { label: "Answer Key", href: "/answer-key" },

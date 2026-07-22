@@ -24,6 +24,7 @@ const SAVED_JOBS_STORAGE_KEY = "saved-jobs-records";
 const navItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Latest Jobs", href: "/latest-job" },
+  { label: "Exam", href: "/exam" },
   { label: "Admit Card", href: "/admit-card" },
   { label: "Results", href: "/result" },
   { label: "Image Compress", href: "/image-compress" },

@@ -166,6 +166,7 @@ export const PAGE_SITEMAP_PATHS = [
   "/answer-key",
   "/contact",
   "/disclaimer",
+  "/exam",
   "/latest-job",
   "/privacy-policy",
   "/result",
@@ -174,6 +175,7 @@ export const PAGE_SITEMAP_PATHS = [
 ] as const;
 
 export const CATEGORY_SITEMAP_PATHS = [
+  "/exam",
   "/latest-job",
   "/admit-card",
   "/result",

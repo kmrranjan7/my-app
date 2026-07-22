@@ -50,11 +50,13 @@ type ExamPostsListingPageProps = Readonly<{
   categoryTitle: string;
   categoryDescription: string;
   categoryChips: readonly CategoryChip[];
+  apiBaseQuery?: string;
 }>;
 
 const PAGE_SIZE = 20;
 const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 const EXAM_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const DEFAULT_POSTS_API_QUERY = "postType=Exam&postStatus=Published&sortBy=createdAt&sortDir=desc";
 
 function mapToRow(item: ApiExamItem, index: number, page: number): ExamRow {
   const slug = (item.postSlug || "").trim();
@@ -76,9 +78,9 @@ function mapToRow(item: ApiExamItem, index: number, page: number): ExamRow {
   };
 }
 
-async function fetchExamPostsPage(page: number): Promise<ExamRow[]> {
+async function fetchExamPostsPage(page: number, apiUrl: string): Promise<ExamRow[]> {
   try {
-    const response = await fetch(`${EXAM_POSTS_API_URL}&page=${page}`, {
+    const response = await fetch(`${apiUrl}&page=${page}`, {
       method: "GET",
       next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
     });
@@ -105,7 +107,12 @@ export default function ExamPostsListingPage({
   categoryTitle,
   categoryDescription,
   categoryChips,
+  apiBaseQuery,
 }: ExamPostsListingPageProps) {
+  const effectiveApiUrl = apiBaseQuery
+    ? `${API_PUBLIC_BASE_URL}/jobs?${apiBaseQuery}&size=${PAGE_SIZE}`
+    : EXAM_POSTS_API_URL;
+
   const {
     items: rows,
     hasMore,
@@ -113,7 +120,7 @@ export default function ExamPostsListingPage({
     sentinelRef,
   } = useInfinitePagedFeed<ExamRow>({
     pageSize: PAGE_SIZE,
-    fetchPage: fetchExamPostsPage,
+    fetchPage: (page) => fetchExamPostsPage(page, effectiveApiUrl),
     getKey: (item) => `${item.href}|${item.title}|${item.startDate}|${item.lastDate}`,
     rootMargin: "340px 0px",
     loadFirstPageOnMount: true,
