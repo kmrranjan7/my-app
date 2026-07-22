@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import ExamPage from "@/components/ExamPage";
 
-export default function ExamsAliasRoutePage() {
-  redirect("/exam");
+export default function ExamsRoutePage() {
+  return <ExamPage />;
 }

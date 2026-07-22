@@ -21,21 +21,25 @@ type SavedJobRecord = Readonly<{
 
 const SAVED_JOBS_STORAGE_KEY = "saved-jobs-records";
 
+
 const navItems: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "Latest Jobs", href: "/latest-job" },
-  { label: "Exam", href: "/exam" },
-  { label: "Admit Card", href: "/admit-card" },
-  { label: "Results", href: "/result" },
-  { label: "Image Compress", href: "/image-compress" },
-  { label: "Admission", href: "/admission" },
-  { label: "Syllabus", href: "/syllabus" },
-  { label: "Answer Key", href: "/answer-key" },
+  { label: "Latest Jobs", href: "/latest-jobs" },
+  { label: "Results", href: "/results" },
+  { label: "Admit Cards", href: "/admit-cards" },
+  { label: "Answer Keys", href: "/answer-keys" },
 ];
 
 const moreItems: NavItem[] = [
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+  { label: "Syllabus", href: "/syllabus" },
+  { label: "Admissions", href: "/admissions" },
+  { label: "Exams", href: "/exams" },
+  { label: "Image Compressor", href: "/image-compress" },
+  { label: "About Us", href: "/about" },
+  { label: "Contact Us", href: "/contact" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
+  { label: "Disclaimer", href: "/disclaimer" },
 ];
 
 export default function HeaderNavbar() {
@@ -249,34 +253,34 @@ export default function HeaderNavbar() {
         ].join(" ")}
       >
         <div className="mx-auto w-[min(1240px,96vw)] px-2 sm:px-3 lg:px-4">
-          <div className="pointer-events-none hidden h-[2px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
+          <div className="pointer-events-none hidden h-[1.5px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
 
-          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[62px] lg:grid-cols-[auto_1fr_auto] lg:gap-4">
+          <div className="grid h-11 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[52px] lg:grid-cols-[auto_1fr_auto] lg:gap-3">
             <div className="inline-flex min-w-0 items-center gap-1.5 lg:gap-2">
               <Link
                 href="/"
-                className="group inline-flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-2"
+                className="group inline-flex min-w-0 items-center gap-1.5 rounded-xl px-1 py-0.5 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-1.5"
                 aria-label="Sarkari Global Result home"
               >
-                <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[11px] font-black text-white shadow-[0_10px_24px_rgba(37,99,235,0.35)]">
+                <span className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[10px] font-black text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)]">
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_58%)]" />
                   <span className="relative">SGR</span>
                 </span>
                 <span className="flex min-w-0 flex-col leading-none">
-                  <span className="truncate text-[15px] font-black tracking-tight text-slate-900 lg:text-[16px]">
+                  <span className="truncate text-[14px] font-black tracking-tight text-slate-900 lg:text-[15px]">
                     Sarkari Global Result
                   </span>
-                  <span className="hidden truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
+                  <span className="hidden truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
                     Government Career Desk
                   </span>
                 </span>
               </Link>
 
               <div className="hidden items-center justify-end gap-1.5 lg:flex">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 shadow-[0_6px_14px_rgba(5,150,105,0.16)] motion-safe:animate-pulse">
-                  <span className="relative inline-flex h-2 w-2" aria-hidden="true">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-700 shadow-[0_6px_14px_rgba(5,150,105,0.16)] motion-safe:animate-pulse">
+                  <span className="relative inline-flex h-1.5 w-1.5" aria-hidden="true">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 motion-safe:animate-ping" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-600" />
                   </span>
                   <span>Live Updates</span>
                 </span>
@@ -284,7 +288,7 @@ export default function HeaderNavbar() {
             </div>
 
             <nav
-              className="hidden min-w-0 items-center justify-end gap-1 overflow-visible whitespace-nowrap lg:flex lg:origin-center lg:scale-95 xl:scale-100"
+              className="hidden min-w-0 items-center justify-end gap-1.5 overflow-visible whitespace-nowrap lg:flex"
               aria-label="Primary"
             >
               {navItems.map((item) => {
@@ -296,11 +300,11 @@ export default function HeaderNavbar() {
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={[
-                      "relative shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] transition-all duration-300",
+                      "relative shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.01em] transition-all duration-300",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45",
                       active
-                        ? "border-[#2563EB]/25 bg-gradient-to-b from-[#eff6ff] to-[#dbeafe] text-[#1d4ed8] shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
-                        : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-[0_9px_22px_rgba(15,23,42,0.1)]",
+                        ? "border-[#2563EB]/25 bg-gradient-to-b from-[#eff6ff] to-[#dbeafe] text-[#1d4ed8] shadow-[0_8px_20px_rgba(37,99,235,0.22)]"
+                        : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-[0_8px_20px_rgba(15,23,42,0.1)]",
                     ].join(" ")}
                   >
                     {item.label}
@@ -308,13 +312,14 @@ export default function HeaderNavbar() {
                 );
               })}
 
+
               <div ref={moreMenuRef} className="relative shrink-0">
                 <button
                   type="button"
                   onClick={() => {
                     setIsMoreOpen((prev) => !prev);
                   }}
-                  className="inline-flex items-center gap-1 rounded-full border border-transparent px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] text-slate-700 transition-all duration-300 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-[0_9px_22px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45"
+                  className="inline-flex items-center gap-1 rounded-full border border-transparent px-2.5 py-1 text-[11px] font-semibold tracking-[0.01em] text-slate-700 transition-all duration-300 hover:border-slate-200 hover:bg-white hover:text-slate-900 hover:shadow-[0_8px_20px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45"
                   aria-haspopup="menu"
                   aria-expanded={isMoreOpen}
                   aria-controls="header-more-menu"
@@ -327,31 +332,63 @@ export default function HeaderNavbar() {
                 <div
                   id="header-more-menu"
                   className={[
-                    "absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                    "absolute right-0 top-[calc(100%+6px)] z-20 min-w-[180px] rounded-xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_14px_30px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
                     isMoreOpen
                       ? "pointer-events-auto visible opacity-100"
                       : "pointer-events-none invisible opacity-0",
                   ].join(" ")}
                 >
-                  {moreItems.map((item) => {
-                    const active = isActive(item.href);
+                  <div className="space-y-0.5">
+                    <div className="space-y-0.5">
+                      <p className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                        Quick Links
+                      </p>
+                      {moreItems.slice(0, 4).map((item) => {
+                        const active = isActive(item.href);
 
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={active ? "page" : undefined}
-                        className={[
-                          "block rounded-xl px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-200",
-                          active
-                            ? "bg-[#eff6ff] text-[#1d4ed8]"
-                            : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
-                        ].join(" ")}
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            aria-current={active ? "page" : undefined}
+                            className={[
+                              "block rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-colors duration-200",
+                              active
+                                ? "bg-[#eff6ff] text-[#1d4ed8]"
+                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+                            ].join(" ")}
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-slate-200/70 pt-0.5 space-y-0.5">
+                      <p className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                        Pages
+                      </p>
+                      {moreItems.slice(4).map((item) => {
+                        const active = isActive(item.href);
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            aria-current={active ? "page" : undefined}
+                            className={[
+                              "block rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-colors duration-200",
+                              active
+                                ? "bg-[#eff6ff] text-[#1d4ed8]"
+                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+                            ].join(" ")}
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -363,7 +400,7 @@ export default function HeaderNavbar() {
                 onClick={() => {
                   setIsBellOpen((prev) => !prev);
                 }}
-                className={`relative inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-2 text-sky-700 transition-transform hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 ${
+                className={`relative inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-1.5 text-sky-700 transition-transform hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 ${
                   isSavedBellRinging ? "animate-bounce" : ""
                 }`}
                 aria-live="polite"
@@ -373,9 +410,9 @@ export default function HeaderNavbar() {
                 aria-expanded={isBellOpen}
                 aria-controls="saved-jobs-menu"
               >
-                <Bell className="size-4" aria-hidden="true" />
+                <Bell className="size-3.5" aria-hidden="true" />
                 {savedJobsCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 inline-flex min-w-[16px] items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-4 text-white">
+                  <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[14px] items-center justify-center rounded-full bg-rose-600 px-0.5 text-[8px] font-bold leading-[14px] text-white">
                     {savedJobsCount}
                   </span>
                 ) : null}
@@ -462,7 +499,7 @@ export default function HeaderNavbar() {
           </div>
         </div>
       </header>
-      <div className="h-12 lg:h-[62px]" aria-hidden="true" />
+      <div className="h-11 lg:h-[52px]" aria-hidden="true" />
     </>
   );
 }
