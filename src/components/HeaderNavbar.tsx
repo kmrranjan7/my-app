@@ -223,26 +223,39 @@ export default function HeaderNavbar() {
       
       setIsLoadingUpdates(true);
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch(`${LATEST_UPDATES_API_URL}&page=0`, {
           method: "GET",
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          },
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.data?.content || [];
-          
-          const updates: LatestUpdateRecord[] = content.map((item: any, index: number) => ({
-            id: item.postSlug || `update-${index}`,
-            title: item.postTitle || "Untitled Update",
-            time: item.startDate || "",
-            type: item.postType || "Update",
-            href: item.postSlug ? `/${item.postSlug}` : "/updates",
-          }));
-          
-          setLatestUpdates(updates);
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        const content = data.data?.content || [];
+        
+        const updates: LatestUpdateRecord[] = content.map((item: any, index: number) => ({
+          id: item.postSlug || `update-${index}`,
+          title: item.postTitle || "Untitled Update",
+          time: item.startDate || "",
+          type: item.postType || "Update",
+          href: item.postSlug ? `/${item.postSlug}` : "/updates",
+        }));
+        
+        setLatestUpdates(updates);
       } catch (error) {
         console.error("Failed to fetch latest updates:", error);
+        // Set empty array on error so UI shows "No updates available"
+        setLatestUpdates([]);
       } finally {
         setIsLoadingUpdates(false);
       }
@@ -511,7 +524,7 @@ export default function HeaderNavbar() {
                 <div
                   id="updates-menu"
                   className={[
-                    "absolute right-0 top-[calc(100%+8px)] z-20 w-[320px] rounded-2xl border border-blue-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                    "absolute right-0 top-[calc(100%+8px)] z-20 w-[min(320px,calc(100vw-16px))] max-w-[320px] rounded-2xl border border-blue-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
                     isUpdatesOpen
                       ? "pointer-events-auto visible opacity-100"
                       : "pointer-events-none invisible opacity-0",
@@ -603,7 +616,7 @@ export default function HeaderNavbar() {
               <div
                 id="saved-jobs-menu"
                 className={[
-                  "absolute right-0 top-[calc(100%+8px)] z-20 w-[290px] rounded-2xl border border-rose-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
+                  "absolute right-0 top-[calc(100%+8px)] z-20 w-[min(290px,calc(100vw-16px))] max-w-[290px] rounded-2xl border border-rose-200/80 bg-white/95 p-1.5 shadow-[0_16px_34px_rgba(2,6,23,0.16)] backdrop-blur-md transition-all duration-200",
                   isBellOpen
                     ? "pointer-events-auto visible opacity-100"
                     : "pointer-events-none invisible opacity-0",
