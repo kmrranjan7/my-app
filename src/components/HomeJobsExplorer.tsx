@@ -61,6 +61,7 @@ function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
       typeof item.priorityScore === "number" && Number.isFinite(item.priorityScore)
         ? item.priorityScore
         : 0,
+    createdAt: item.createdAt,
   };
 }
 

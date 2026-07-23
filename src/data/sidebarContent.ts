@@ -32,5 +32,6 @@ export type LatestJob = {
   href: string;
   isFeatured?: boolean;
   priorityScore?: number;
+  createdAt?: string;
 };
 
