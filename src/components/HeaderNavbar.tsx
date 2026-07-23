@@ -257,7 +257,7 @@ export default function HeaderNavbar() {
         <div className="w-full px-2 sm:px-3 lg:px-4">
           <div className="pointer-events-none hidden h-[1.5px] w-full bg-gradient-to-r from-transparent via-[#2563EB]/80 to-transparent lg:block" />
 
-          <div className="grid h-11 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[52px] lg:grid-cols-[auto_1fr_auto] lg:gap-3">
+          <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[56px] lg:grid-cols-[auto_1fr_auto] lg:gap-3">
             <div className="inline-flex min-w-0 items-center gap-1.5 lg:gap-2">
               <Link
                 href="/"
@@ -508,7 +508,7 @@ export default function HeaderNavbar() {
           </div>
         </div>
       </header>
-      <div className="h-11 lg:h-[52px]" aria-hidden="true" />
+      <div className="h-12 lg:h-[56px]" aria-hidden="true" />
     </>
   );
 }

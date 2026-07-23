@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
-  Filter,
   GraduationCap,
   Search,
   MapPin,
@@ -26,6 +25,7 @@ type JobsApiContentItem = Readonly<{
   readonly createdAt?: string;
   readonly isFeatured?: boolean;
   readonly organization?: string;
+  readonly qualification?: string;
   readonly priorityScore?: number;
   readonly postSlug?: string;
   readonly postTitle?: string;
@@ -42,12 +42,15 @@ type JobsApiResponse = Readonly<{
 }>;
 
 const HOME_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+const STATE_FILTER_JOBS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Job&postStatus=Published&sortBy=createdAt&sortDir=desc`;
 
 function mapApiJobToExplorerJob(item: JobsApiContentItem): LatestJob {
+  const qualification = item.qualification?.trim() || "Not Specified";
+
   return {
     badge: item.organization || item.applicationId || "JOB",
     postName: item.postTitle || "Untitled Job",
-    qualification: "Graduate",
+    qualification,
     seats:
       typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
         ? item.vacancies.toLocaleString("en-IN")
@@ -203,6 +206,10 @@ function getOrgBadge(postName: string, variantKey = "") {
   return { label, style };
 }
 
+function normalizeFilterValue(value: string): string {
+  return value.trim().toLowerCase();
+}
+
 function formatDateDdMmYyyy(value: string) {
   const parsed = parseDateSafe(value);
   if (!parsed) return value;
@@ -322,12 +329,15 @@ function formatSavedJobDateLabel(job: LatestJob) {
 
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [badgeFilter, setBadgeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
   const [closingWeekOnly, setClosingWeekOnly] = useState(false);
   const [savedJobKeys, setSavedJobKeys] = useState<string[]>([]);
   const [savedJobRecords, setSavedJobRecords] = useState<SavedJobRecord[]>([]);
+  const [dropdownScopedJobs, setDropdownScopedJobs] = useState<LatestJob[] | null>(null);
+  const [isDropdownScopedLoading, setIsDropdownScopedLoading] = useState(false);
+  const [searchFallbackJobs, setSearchFallbackJobs] = useState<LatestJob[] | null>(null);
+  const [isSearchFallbackLoading, setIsSearchFallbackLoading] = useState(false);
   const [badgeColorSeed, setBadgeColorSeed] = useState(0);
   const previousSavedCountRef = useRef(0);
   const hasHydratedSavedJobsRef = useRef(false);
@@ -343,9 +353,106 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     getKey: (job) => `${job.href}|${job.postName}|${job.startDate}|${job.lastDate}`,
   });
 
-  const allJobs = useMemo(() => {
+  const rankedItems = useMemo(() => {
     return [...items].sort(compareJobsByRanking);
   }, [items]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const selectedState = stateFilter === "all" ? "" : stateFilter.toLowerCase();
+    const selectedQualification = qualificationFilter === "all" ? "" : qualificationFilter.toLowerCase();
+    const searchTerms = [selectedState, selectedQualification].filter(Boolean);
+
+    if (searchTerms.length === 0) {
+      setDropdownScopedJobs(null);
+      setIsDropdownScopedLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const hasLocalDropdownMatch = rankedItems.some((job) => {
+      if (stateFilter !== "all") {
+        const normalizedSelectedState = normalizeFilterValue(stateFilter);
+        const normalizedJobState = normalizeFilterValue(job.state);
+
+        if (!normalizedJobState.includes(normalizedSelectedState)) {
+          return false;
+        }
+      }
+
+      if (qualificationFilter !== "all") {
+        const normalizedSelectedQualification = normalizeFilterValue(qualificationFilter);
+        const normalizedJobQualification = normalizeFilterValue(job.qualification);
+
+        if (!normalizedJobQualification.includes(normalizedSelectedQualification)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    if (hasLocalDropdownMatch) {
+      setDropdownScopedJobs(null);
+      setIsDropdownScopedLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const fetchDropdownScopedJobs = async () => {
+      setIsDropdownScopedLoading(true);
+      setDropdownScopedJobs([]);
+
+      try {
+        const searchValue = searchTerms.join(" ");
+        const response = await fetch(
+          `${STATE_FILTER_JOBS_API_URL}&search=${encodeURIComponent(searchValue)}`,
+          {
+            method: "GET",
+            next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
+          },
+        );
+
+        if (!response.ok) {
+          if (isMounted) {
+            setDropdownScopedJobs([]);
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as JobsApiResponse;
+        const content = payload.data?.content ?? [];
+
+        if (isMounted) {
+          setDropdownScopedJobs(content.map(mapApiJobToExplorerJob));
+        }
+      } catch {
+        if (isMounted) {
+          setDropdownScopedJobs([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsDropdownScopedLoading(false);
+        }
+      }
+    };
+
+    void fetchDropdownScopedJobs();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [rankedItems, stateFilter, qualificationFilter]);
+
+  const isDropdownApiMode = dropdownScopedJobs !== null;
+
+  const allJobs = useMemo(() => {
+    const source = dropdownScopedJobs ?? rankedItems;
+    return [...source].sort(compareJobsByRanking);
+  }, [dropdownScopedJobs, rankedItems]);
 
   const indexedJobs = useMemo(() => {
     return allJobs.map((job) => {
@@ -369,25 +476,156 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
     });
   }, [allJobs]);
 
-  const badgeOptions = useMemo(() => {
-    return Array.from(new Set(allJobs.map((job) => job.badge))).sort((a, b) => a.localeCompare(b));
-  }, [allJobs]);
+  useEffect(() => {
+    let isMounted = true;
+
+    const query = searchTerm.trim().toLowerCase();
+
+    if (!query) {
+      setSearchFallbackJobs(null);
+      setIsSearchFallbackLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const normalizedQuery = query.replace(/[\s,.-]/g, "");
+
+    const hasLocalMatch = indexedJobs.some(({ job, searchCorpus, normalizedSearchCorpus }) => {
+      if (stateFilter !== "all") {
+        const normalizedSelectedState = normalizeFilterValue(stateFilter);
+        const normalizedJobState = normalizeFilterValue(job.state);
+
+        if (!normalizedJobState.includes(normalizedSelectedState)) {
+          return false;
+        }
+      }
+
+      if (qualificationFilter !== "all") {
+        const normalizedSelectedQualification = normalizeFilterValue(qualificationFilter);
+        const normalizedJobQualification = normalizeFilterValue(job.qualification);
+
+        if (!normalizedJobQualification.includes(normalizedSelectedQualification)) {
+          return false;
+        }
+      }
+
+      if (closingWeekOnly) {
+        const effectiveDaysLeft = getDaysLeftFromLastDate(job.startDate, job.lastDate);
+        const matchesClosingWeek = effectiveDaysLeft !== null && effectiveDaysLeft >= 0 && effectiveDaysLeft <= 7;
+
+        if (!matchesClosingWeek) {
+          return false;
+        }
+      }
+
+      return searchCorpus.includes(query) || normalizedSearchCorpus.includes(normalizedQuery);
+    });
+
+    if (hasLocalMatch) {
+      setSearchFallbackJobs(null);
+      setIsSearchFallbackLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const fetchSearchFallbackJobs = async () => {
+      setIsSearchFallbackLoading(true);
+      setSearchFallbackJobs([]);
+
+      try {
+        const response = await fetch(
+          `${STATE_FILTER_JOBS_API_URL}&search=${encodeURIComponent(query)}`,
+          {
+            method: "GET",
+            next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
+          },
+        );
+
+        if (!response.ok) {
+          if (isMounted) {
+            setSearchFallbackJobs([]);
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as JobsApiResponse;
+        const content = payload.data?.content ?? [];
+
+        if (isMounted) {
+          setSearchFallbackJobs(content.map(mapApiJobToExplorerJob));
+        }
+      } catch {
+        if (isMounted) {
+          setSearchFallbackJobs([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsSearchFallbackLoading(false);
+        }
+      }
+    };
+
+    void fetchSearchFallbackJobs();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [closingWeekOnly, indexedJobs, qualificationFilter, searchTerm, stateFilter]);
+
+  const activeJobs = searchFallbackJobs ?? allJobs;
+
+  const indexedActiveJobs = useMemo(() => {
+    return activeJobs.map((job) => {
+      const searchCorpus = [
+        job.postName,
+        job.badge,
+        job.state,
+        job.qualification,
+        job.seats,
+        job.startDate,
+        job.lastDate,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return {
+        job,
+        searchCorpus,
+        normalizedSearchCorpus: searchCorpus.replace(/[\s,.-]/g, ""),
+      };
+    });
+  }, [activeJobs]);
 
   const filteredJobs = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     const normalizedQuery = query.replace(/[\s,.-]/g, "");
     const hasSearch = query.length > 0;
-    const hasDirectFilters = badgeFilter !== "all" || stateFilter !== "all" || qualificationFilter !== "all";
+    const hasDirectFilters = stateFilter !== "all" || qualificationFilter !== "all";
 
     if (!hasSearch && !hasDirectFilters && !closingWeekOnly) {
-      return allJobs;
+      return activeJobs;
     }
 
-    return indexedJobs
+    return indexedActiveJobs
       .filter(({ job, searchCorpus, normalizedSearchCorpus }) => {
-        if (badgeFilter !== "all" && job.badge !== badgeFilter) return false;
-        if (stateFilter !== "all" && job.state !== stateFilter) return false;
-        if (qualificationFilter !== "all" && job.qualification !== qualificationFilter) return false;
+        if (stateFilter !== "all") {
+          const normalizedSelectedState = normalizeFilterValue(stateFilter);
+          const normalizedJobState = normalizeFilterValue(job.state);
+
+          if (!normalizedJobState.includes(normalizedSelectedState)) {
+            return false;
+          }
+        }
+        if (qualificationFilter !== "all") {
+          const normalizedSelectedQualification = normalizeFilterValue(qualificationFilter);
+          const normalizedJobQualification = normalizeFilterValue(job.qualification);
+
+          if (!normalizedJobQualification.includes(normalizedSelectedQualification)) {
+            return false;
+          }
+        }
 
         if (closingWeekOnly) {
           const effectiveDaysLeft = getDaysLeftFromLastDate(job.startDate, job.lastDate);
@@ -404,7 +642,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
         return true;
       })
       .map(({ job }) => job);
-  }, [allJobs, indexedJobs, searchTerm, badgeFilter, stateFilter, qualificationFilter, closingWeekOnly]);
+  }, [activeJobs, indexedActiveJobs, searchTerm, stateFilter, qualificationFilter, closingWeekOnly]);
 
   const closingThisWeekCount = useMemo(() => {
     return allJobs.filter((job) => {
@@ -415,21 +653,15 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   const hasActiveFilters =
     searchTerm.length > 0 ||
-    badgeFilter !== "all" ||
     stateFilter !== "all" ||
     qualificationFilter !== "all" ||
     closingWeekOnly;
 
   const clearFilters = () => {
     setSearchTerm("");
-    setBadgeFilter("all");
     setStateFilter("all");
     setQualificationFilter("all");
     setClosingWeekOnly(false);
-  };
-
-  const handleBadgeFilterChange = (value: string) => {
-    setBadgeFilter(value);
   };
 
   const handleStateFilterChange = (value: string) => {
@@ -615,8 +847,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </button>
         </div>
 
-        <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+        <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto]">
+          <label className="group inline-flex min-w-0 w-full items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
             <Search className="size-3 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
@@ -629,24 +861,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
           <div className="space-y-1 sm:contents">
             <div className="grid grid-cols-2 gap-1 sm:contents">
-              <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-indigo-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
-              <Filter className="size-3 text-indigo-500" aria-hidden="true" />
-              <select
-                value={badgeFilter}
-                onChange={(event) => handleBadgeFilterChange(event.target.value)}
-                onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
-                suppressHydrationWarning
-              >
-                <option value="all">All Badges</option>
-                {badgeOptions.map((badge) => (
-                  <option key={badge} value={badge}>
-                    {badge}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-emerald-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
               <MapPin className="size-3 text-emerald-500" aria-hidden="true" />
               <select
@@ -799,15 +1013,27 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               </div>
             )}
 
-            <div ref={sentinelRef} className="col-span-full h-2" aria-hidden="true" />
+            {!isDropdownApiMode ? <div ref={sentinelRef} className="col-span-full h-2" aria-hidden="true" /> : null}
 
-            {isLoadingMore && (
+            {isDropdownApiMode && isDropdownScopedLoading ? (
+              <div className="col-span-full rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-center text-[11px] font-semibold text-cyan-800">
+                Loading filtered jobs...
+              </div>
+            ) : null}
+
+            {!isDropdownScopedLoading && isSearchFallbackLoading ? (
+              <div className="col-span-full rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-center text-[11px] font-semibold text-cyan-800">
+                No local match found. Searching more jobs...
+              </div>
+            ) : null}
+
+            {!isDropdownApiMode && isLoadingMore && (
               <div className="col-span-full rounded-lg border border-cyan-100 bg-cyan-50/60 px-3 py-2 text-center text-[11px] font-semibold text-cyan-800">
                 Loading 20 more jobs...
               </div>
             )}
 
-            {!hasMore && allJobs.length > 0 && (
+            {!isDropdownApiMode && !hasMore && allJobs.length > 0 && (
               <div className="col-span-full text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                 You have reached the latest available jobs.
               </div>
