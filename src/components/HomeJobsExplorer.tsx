@@ -623,6 +623,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
               className="w-full bg-transparent text-[12px] font-normal text-slate-700 placeholder:text-slate-400 outline-none"
+              suppressHydrationWarning
             />
           </label>
 
@@ -635,6 +636,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 onChange={(event) => handleBadgeFilterChange(event.target.value)}
                 onInput={(event) => handleBadgeFilterChange((event.target as HTMLSelectElement).value)}
                 className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                suppressHydrationWarning
               >
                 <option value="all">All Badges</option>
                 {badgeOptions.map((badge) => (
@@ -652,6 +654,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 onChange={(event) => handleStateFilterChange(event.target.value)}
                 onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
                 className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                suppressHydrationWarning
               >
                 <option value="all">All India</option>
                 {stateOptions.map((stateName) => (
@@ -672,6 +675,7 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
                 onChange={(event) => handleQualificationFilterChange(event.target.value)}
                 onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
                 className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+                suppressHydrationWarning
               >
                 <option value="all">All Qualification</option>
                 {qualificationOptions.map((qualification) => (
