@@ -12,13 +12,11 @@ const allowedDevOrigins = Array.from(
   new Set(parseCsvEnv(process.env.NEXT_ALLOWED_DEV_ORIGINS)),
 );
 
-const sitemapApiOrigin =
-  process.env.SITEMAP_API_ORIGIN?.trim() ??
-  (!isProduction ? "http://localhost:8080" : undefined);
+const sitemapApiOrigin = process.env.SITEMAP_API_ORIGIN?.trim();
 
 if (!sitemapApiOrigin) {
   throw new Error(
-    "SITEMAP_API_ORIGIN must be set in production to generate sitemap rewrites.",
+    "SITEMAP_API_ORIGIN environment variable must be set.",
   );
 }
 

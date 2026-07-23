@@ -156,7 +156,7 @@ export const DEFAULT_SEO_KEYWORDS = [
 ] as const;
 
 export const BACKEND_SITEMAP_INDEX_URL =
-  "http://localhost:8080/api/site/sitemap-index.xml";
+  `${process.env.NEXT_PUBLIC_API_BASE_URL!}/api/site/sitemap-index.xml`;
 
 export const PAGE_SITEMAP_PATHS = [
   "/",
