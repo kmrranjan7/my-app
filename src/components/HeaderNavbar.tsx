@@ -223,39 +223,26 @@ export default function HeaderNavbar() {
       
       setIsLoadingUpdates(true);
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
         const response = await fetch(`${LATEST_UPDATES_API_URL}&page=0`, {
           method: "GET",
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          },
         });
         
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.data?.content || [];
+          
+          const updates: LatestUpdateRecord[] = content.map((item: any, index: number) => ({
+            id: item.postSlug || `update-${index}`,
+            title: item.postTitle || "Untitled Update",
+            time: item.startDate || "",
+            type: item.postType || "Update",
+            href: item.postSlug ? `/${item.postSlug}` : "/updates",
+          }));
+          
+          setLatestUpdates(updates);
         }
-        
-        const data = await response.json();
-        const content = data.data?.content || [];
-        
-        const updates: LatestUpdateRecord[] = content.map((item: any, index: number) => ({
-          id: item.postSlug || `update-${index}`,
-          title: item.postTitle || "Untitled Update",
-          time: item.startDate || "",
-          type: item.postType || "Update",
-          href: item.postSlug ? `/${item.postSlug}` : "/updates",
-        }));
-        
-        setLatestUpdates(updates);
       } catch (error) {
         console.error("Failed to fetch latest updates:", error);
-        // Set empty array on error so UI shows "No updates available"
-        setLatestUpdates([]);
       } finally {
         setIsLoadingUpdates(false);
       }
