@@ -116,9 +116,10 @@ const qualificationOptions = [
   "Below 10th Pass",
   "10th Pass",
   "12th Pass",
-  "Diploma",
   "Graduate",
   "Post Graduate",
+  "Diploma",
+  
 ] as const;
 
 type QualificationFilter = "all" | (typeof qualificationOptions)[number];
@@ -815,8 +816,8 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
   return (
     <section className="relative block w-full min-w-0 max-w-full overflow-x-hidden">
-      <div className="relative mx-1 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:mx-0 sm:px-2.5">
-        <div className="flex items-center justify-between gap-2">
+      <div className="relative mx-0 w-full max-w-full rounded-xl border border-sky-100/85 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-2 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ring-1 ring-sky-100/70 backdrop-blur-sm sm:px-2.5">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex items-center gap-1.5">
             <span className="inline-flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-cyan-100 to-blue-100 text-cyan-700 shadow-sm">
               <Sparkles className="size-3.5" aria-hidden="true" />
@@ -831,13 +832,13 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           <button
             type="button"
             onClick={() => setClosingWeekOnly((prev) => !prev)}
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] ring-1 shadow-sm transition-colors sm:text-[10px] ${
+            className={`w-full max-w-full shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold uppercase leading-4 tracking-[0.1em] ring-1 shadow-sm transition-colors sm:w-auto sm:text-[10px] ${
               closingWeekOnly
                 ? "animate-pulse bg-gradient-to-r from-rose-700 to-red-700 text-white ring-rose-900 shadow-[0_0_0_2px_rgba(190,18,60,0.28)]"
                 : "bg-gradient-to-r from-rose-600 to-red-600 text-white ring-rose-700"
             }`}
           >
-            <span className="inline-flex items-center gap-1 text-white">
+            <span className="inline-flex min-w-0 flex-wrap items-center justify-center gap-1 text-white">
               Closing This Week: {closingThisWeekCount}
               <ChevronRight
                 className={`size-3 transition-transform ${closingWeekOnly ? "translate-x-0.5" : "animate-bounce"}`}
@@ -847,75 +848,68 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
           </button>
         </div>
 
-        <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_auto_auto]">
-          <label className="group inline-flex min-w-0 w-full items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100">
+        <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(130px,0.55fr)_minmax(150px,0.6fr)_auto]">
+          <label className="group inline-flex min-w-0 w-full items-center gap-1 rounded-md border border-slate-200/90 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-100 sm:col-span-2 lg:col-span-1">
             <Search className="size-3 text-slate-400 transition-colors group-focus-within:text-cyan-600" aria-hidden="true" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search post, badge, state, qualification, seats, dates"
-              className="w-full bg-transparent text-[12px] font-normal text-slate-700 placeholder:text-slate-400 outline-none"
+              className="min-w-0 w-full bg-transparent text-[12px] font-normal text-slate-700 placeholder:text-slate-400 outline-none"
               suppressHydrationWarning
             />
           </label>
 
-          <div className="space-y-1 sm:contents">
-            <div className="grid grid-cols-2 gap-1 sm:contents">
-            <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-emerald-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
-              <MapPin className="size-3 text-emerald-500" aria-hidden="true" />
-              <select
-                value={stateFilter}
-                onChange={(event) => handleStateFilterChange(event.target.value)}
-                onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
-                suppressHydrationWarning
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-emerald-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
+            <MapPin className="size-3 shrink-0 text-emerald-500" aria-hidden="true" />
+            <select
+              value={stateFilter}
+              onChange={(event) => handleStateFilterChange(event.target.value)}
+              onInput={(event) => handleStateFilterChange((event.target as HTMLSelectElement).value)}
+              className="min-w-0 w-full bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+              suppressHydrationWarning
+            >
+              <option value="all">All India</option>
+              {stateOptions.map((stateName) => (
+                <option key={stateName} value={stateName}>
+                  {stateName}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="inline-flex min-w-0 items-center gap-1 rounded-md border border-violet-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
+            <GraduationCap className="size-3 shrink-0 text-violet-500" aria-hidden="true" />
+            <select
+              value={qualificationFilter}
+              onChange={(event) => handleQualificationFilterChange(event.target.value)}
+              onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
+              className="min-w-0 w-full bg-transparent text-[12px] font-normal text-slate-700 outline-none"
+              suppressHydrationWarning
+            >
+              <option value="all">All Qualification</option>
+              {qualificationOptions.map((qualification) => (
+                <option key={qualification} value={qualification}>
+                  {qualification}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 sm:col-span-2 lg:col-span-1 lg:justify-end">
+            <span className="rounded-md bg-cyan-50 px-2 py-1 text-[10px] font-semibold text-cyan-700 ring-1 ring-cyan-200">
+              {filteredJobs.length} jobs
+            </span>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
               >
-                <option value="all">All India</option>
-                {stateOptions.map((stateName) => (
-                  <option key={stateName} value={stateName}>
-                    {stateName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            </div>
-
-            <div className="flex items-center gap-1 sm:contents">
-            <label className="inline-flex w-full min-w-0 flex-1 items-center gap-1 rounded-md border border-violet-100 bg-white/95 px-1.5 py-1 text-[11px] font-medium text-slate-600 shadow-[0_3px_10px_rgba(15,23,42,0.07)] sm:min-w-0 sm:shrink sm:flex-1">
-              <GraduationCap className="size-3 text-violet-500" aria-hidden="true" />
-              <select
-                value={qualificationFilter}
-                onChange={(event) => handleQualificationFilterChange(event.target.value)}
-                onInput={(event) => handleQualificationFilterChange((event.target as HTMLSelectElement).value)}
-                className="w-full min-w-0 bg-transparent text-[12px] font-normal text-slate-700 outline-none"
-                suppressHydrationWarning
-              >
-                <option value="all">All Qualification</option>
-                {qualificationOptions.map((qualification) => (
-                  <option key={qualification} value={qualification}>
-                    {qualification}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="flex items-center justify-end gap-1 sm:col-span-2 lg:col-span-1">
-              <span className="rounded-md bg-cyan-50 px-2 py-1 text-[10px] font-semibold text-cyan-700 ring-1 ring-cyan-200">
-                {filteredJobs.length} jobs
-              </span>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
-                >
-                  <X className="size-3" aria-hidden="true" />
-                  Clear
-                </button>
-              )}
-            </div>
-            </div>
+                <X className="size-3" aria-hidden="true" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>

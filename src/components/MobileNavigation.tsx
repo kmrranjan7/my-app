@@ -19,7 +19,7 @@ type MobileNavItem = {
 
 const mobileNavItems: MobileNavItem[] = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Jobs", href: "/latest-jobs", icon: BriefcaseBusiness },
+  { label: "Latest Jobs", href: "/latest-jobs", icon: BriefcaseBusiness },
   { label: "Admit Cards", href: "/admit-cards", icon: IdCard },
   { label: "Results", href: "/results", icon: Trophy },
 ];
