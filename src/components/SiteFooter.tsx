@@ -95,9 +95,9 @@ export default function SiteFooter() {
     <footer className="mt-5 overflow-x-clip border-t-2 border-blue-600 bg-white shadow-[0_-8px_30px_rgba(37,99,235,0.12)]">
       <div className="mx-auto max-w-7xl px-4 py-2 sm:px-5 lg:px-8">
           {/* Top Section */}
-          <div className="grid gap-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {/* Logo & About */}
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <h2 className="text-base font-bold text-slate-900 sm:text-lg">
                 Sarkari Global Result
               </h2>
@@ -154,7 +154,7 @@ export default function SiteFooter() {
             </div>
 
             {/* Follow */}
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <h3 className="mb-0.5 text-sm font-semibold text-slate-900">
                 Follow
               </h3>
@@ -188,13 +188,29 @@ export default function SiteFooter() {
           </div>
 
           {/* Disclaimer */}
-          <div className="mt-2 rounded-3xl bg-yellow-200 p-1.5 text-center shadow-[0_20px_60px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-0.5 sm:p-2">
-            <p className="flex items-center justify-center gap-1.5 text-[10px] text-slate-600 sm:text-xs">
-              <svg className="h-3.5 w-3.5 flex-shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <span>Sarkari Global Result is an independent educational and job information portal. We are not affiliated with any government organization. Please verify all information from the official website before applying.</span>
-            </p>
+          <div className="mt-3 overflow-hidden rounded-lg border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-slate-50 shadow-[0_10px_24px_rgba(37,99,235,0.08)]">
+            <div className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-2.5">
+                <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)]">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75 5.25 6v5.25c0 4.25 2.8 7.95 6.75 9 3.95-1.05 6.75-4.75 6.75-9V6L12 3.75Z" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-blue-700">
+                    Independent Information Portal
+                  </p>
+                  <p className="mt-0.5 text-xs leading-5 text-slate-600 sm:text-[13px]">
+                    Sarkari Global Result shares educational and job updates for awareness only. We are not affiliated with any government organization; always verify details on the official website before applying.
+                  </p>
+                </div>
+              </div>
+
+              <span className="inline-flex shrink-0 items-center justify-center rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-blue-700">
+                Verify Officially
+              </span>
+            </div>
           </div>
 
           {/* Bottom */}

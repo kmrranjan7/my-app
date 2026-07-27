@@ -524,7 +524,80 @@ notify("error", "Failed to extract image from PDF.");
 setBusy(false);
 }
 }
+function trimWhiteSpace(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d")!;
+  const { width, height } = canvas;
 
+  const img = ctx.getImageData(0, 0, width, height);
+  const data = img.data;
+
+  let top = 0;
+  let bottom = height - 1;
+  let left = 0;
+  let right = width - 1;
+
+  const isWhite = (r: number, g: number, b: number, a: number) =>
+    a === 0 || (r > 245 && g > 245 && b > 245);
+
+  // Top
+  outerTop:
+  for (; top < height; top++) {
+    for (let x = 0; x < width; x++) {
+      const i = (top * width + x) * 4;
+      if (!isWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) {
+        break outerTop;
+      }
+    }
+  }
+
+  // Bottom
+  outerBottom:
+  for (; bottom >= top; bottom--) {
+    for (let x = 0; x < width; x++) {
+      const i = (bottom * width + x) * 4;
+      if (!isWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) {
+        break outerBottom;
+      }
+    }
+  }
+
+  // Left
+  outerLeft:
+  for (; left < width; left++) {
+    for (let y = top; y <= bottom; y++) {
+      const i = (y * width + left) * 4;
+      if (!isWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) {
+        break outerLeft;
+      }
+    }
+  }
+
+  // Right
+  outerRight:
+  for (; right >= left; right--) {
+    for (let y = top; y <= bottom; y++) {
+      const i = (y * width + right) * 4;
+      if (!isWhite(data[i], data[i + 1], data[i + 2], data[i + 3])) {
+        break outerRight;
+      }
+    }
+  }
+
+  const cropWidth = right - left + 1;
+  const cropHeight = bottom - top + 1;
+
+  if (cropWidth <= 0 || cropHeight <= 0) return canvas;
+
+  const out = document.createElement("canvas");
+  out.width = cropWidth;
+  out.height = cropHeight;
+
+  out
+    .getContext("2d")!
+    .drawImage(canvas, left, top, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+  return out;
+}
 function onDrop(e: React.DragEvent<HTMLDivElement>) {
 e.preventDefault();
 const f = e.dataTransfer.files?.[0];
@@ -570,7 +643,12 @@ manualArea = { sx: Math.round(crop.x), sy: Math.round(crop.y), sw: Math.round(cr
 }
 
 const c = drawToCanvas(img, width, height, fitMode, forceWhiteBg, manualArea);
-const blob = await compressToTarget(c);
+
+// Remove white borders automatically
+
+const trimmedCanvas = trimWhiteSpace(c);
+
+const blob = await compressToTarget(trimmedCanvas);
 const url = URL.createObjectURL(blob);
 
 if (outputSrc) URL.revokeObjectURL(outputSrc);
@@ -708,7 +786,7 @@ Drag & drop an <b>Image</b> or <b>PDF</b> here
 <div className="flex flex-wrap gap-2">
 <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700">
 📷 Upload Image
-<input ref={imgInputRef} hidden type="file" accept="image/*" capture="user" onChange={onImageUpload} /> {/* NEW */}
+<input ref={imgInputRef} hidden type="file" accept="image/*" onChange={onImageUpload} /> {/* NEW */}
 </label>
 
 <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700">
