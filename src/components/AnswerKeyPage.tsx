@@ -102,7 +102,7 @@ export default function AnswerKeyPage() {
   return (
     <main className="w-full py-3 sm:py-4">
       <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
-        <section className="rounded-2xl border border-indigo-100/90 bg-white/95 p-3 shadow-[0_12px_26px_rgba(15,23,42,0.07)] sm:p-4">
+      
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Answer Key</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
             Welcome to Sarkari Global Result Answer Key Updates
@@ -117,7 +117,7 @@ export default function AnswerKeyPage() {
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Exam-wise Filter</span>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
           </div>
-        </section>
+
 
         {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">

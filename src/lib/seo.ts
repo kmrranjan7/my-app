@@ -161,24 +161,30 @@ export const BACKEND_SITEMAP_INDEX_URL =
 export const PAGE_SITEMAP_PATHS = [
   "/",
   "/about",
-  "/admission",
-  "/admit-card",
-  "/answer-key",
   "/contact",
-  "/disclaimer",
-  "/exam",
-  "/latest-job",
   "/privacy-policy",
-  "/result",
-  "/syllabus",
-  "/terms",
+  "/terms-and-conditions",
+  "/disclaimer",
+  "/latest-jobs",
+  "/results",
+  "/admit-cards",
+  "/exams",
+  "/image-compress",
+  "answer-keys",
+  "syllabus",
+  "admissions"
 ] as const;
 
 export const CATEGORY_SITEMAP_PATHS = [
-  "/exam",
-  "/latest-job",
-  "/admit-card",
-  "/result",
+  "/",
+  "/latest-jobs",
+  "/results",
+  "/admit-cards",
+  "/exams",
+  "/image-compress",
+  "answer-keys",
+  "syllabus",
+  "admissions"
 ] as const;
 
 export function toAbsoluteUrl(path: string): string {

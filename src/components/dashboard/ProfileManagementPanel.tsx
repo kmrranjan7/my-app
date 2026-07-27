@@ -3,7 +3,6 @@
 import { Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { API_BASE_URL } from "@/lib/apiConfig";
 import { Badge, Card, GhostButton, SectionHeading } from "@/components/dashboard/ui";
 
 type AuthApiResponse<T> = Readonly<{
@@ -19,7 +18,7 @@ type UserRecord = Readonly<{
   readonly updatedAt: string;
 }>;
 
-const AUTH_BASE_URL = `${API_BASE_URL}/api/auth`;
+const AUTH_BASE_URL = "/api/auth";
 
 async function readJson<T>(response: Response): Promise<T | null> {
   try {

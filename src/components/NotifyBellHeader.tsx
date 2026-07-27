@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { Bell, CircleDot } from "lucide-react";
-import { type ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-
 const PAGE_SIZE = 10;
+const CACHE_DURATION_MS = 60 * 1000;
 const LATEST_UPDATES_API_URL =
-  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+  `/api/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
 type PublicLatestUpdateItem = Readonly<{
   readonly id?: string;
@@ -70,6 +68,7 @@ export default function NotifyBellHeader() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [lastFetchedAt, setLastFetchedAt] = useState<number | null>(null);
   const [showUnreadDot, setShowUnreadDot] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -132,10 +131,12 @@ export default function NotifyBellHeader() {
       setNotifications(firstPageNotifications);
       setCurrentPage(0);
       setHasMore(firstPageNotifications.length === PAGE_SIZE);
+      setLastFetchedAt(Date.now());
     } catch {
       setNotifications([]);
       setCurrentPage(0);
       setHasMore(false);
+      setLastFetchedAt(null);
       setErrorMessage("Unable to load notifications.");
     } finally {
       setIsLoading(false);
@@ -203,7 +204,11 @@ export default function NotifyBellHeader() {
         setShowUnreadDot(false);
       }
 
-      await fetchLatestUpdates();
+      const isCacheExpired = !lastFetchedAt || Date.now() - lastFetchedAt > CACHE_DURATION_MS;
+
+      if (isCacheExpired && !isLoading) {
+        await fetchLatestUpdates();
+      }
     }
   };
 
@@ -215,23 +220,6 @@ export default function NotifyBellHeader() {
     loadMoreStatusLabel = "Scroll for more";
   }
 
-  let bellBadge: ReactNode = null;
-
-  if (notifications.length > 0) {
-    bellBadge = (
-      <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[14px] items-center justify-center rounded-full bg-sky-600 px-0.5 text-[8px] font-bold leading-[14px] text-white">
-        {notifications.length}
-      </span>
-    );
-  } else if (showUnreadDot) {
-    bellBadge = (
-      <span
-        className="absolute right-[1px] top-[1px] h-2 w-2 rounded-full bg-sky-600 ring-2 ring-white"
-        aria-hidden="true"
-      />
-    );
-  }
-
   return (
     <div ref={dropdownRef} className="relative shrink-0">
       <button
@@ -240,14 +228,19 @@ export default function NotifyBellHeader() {
           void handleBellClick();
         }}
         className="relative inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-1.5 text-sky-600 transition-colors hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
-        aria-label={`Notifications ${notifications.length}`}
+        aria-label="Notifications"
         title="Notifications"
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls="header-notification-menu"
       >
         <Bell className="size-3.5" aria-hidden="true" />
-        {bellBadge}
+        {showUnreadDot ? (
+          <span
+            className="absolute right-[1px] top-[1px] h-2 w-2 rounded-full bg-sky-600 ring-2 ring-white"
+            aria-hidden="true"
+          />
+        ) : null}
       </button>
 
       <div

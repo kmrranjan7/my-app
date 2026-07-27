@@ -9,7 +9,7 @@ import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 const PAGE_SIZE = 10;
 const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
 const LATEST_UPDATES_API_URL =
-  `${API_PUBLIC_BASE_URL}/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
+  `/api/latest-update?postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 const EXAMS_API_URL =
   `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
 
