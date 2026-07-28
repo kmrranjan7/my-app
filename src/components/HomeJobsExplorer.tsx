@@ -339,7 +339,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [isDropdownScopedLoading, setIsDropdownScopedLoading] = useState(false);
   const [searchFallbackJobs, setSearchFallbackJobs] = useState<LatestJob[] | null>(null);
   const [isSearchFallbackLoading, setIsSearchFallbackLoading] = useState(false);
-  const [badgeColorSeed, setBadgeColorSeed] = useState(0);
+  const [badgeColorSeed] = useState(() =>
+    jobs.reduce((seed, job) => seed + job.postName.length, 0),
+  );
   const previousSavedCountRef = useRef(0);
   const hasHydratedSavedJobsRef = useRef(false);
   const {
@@ -702,11 +704,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
       ];
     });
   };
-
-  useEffect(() => {
-    // New seed on each page load/refresh to rotate badge colors.
-    setBadgeColorSeed(Date.now());
-  }, []);
 
   useEffect(() => {
     if (typeof globalThis === "undefined" || hasHydratedSavedJobsRef.current) {

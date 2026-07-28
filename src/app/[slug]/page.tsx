@@ -4,12 +4,9 @@ import { cache } from "react";
 
 import ShareActionButton from "@/components/common/ShareActionButton";
 import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
+import { DEFAULT_SEO_KEYWORDS, SITE_URL } from "@/lib/seo";
 
-const siteUrl =
-	process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
-		? process.env.NEXT_PUBLIC_SITE_URL
-		: "https://www.sarkariglobalresult.com";
+const siteUrl = SITE_URL;
 
 const normalizedSiteUrl = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
 const SLUG_REVALIDATE_SECONDS = 60;

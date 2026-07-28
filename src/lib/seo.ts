@@ -1,7 +1,10 @@
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.startsWith("http")
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://sarkariglobalresult.com";
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+
+if (!configuredSiteUrl?.startsWith("http")) {
+  throw new Error("NEXT_PUBLIC_SITE_URL must be set to an absolute URL.");
+}
+
+export const SITE_URL = configuredSiteUrl;
 
 export const NORMALIZED_SITE_URL = SITE_URL.endsWith("/")
   ? SITE_URL.slice(0, -1)

@@ -58,8 +58,19 @@ export function useInfinitePagedFeed<T>({
   const nextPageRef = useRef(loadFirstPageOnMount ? 0 : 1);
   const isFetchingRef = useRef(false);
   const hasMoreRef = useRef(shouldAssumeMoreInitially);
+  const initialConfigRef = useRef({ initialItems, loadFirstPageOnMount, pageSize });
 
   useEffect(() => {
+    const previousConfig = initialConfigRef.current;
+    if (
+      previousConfig.initialItems === initialItems &&
+      previousConfig.loadFirstPageOnMount === loadFirstPageOnMount &&
+      previousConfig.pageSize === pageSize
+    ) {
+      return;
+    }
+
+    initialConfigRef.current = { initialItems, loadFirstPageOnMount, pageSize };
     setItems(initialItems);
     const initialHasMore = loadFirstPageOnMount || initialItems.length >= pageSize;
     setHasMore(initialHasMore);

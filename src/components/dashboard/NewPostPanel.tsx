@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import type { Editor as TinyMCEEditor } from "tinymce";
+import { SITE_URL } from "@/lib/seo";
 import { useEffect, useRef, useState } from "react";
 
 import { buildAiAutofillPatch } from "@/components/dashboard/newPostAi";
@@ -511,8 +512,8 @@ export default function NewPostPanel({ prefillRecord, onSavedRecord }: NewPostPa
   };
 
   const permalink = postSlug
-    ? `https://sarkariglobalresult.com/posts/${postSlug}`
-    : "https://sarkariglobalresult.com/posts/your-post-slug";
+    ? `${SITE_URL}/posts/${postSlug}`
+    : `${SITE_URL}/posts/your-post-slug`;
 
   const seoTitleLength = seoTitle.length;
   const seoDescriptionLength = seoDescription.length;
