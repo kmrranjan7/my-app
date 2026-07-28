@@ -16,15 +16,15 @@ const ADMISSION_CATEGORY_LINKS = [
   { label: "Entrance Updates", href: "/admission?search=Entrance" },
 ] as const;
 
-function getStatusBadgeClasses(daysLeft: string): string {
-  if (daysLeft === "Expired") {
+function getDurationBadgeClasses(duration: string): string {
+  if (duration === "Invalid dates") {
     return "border-rose-200 bg-rose-50 text-rose-700";
   }
-  if (daysLeft === "Today") {
+  if (duration === "0d left") {
     return "border-amber-200 bg-amber-50 text-amber-700";
   }
-  if (daysLeft === "N/A") {
-    return "border-slate-200 bg-slate-50 text-slate-700";
+  if (duration === "To Be Announced") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
   }
   return "border-emerald-200 bg-emerald-50 text-emerald-700";
 }
@@ -89,7 +89,7 @@ export default function AdmissionPage({ initialRows = EMPTY_INITIAL_ROWS }: Admi
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Start Date</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Last Date</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Status</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Duration</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Share</th>
                   </tr>
                 </thead>
@@ -111,8 +111,8 @@ export default function AdmissionPage({ initialRows = EMPTY_INITIAL_ROWS }: Admi
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.lastDate}</td>
                       <td className="px-2 py-2 align-top">
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>
-                          {row.daysLeft}
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getDurationBadgeClasses(row.duration)}`}>
+                          {row.duration}
                         </span>
                       </td>
                       <td className="px-2 py-2 align-top"><ShareActionButton title={row.title} href={row.href} contextLabel="Admission" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Seats", value: row.seats }, { label: "Start Date", value: row.startDate }, { label: "Last Date", value: row.lastDate }]} /></td>
@@ -129,7 +129,7 @@ export default function AdmissionPage({ initialRows = EMPTY_INITIAL_ROWS }: Admi
                     <span className="max-w-[58%] truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-cyan-800 sm:max-w-[62%]">
                       {row.badge}
                     </span>
-                    <div className="flex shrink-0 items-center gap-1"><span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>{row.daysLeft}</span><ShareActionButton title={row.title} href={row.href} contextLabel="Admission" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Seats", value: row.seats }, { label: "Start Date", value: row.startDate }, { label: "Last Date", value: row.lastDate }]} showLabel={false} buttonClassName="inline-flex size-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800" iconClassName="size-2.5" copiedTextClassName="mt-0.5 text-[9px] font-semibold text-emerald-700" /></div>
+                    <div className="flex shrink-0 items-center gap-1"><span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${getDurationBadgeClasses(row.duration)}`}>{row.duration}</span><ShareActionButton title={row.title} href={row.href} contextLabel="Admission" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Seats", value: row.seats }, { label: "Start Date", value: row.startDate }, { label: "Last Date", value: row.lastDate }]} showLabel={false} buttonClassName="inline-flex size-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800" iconClassName="size-2.5" copiedTextClassName="mt-0.5 text-[9px] font-semibold text-emerald-700" /></div>
                   </div>
                   <Link href={row.href} className="mt-1 block text-[11px] font-bold leading-3.5 text-slate-900 transition-colors hover:text-cyan-800 sm:text-[12px]">
                     {row.title}
