@@ -253,19 +253,19 @@ export default async function HomePage() {
 
         <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
           <Link
-            href="/latest-job"
+            href="/latest-jobs"
             className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
           >
             Latest Govt Jobs 2026 Notifications and Apply Online Updates
           </Link>
           <Link
-            href="/result"
+            href="/results"
             className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
           >
             Latest Sarkari Result, Merit List, and Selection List Announcements
           </Link>
           <Link
-            href="/admit-card"
+            href="/admit-cards"
             className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[13px] font-bold leading-5 text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800"
           >
             Download Admit Card and Government Exam Hall Ticket Updates
