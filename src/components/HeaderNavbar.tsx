@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Heart, CircleDot, X } from "lucide-react";
 
 import NotifyBellHeader from "@/components/NotifyBellHeader";
+import logo from "@/app/logo.png";
 
 type NavItem = {
   label: string;
@@ -259,12 +261,21 @@ export default function HeaderNavbar() {
 
           <div className="grid h-12 grid-cols-[1fr_auto] items-center gap-1.5 lg:h-[56px] lg:grid-cols-[auto_1fr_auto] lg:gap-3">
             <div className="inline-flex min-w-0 items-center gap-1.5 lg:gap-2">
+              
               <Link
                 href="/"
                 className="group inline-flex min-w-0 items-center gap-1.5 rounded-xl px-1 py-0.5 text-[13px] font-extrabold tracking-tight text-slate-900 transition-all duration-300 hover:text-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/45 lg:px-1.5"
                 aria-label="Sarkari Global Result home"
               >
-                <span className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[10px] font-black text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)]">
+                <Image
+  src={logo}
+  alt="Sarkari Global Result"
+  width={200}
+  height={200}
+  priority
+  className="shrink-0 object-contain"
+/>
+                {/* <span className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#2563EB]/30 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-[10px] font-black text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)]">
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_58%)]" />
                   <span className="relative">SGR</span>
                 </span>
@@ -275,7 +286,7 @@ export default function HeaderNavbar() {
                   <span className="hidden truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-[#2563EB] lg:block">
                     Government Career Desk
                   </span>
-                </span>
+                </span> */}
               </Link>
 
               <div className="hidden items-center justify-end gap-1.5 lg:flex">

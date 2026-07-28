@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
@@ -329,6 +330,8 @@ function formatSavedJobDateLabel(job: LatestJob) {
 }
 
 export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
+  const searchParams = useSearchParams();
+  const requestedSearch = searchParams.get("search")?.trim() ?? "";
   const [searchTerm, setSearchTerm] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
   const [qualificationFilter, setQualificationFilter] = useState<QualificationFilter>("all");
@@ -344,6 +347,11 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   );
   const previousSavedCountRef = useRef(0);
   const hasHydratedSavedJobsRef = useRef(false);
+
+  useEffect(() => {
+    setSearchTerm(requestedSearch);
+  }, [requestedSearch]);
+
   const {
     items,
     hasMore,

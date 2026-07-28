@@ -23,25 +23,25 @@ type QuickLink = Readonly<{
 }>;
 
 const GOVT_CATEGORY_LINKS: readonly QuickLink[] = [
-  { label: "SSC Jobs", href: "/latest-job?search=SSC" },
-  { label: "UPSC Jobs", href: "/latest-job?search=UPSC" },
-  { label: "Railway Jobs", href: "/latest-job?search=Railway" },
-  { label: "Bank Jobs", href: "/latest-job?search=Bank" },
-  { label: "Defence Jobs", href: "/latest-job?search=Defence" },
-  { label: "Police Jobs", href: "/latest-job?search=Police" },
-  { label: "Teaching Jobs", href: "/latest-job?search=Teaching" },
-  { label: "PSU Jobs", href: "/latest-job?search=PSU" },
+  { label: "SSC Jobs", href: "/?search=SSC" },
+  { label: "UPSC Jobs", href: "/?search=UPSC" },
+  { label: "Railway Jobs", href: "/?search=Railway" },
+  { label: "Bank Jobs", href: "/?search=Bank" },
+  { label: "Defence Jobs", href: "/?search=Defence" },
+  { label: "Police Jobs", href: "/?search=Police" },
+  { label: "Teaching Jobs", href: "/?search=Teaching" },
+  { label: "PSU Jobs", href: "/?search=PSU" },
 ] as const;
 
 const STATE_WISE_LINKS: readonly QuickLink[] = [
-  { label: "Uttar Pradesh Jobs", href: "/latest-job?search=Uttar%20Pradesh" },
-  { label: "Bihar Jobs", href: "/latest-job?search=Bihar" },
-  { label: "Madhya Pradesh Jobs", href: "/latest-job?search=Madhya%20Pradesh" },
-  { label: "Rajasthan Jobs", href: "/latest-job?search=Rajasthan" },
-  { label: "Maharashtra Jobs", href: "/latest-job?search=Maharashtra" },
-  { label: "Gujarat Jobs", href: "/latest-job?search=Gujarat" },
-  { label: "Delhi Jobs", href: "/latest-job?search=Delhi" },
-  { label: "West Bengal Jobs", href: "/latest-job?search=West%20Bengal" },
+  { label: "Uttar Pradesh Jobs", href: "/?search=Uttar%20Pradesh" },
+  { label: "Bihar Jobs", href: "/?search=Bihar" },
+  { label: "Madhya Pradesh Jobs", href: "/?search=Madhya%20Pradesh" },
+  { label: "Rajasthan Jobs", href: "/?search=Rajasthan" },
+  { label: "Maharashtra Jobs", href: "/?search=Maharashtra" },
+  { label: "Gujarat Jobs", href: "/?search=Gujarat" },
+  { label: "Delhi Jobs", href: "/?search=Delhi" },
+  { label: "West Bengal Jobs", href: "/?search=West%20Bengal" },
 ] as const;
 
 export default function LatestJobPageClient({
