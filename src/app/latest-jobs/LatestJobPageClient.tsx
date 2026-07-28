@@ -62,22 +62,22 @@ export default function LatestJobPageClient({
   });
 
   return (
-    <main className="w-full py-3 sm:py-4">
-      <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
-        <section >
-          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Latest Jobs</p>
-          <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
+    <main className="w-full py-2 sm:py-3 lg:py-4">
+      <section className="mx-auto w-[min(1220px,94vw)] space-y-2 sm:space-y-3">
+        <section className="rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/70 to-cyan-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] sm:p-3 lg:p-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-indigo-700 sm:text-[11px]">Latest Jobs</p>
+          <h2 className="mt-1 max-w-3xl text-[17px] font-black leading-tight tracking-tight text-slate-900 sm:text-[20px] lg:text-[24px]">
             Welcome to Sarkari Global Result Latest Jobs Updates
           </h2>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
+          <p className="mt-1.5 max-w-4xl text-[11px] leading-relaxed text-slate-700 sm:text-[12px] lg:text-[13px]">
             Stay informed about the latest government job notifications published across India.
             Whether you are preparing for central or state recruitment, this page is refreshed regularly to help you track important vacancies without delay.
           </p>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700">Central Jobs</span>
-            <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-700">State Jobs</span>
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Recruitment Alerts</span>
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
+          <div className="mt-2 flex flex-wrap gap-1">
+            <span className="rounded-full border border-indigo-200 bg-white/80 px-2 py-0.5 text-[9px] font-bold text-indigo-700 sm:text-[10px]">Central Jobs</span>
+            <span className="rounded-full border border-cyan-200 bg-white/80 px-2 py-0.5 text-[9px] font-bold text-cyan-700 sm:text-[10px]">State Jobs</span>
+            <span className="rounded-full border border-blue-200 bg-white/80 px-2 py-0.5 text-[9px] font-bold text-blue-700 sm:text-[10px]">Recruitment Alerts</span>
+            <span className="rounded-full border border-emerald-200 bg-white/80 px-2 py-0.5 text-[9px] font-bold text-emerald-700 sm:text-[10px]">Frequent Updates</span>
           </div>
         </section>
 
@@ -88,7 +88,7 @@ export default function LatestJobPageClient({
           </section>
         ) : (
           <section className="overflow-hidden rounded-2xl border border-cyan-100/90 bg-white/92 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
-            <div className="hidden overflow-x-auto md:block">
+            <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full border-collapse text-left">
                 <thead className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 text-white">
                   <tr>
@@ -116,9 +116,9 @@ export default function LatestJobPageClient({
                         </span>
                       </td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
-                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
+                      <td className="px-2 py-2 text-[11px] font-bold text-emerald-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
-                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.lastDate}</td>
+                      <td className="px-2 py-2 text-[11px] font-bold text-rose-700 align-top">{row.lastDate}</td>
                       <td className="px-2 py-2 align-top">
                         <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(row.status)}`}>
                           {row.status}
@@ -144,15 +144,15 @@ export default function LatestJobPageClient({
               </table>
             </div>
 
-            <div className="space-y-1.5 p-2 md:hidden">
+            <div className="grid gap-1 p-1 sm:grid-cols-2 sm:gap-1.5 sm:p-1.5 lg:hidden">
               {rows.map((row, index) => (
-                <article key={`${row.id}-${index}`} className="rounded-xl border border-slate-200/90 bg-white p-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
+                <article key={`${row.id}-${index}`} className="flex min-w-0 flex-col rounded-md border border-slate-200/90 bg-white p-1.5 shadow-sm transition-shadow hover:shadow-md">
+                  <div className="flex items-start justify-between gap-1">
+                    <span className="max-w-[58%] truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-cyan-800 sm:max-w-[62%]">
                       {row.badge}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(row.status)}`}>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${getStatusClasses(row.status)}`}>
                         {row.status}
                       </span>
                       <ShareActionButton
@@ -167,20 +167,20 @@ export default function LatestJobPageClient({
                           { label: "Last Date", value: row.lastDate },
                         ]}
                         showLabel={false}
-                        buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                        iconClassName="size-3"
-                        copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
+                        buttonClassName="inline-flex size-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                        iconClassName="size-2.5"
+                        copiedTextClassName="mt-0.5 text-[9px] font-semibold text-emerald-700"
                       />
                     </div>
                   </div>
-                  <Link href={row.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
+                  <Link href={row.href} className="mt-1 block text-[11px] font-bold leading-3.5 text-slate-900 transition-colors hover:text-cyan-800 sm:text-[12px]">
                     {row.title}
                   </Link>
-                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] text-slate-600">
-                    <p><span className="font-bold text-slate-700">State:</span> {row.state}</p>
-                    <p><span className="font-bold text-slate-700">Seats:</span> {row.seats}</p>
-                    <p><span className="font-bold text-slate-700">Start:</span> {row.startDate}</p>
-                    <p><span className="font-bold text-slate-700">Last:</span> {row.lastDate}</p>
+                  <div className="mt-1 grid grid-cols-2 gap-x-1.5 gap-y-0.5 border-t border-slate-100 pt-1 text-[8px] leading-3 text-slate-600 sm:text-[9px]">
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">State</span><span className="line-clamp-1 font-semibold text-slate-700">{row.state}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Seats</span><span className="line-clamp-1 font-bold text-emerald-700">{row.seats}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Starts</span><span className="line-clamp-1 font-semibold text-slate-700">{row.startDate}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Last date</span><span className="line-clamp-1 font-bold text-rose-700">{row.lastDate}</span></p>
                   </div>
                 </article>
               ))}
@@ -202,20 +202,20 @@ export default function LatestJobPageClient({
           </section>
         )}
 
-        <section className="grid gap-2 sm:grid-cols-2">
-          <article className="rounded-2xl border border-cyan-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
+        <section className="grid gap-2 md:grid-cols-2">
+          <article className="rounded-xl border border-cyan-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
               More Govt Posts by Category
             </h2>
             <p className="mt-1 text-[11px] text-slate-600">
               Explore SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU recruitment updates.
             </p>
-            <ul className="mt-2 grid grid-cols-2 gap-1.5">
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
               {GOVT_CATEGORY_LINKS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
+                    className="inline-flex w-full justify-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-center text-[9px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
                   >
                     {item.label}
                   </Link>
@@ -224,19 +224,19 @@ export default function LatestJobPageClient({
             </ul>
           </article>
 
-          <article className="rounded-2xl border border-blue-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
+          <article className="rounded-xl border border-blue-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
               State Wise Govt Jobs
             </h2>
             <p className="mt-1 text-[11px] text-slate-600">
               Find state-wise opportunities and regional recruitment updates across major Indian states.
             </p>
-            <ul className="mt-2 grid grid-cols-2 gap-1.5">
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
               {STATE_WISE_LINKS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-800 transition-colors hover:bg-blue-100"
+                    className="inline-flex w-full justify-center rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-center text-[9px] font-bold text-blue-800 transition-colors hover:bg-blue-100"
                   >
                     {item.label}
                   </Link>
@@ -246,13 +246,13 @@ export default function LatestJobPageClient({
           </article>
         </section>
 
-        <section className="rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-3 shadow-[0_12px_32px_rgba(15,23,42,0.08)] sm:p-4">
+        <section className="rounded-xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3 lg:p-4">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-blue-800">Related Sections</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Link href="/result" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+          <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
+            <Link href="/result" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
               Latest Sarkari Result and Merit List Updates
             </Link>
-            <Link href="/admit-card" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+            <Link href="/admit-card" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
               Download Latest Admit Card and Hall Ticket
             </Link>
           </div>

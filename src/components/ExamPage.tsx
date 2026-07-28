@@ -3,8 +3,12 @@
 import Link from "next/link";
 import ShareActionButton from "@/components/common/ShareActionButton";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
-import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { formatDate } from "@/lib/dateStatus";
+import {
+  EXAM_PAGE_SIZE,
+  fetchExamPage,
+  getExamRowKey,
+  type ExamRow,
+} from "@/app/exams/examData";
 
 const EXAM_CATEGORY_LINKS = [
   { label: "SSC Exams", href: "/exam?search=SSC" },
@@ -17,92 +21,31 @@ const EXAM_CATEGORY_LINKS = [
   { label: "State Exams", href: "/exam?search=State" },
 ] as const;
 
-type ApiExamItem = Readonly<{
-  readonly applicationId?: string;
-  readonly organization?: string;
-  readonly postSlug?: string;
-  readonly postTitle?: string;
-  readonly startDate?: string;
-  readonly endDate?: string;
-  readonly stateName?: string;
-  readonly vacancies?: number;
+type ExamPageProps = Readonly<{
+  initialRows?: readonly ExamRow[];
 }>;
 
-type ApiExamResponse = Readonly<{
-  readonly data?: {
-    readonly content?: ApiExamItem[];
-  };
-}>;
+const EMPTY_INITIAL_ROWS: readonly ExamRow[] = [];
 
-type ExamRow = Readonly<{
-  readonly id: string;
-  readonly title: string;
-  readonly href: string;
-  readonly badge: string;
-  readonly state: string;
-  readonly seats: string;
-  readonly startDate: string;
-}>;
-
-const PAGE_SIZE = 20;
-const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
-const EXAM_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Exam&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
-
-function mapToExamRow(item: ApiExamItem, index: number, page: number): ExamRow {
-  const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Exam Update").trim();
-
-  return {
-    id: item.applicationId?.trim() || slug || `exam-${page}-${index + 1}`,
-    title,
-    href: slug ? `/${slug}` : "/exam",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "EXAM",
-    state: item.stateName?.trim() || "All India",
-    seats:
-      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
-        ? item.vacancies.toLocaleString("en-IN")
-        : "N/A",
-    startDate: formatDate(item.startDate),
-  };
-}
-
-async function fetchExamPage(page: number): Promise<ExamRow[]> {
-  try {
-    const response = await fetch(`${EXAM_POSTS_API_URL}&page=${page}`, {
-      method: "GET",
-      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as ApiExamResponse;
-    const content = payload.data?.content ?? [];
-    return content.map((item, index) => mapToExamRow(item, index, page));
-  } catch {
-    return [];
-  }
-}
-
-export default function ExamPage() {
+export default function ExamPage({ initialRows = EMPTY_INITIAL_ROWS }: ExamPageProps) {
   const {
     items: rows,
     hasMore,
     isLoadingMore,
     sentinelRef,
   } = useInfinitePagedFeed<ExamRow>({
-    pageSize: PAGE_SIZE,
+    initialItems: initialRows,
+    pageSize: EXAM_PAGE_SIZE,
     fetchPage: fetchExamPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
+    getKey: getExamRowKey,
     rootMargin: "340px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: false,
   });
 
   return (
-    <main className="w-full py-3 sm:py-4">
-      <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
-       
+    <main className="w-full bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_26rem)] py-2 sm:py-3 lg:py-4">
+      <section className="mx-auto w-[min(1220px,94vw)] space-y-2.5 sm:space-y-3">
+        <section className="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/80 to-cyan-50/90 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-4 lg:p-5">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Exam</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
             Welcome to Sarkari Global Result Exam Updates
@@ -117,7 +60,12 @@ export default function ExamPage() {
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Official Sources</span>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
           </div>
-     
+        </section>
+
+        <section className="flex items-center justify-between gap-2 rounded-xl border border-amber-100 bg-white/90 p-2 shadow-[0_6px_18px_rgba(15,23,42,0.04)] sm:px-3">
+          <p className="text-[10px] font-semibold text-slate-600 sm:text-[11px]"><strong className="text-slate-800">Before you plan:</strong> check the official notice for schedule and venue details.</p>
+          <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 sm:text-[10px]">Official updates</span>
+        </section>
 
         {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
@@ -126,17 +74,17 @@ export default function ExamPage() {
           </section>
         ) : (
           <section className="overflow-hidden rounded-2xl border border-cyan-100/90 bg-white/92 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
-            <div className="hidden overflow-x-auto md:block">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-2.5 py-2 sm:px-3"><div><h2 className="text-[12px] font-black text-slate-900 sm:text-[13px]">Latest exam updates</h2><p className="text-[9px] text-slate-500 sm:text-[10px]">Open an update to view the official notice.</p></div><span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[9px] font-bold text-indigo-700 sm:text-[10px]">{rows.length} updates</span></div>
+            <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full border-collapse text-left">
                 <thead className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 text-white">
                   <tr>
                     <th className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Update</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Org</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">State</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Seats</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Exams Date</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Released</th>
                     <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Status</th>
-                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Share</th>
+                    <th className="px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,25 +101,17 @@ export default function ExamPage() {
                         </span>
                       </td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
-                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
                       <td className="px-2 py-2 align-top">
-                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                          Published
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${row.startDate === "To Be Announced" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+                          {row.startDate === "To Be Announced" ? "Pending" : "Released"}
                         </span>
                       </td>
                       <td className="px-2 py-2 align-top">
-                        <ShareActionButton
-                          title={row.title}
-                          href={row.href}
-                          contextLabel="Exam"
-                          details={[
-                            { label: "Organization", value: row.badge },
-                            { label: "State", value: row.state },
-                            { label: "Seats", value: row.seats },
-                            { label: "Start Date", value: row.startDate },
-                          ]}
-                        />
+                        <div className="flex items-center justify-between gap-2">
+                          <ShareActionButton title={row.title} href={row.href} contextLabel="Exam" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Released", value: row.startDate }]} />
+                          <Link href={row.href} className="shrink-0 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 transition-colors hover:border-indigo-300 hover:bg-indigo-100">View Details</Link>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -179,41 +119,27 @@ export default function ExamPage() {
               </table>
             </div>
 
-            <div className="space-y-1.5 p-2 md:hidden">
+            <div className="grid gap-1.5 p-1.5 sm:grid-cols-2 sm:p-2 lg:hidden">
               {rows.map((row, index) => (
-                <article key={`${row.id}-${index}`} className="rounded-xl border border-slate-200/90 bg-white p-2">
+                <article key={`${row.id}-${index}`} className="group rounded-xl border border-slate-200/90 bg-white p-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
                   <div className="flex items-start justify-between gap-2">
                     <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
                       {row.badge}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                        Published
-                      </span>
-                      <ShareActionButton
-                        title={row.title}
-                        href={row.href}
-                        contextLabel="Exam"
-                        details={[
-                          { label: "Organization", value: row.badge },
-                          { label: "State", value: row.state },
-                          { label: "Seats", value: row.seats },
-                          { label: "Start Date", value: row.startDate },
-                        ]}
-                        showLabel={false}
-                        buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                        iconClassName="size-3"
-                        copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
-                      />
-                    </div>
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${row.startDate === "To Be Announced" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+                      {row.startDate === "To Be Announced" ? "Pending" : "Released"}
+                    </span>
                   </div>
-                  <Link href={row.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
+                  <Link href={row.href} className="mt-1.5 block text-[12px] font-bold leading-4 text-slate-900 transition-colors hover:text-indigo-700">
                     {row.title}
                   </Link>
                   <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] text-slate-600">
                     <p><span className="font-bold text-slate-700">State:</span> {row.state}</p>
-                    <p><span className="font-bold text-slate-700">Seats:</span> {row.seats}</p>
-                    <p><span className="font-bold text-slate-700">Start:</span> {row.startDate}</p>
+                    <p><span className="font-bold text-slate-700">Released:</span> {row.startDate}</p>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <ShareActionButton title={row.title} href={row.href} contextLabel="Exam" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Released", value: row.startDate }]} showLabel={false} buttonClassName="inline-flex size-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700" iconClassName="size-3" copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700" />
+                    <Link href={row.href} className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 transition-colors hover:border-indigo-300 hover:bg-indigo-100">View Details</Link>
                   </div>
                 </article>
               ))}

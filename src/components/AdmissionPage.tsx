@@ -3,8 +3,7 @@
 import Link from "next/link";
 import ShareActionButton from "@/components/common/ShareActionButton";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
-import { API_PUBLIC_BASE_URL } from "@/lib/apiConfig";
-import { formatDate } from "@/lib/dateStatus";
+import { ADMISSION_PAGE_SIZE, fetchAdmissionPage, getAdmissionRowKey, type AdmissionRow } from "@/app/admissions/admissionData";
 
 const ADMISSION_CATEGORY_LINKS = [
   { label: "UG Admissions", href: "/admission?search=UG" },
@@ -16,74 +15,6 @@ const ADMISSION_CATEGORY_LINKS = [
   { label: "Law Admission", href: "/admission?search=Law" },
   { label: "Entrance Updates", href: "/admission?search=Entrance" },
 ] as const;
-
-type ApiAdmissionItem = Readonly<{
-  readonly applicationId?: string;
-  readonly organization?: string;
-  readonly postSlug?: string;
-  readonly postTitle?: string;
-  readonly startDate?: string;
-  readonly endDate?: string;
-  readonly stateName?: string;
-  readonly vacancies?: number;
-}>;
-
-type ApiAdmissionResponse = Readonly<{
-  readonly data?: {
-    readonly content?: ApiAdmissionItem[];
-  };
-}>;
-
-type AdmissionRow = Readonly<{
-  readonly id: string;
-  readonly title: string;
-  readonly href: string;
-  readonly badge: string;
-  readonly state: string;
-  readonly seats: string;
-  readonly startDate: string;
-  readonly lastDate: string;
-  readonly daysLeft: string;
-}>;
-
-const PAGE_SIZE = 20;
-const PUBLIC_FEED_REVALIDATE_SECONDS = 60;
-const ADMISSION_POSTS_API_URL = `${API_PUBLIC_BASE_URL}/jobs?postType=Admission&postStatus=Published&size=${PAGE_SIZE}&sortBy=createdAt&sortDir=desc`;
-
-function mapToAdmissionRow(item: ApiAdmissionItem, index: number, page: number): AdmissionRow {
-  const slug = (item.postSlug || "").trim();
-  const title = (item.postTitle || "Untitled Admission Update").trim();
-
-  const lastDate = item.endDate || item.startDate;
-  const daysLeft = (() => {
-    if (!lastDate) return "N/A";
-    const endDate = new Date(lastDate);
-    if (Number.isNaN(endDate.getTime())) return "N/A";
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-    const diffTime = endDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return "Expired";
-    if (diffDays === 0) return "Today";
-    return `${diffDays}d left`;
-  })();
-
-  return {
-    id: item.applicationId?.trim() || slug || `admission-${page}-${index + 1}`,
-    title,
-    href: slug ? `/${slug}` : "/admission",
-    badge: item.organization?.trim() || item.applicationId?.trim() || "ADMISSION",
-    state: item.stateName?.trim() || "All India",
-    seats:
-      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
-        ? item.vacancies.toLocaleString("en-IN")
-        : "N/A",
-    startDate: formatDate(item.startDate),
-    lastDate: formatDate(lastDate),
-    daysLeft,
-  };
-}
 
 function getStatusBadgeClasses(daysLeft: string): string {
   if (daysLeft === "Expired") {
@@ -98,43 +29,28 @@ function getStatusBadgeClasses(daysLeft: string): string {
   return "border-emerald-200 bg-emerald-50 text-emerald-700";
 }
 
-async function fetchAdmissionPage(page: number): Promise<AdmissionRow[]> {
-  try {
-    const response = await fetch(`${ADMISSION_POSTS_API_URL}&page=${page}`, {
-      method: "GET",
-      next: { revalidate: PUBLIC_FEED_REVALIDATE_SECONDS },
-    });
+type AdmissionPageProps = Readonly<{ initialRows?: readonly AdmissionRow[] }>;
+const EMPTY_INITIAL_ROWS: readonly AdmissionRow[] = [];
 
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as ApiAdmissionResponse;
-    const content = payload.data?.content ?? [];
-    return content.map((item, index) => mapToAdmissionRow(item, index, page));
-  } catch {
-    return [];
-  }
-}
-
-export default function AdmissionPage() {
+export default function AdmissionPage({ initialRows = EMPTY_INITIAL_ROWS }: AdmissionPageProps) {
   const {
     items: rows,
     hasMore,
     isLoadingMore,
     sentinelRef,
   } = useInfinitePagedFeed<AdmissionRow>({
-    pageSize: PAGE_SIZE,
+    initialItems: initialRows,
+    pageSize: ADMISSION_PAGE_SIZE,
     fetchPage: fetchAdmissionPage,
-    getKey: (item) => `${item.href}|${item.title}|${item.startDate}`,
+    getKey: getAdmissionRowKey,
     rootMargin: "340px 0px",
-    loadFirstPageOnMount: true,
+    loadFirstPageOnMount: false,
   });
 
   return (
-    <main className="w-full py-3 sm:py-4">
-      <section className="mx-auto w-[min(1220px,96vw)] space-y-2.5">
-      
+    <main className="w-full bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_26rem)] py-2 sm:py-3 lg:py-4">
+      <section className="mx-auto w-[min(1220px,94vw)] space-y-2.5 sm:space-y-3">
+        <section className="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/80 to-cyan-50/90 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-4 lg:p-5">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Admission</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
             Welcome to Sarkari Global Result Admission Updates
@@ -149,7 +65,12 @@ export default function AdmissionPage() {
             <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">Official Sources</span>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Frequent Updates</span>
           </div>
-    
+        </section>
+
+        <section className="flex items-center justify-between gap-2 rounded-xl border border-amber-100 bg-white/90 p-2 shadow-[0_6px_18px_rgba(15,23,42,0.04)] sm:px-3">
+          <p className="text-[10px] font-semibold text-slate-600 sm:text-[11px]"><strong className="text-slate-800">Before you apply:</strong> keep your required documents and application details ready.</p>
+          <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 sm:text-[10px]">Official updates</span>
+        </section>
 
         {rows.length === 0 ? (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white/85 px-4 py-10 text-center shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
@@ -158,7 +79,7 @@ export default function AdmissionPage() {
           </section>
         ) : (
           <section className="overflow-hidden rounded-2xl border border-cyan-100/90 bg-white/92 shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
-            <div className="hidden overflow-x-auto md:block">
+            <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full border-collapse text-left">
                 <thead className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-indigo-700 via-blue-600 to-cyan-500 text-white">
                   <tr>
@@ -186,7 +107,7 @@ export default function AdmissionPage() {
                         </span>
                       </td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.state}</td>
-                      <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.seats}</td>
+                      <td className="px-2 py-2 text-[11px] font-bold text-emerald-700 align-top">{row.seats}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.startDate}</td>
                       <td className="px-2 py-2 text-[11px] font-semibold text-slate-700 align-top">{row.lastDate}</td>
                       <td className="px-2 py-2 align-top">
@@ -194,63 +115,30 @@ export default function AdmissionPage() {
                           {row.daysLeft}
                         </span>
                       </td>
-                      <td className="px-2 py-2 align-top">
-                        <ShareActionButton
-                          title={row.title}
-                          href={row.href}
-                          contextLabel="Admission"
-                          details={[
-                            { label: "Organization", value: row.badge },
-                            { label: "State", value: row.state },
-                            { label: "Seats", value: row.seats },
-                            { label: "Start Date", value: row.startDate },
-                            { label: "Last Date", value: row.lastDate },
-                          ]}
-                        />
-                      </td>
+                      <td className="px-2 py-2 align-top"><ShareActionButton title={row.title} href={row.href} contextLabel="Admission" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Seats", value: row.seats }, { label: "Start Date", value: row.startDate }, { label: "Last Date", value: row.lastDate }]} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="space-y-1.5 p-2 md:hidden">
+            <div className="grid gap-1 p-1 sm:grid-cols-2 sm:gap-1.5 sm:p-1.5 lg:hidden">
               {rows.map((row, index) => (
-                <article key={`${row.id}-${index}`} className="rounded-xl border border-slate-200/90 bg-white p-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-cyan-800">
+                <article key={`${row.id}-${index}`} className="flex min-w-0 flex-col rounded-md border border-slate-200/90 bg-white p-1.5 shadow-sm transition-shadow hover:shadow-md">
+                  <div className="flex items-start justify-between gap-1">
+                    <span className="max-w-[58%] truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-cyan-800 sm:max-w-[62%]">
                       {row.badge}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>
-                        {row.daysLeft}
-                      </span>
-                      <ShareActionButton
-                        title={row.title}
-                        href={row.href}
-                        contextLabel="Admission"
-                        details={[
-                          { label: "Organization", value: row.badge },
-                          { label: "State", value: row.state },
-                          { label: "Seats", value: row.seats },
-                          { label: "Start Date", value: row.startDate },
-                          { label: "Last Date", value: row.lastDate },
-                        ]}
-                        showLabel={false}
-                        buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800"
-                        iconClassName="size-3"
-                        copiedTextClassName="mt-1 text-[10px] font-semibold text-emerald-700"
-                      />
-                    </div>
+                    <div className="flex shrink-0 items-center gap-1"><span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${getStatusBadgeClasses(row.daysLeft)}`}>{row.daysLeft}</span><ShareActionButton title={row.title} href={row.href} contextLabel="Admission" details={[{ label: "Organization", value: row.badge }, { label: "State", value: row.state }, { label: "Seats", value: row.seats }, { label: "Start Date", value: row.startDate }, { label: "Last Date", value: row.lastDate }]} showLabel={false} buttonClassName="inline-flex size-5 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800" iconClassName="size-2.5" copiedTextClassName="mt-0.5 text-[9px] font-semibold text-emerald-700" /></div>
                   </div>
-                  <Link href={row.href} className="mt-1 block text-[12px] font-bold leading-4 text-slate-900">
+                  <Link href={row.href} className="mt-1 block text-[11px] font-bold leading-3.5 text-slate-900 transition-colors hover:text-cyan-800 sm:text-[12px]">
                     {row.title}
                   </Link>
-                  <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] text-slate-600">
-                    <p><span className="font-bold text-slate-700">State:</span> {row.state}</p>
-                    <p><span className="font-bold text-slate-700">Seats:</span> {row.seats}</p>
-                    <p><span className="font-bold text-slate-700">Start:</span> {row.startDate}</p>
-                    <p><span className="font-bold text-slate-700">Last:</span> {row.lastDate}</p>
+                  <div className="mt-1 grid grid-cols-2 gap-x-1.5 gap-y-0.5 border-t border-slate-100 pt-1 text-[8px] leading-3 text-slate-600 sm:text-[9px]">
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">State</span><span className="line-clamp-1 font-semibold text-slate-700">{row.state}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Seats</span><span className="line-clamp-1 font-bold text-emerald-700">{row.seats}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Starts</span><span className="line-clamp-1 font-semibold text-slate-700">{row.startDate}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Last date</span><span className="line-clamp-1 font-bold text-rose-700">{row.lastDate}</span></p>
                   </div>
                 </article>
               ))}

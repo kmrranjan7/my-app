@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SyllabusPage from "@/components/SyllabusPage";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchSyllabusFirstPage } from "./syllabusData";
 
 export const metadata: Metadata = {
   title: "Latest Syllabus 2026 - Exam Pattern and Subject Updates",
@@ -42,6 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SyllabusRoutePage() {
-  return <SyllabusPage />;
+export default async function SyllabusRoutePage() {
+  const initialRows = await fetchSyllabusFirstPage();
+  return <SyllabusPage initialRows={initialRows} />;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AnswerKeyPage from "@/components/AnswerKeyPage";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchAnswerKeyFirstPage } from "./answerKeyData";
 
 export const metadata: Metadata = {
   title: "Latest Answer Key 2026 - Official and Provisional Key Updates",
@@ -42,6 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AnswerKeyRoutePage() {
-  return <AnswerKeyPage />;
+export default async function AnswerKeyRoutePage() {
+  const initialRows = await fetchAnswerKeyFirstPage();
+  return <AnswerKeyPage initialRows={initialRows} />;
 }

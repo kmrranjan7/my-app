@@ -29,7 +29,6 @@ export type AdmitRow = Readonly<{
   readonly href: string;
   readonly badge: string;
   readonly state: string;
-  readonly seats: string;
   readonly startDate: string;
   readonly lastDate: string;
   readonly status: string;
@@ -45,10 +44,6 @@ function mapToRow(item: ApiAdmitItem, index: number, page: number): AdmitRow {
     href: slug ? `/${slug}` : "/admit-card",
     badge: item.organization?.trim() || item.applicationId?.trim() || "ADMIT",
     state: item.stateName?.trim() || "All India",
-    seats:
-      typeof item.vacancies === "number" && Number.isFinite(item.vacancies)
-        ? item.vacancies.toLocaleString("en-IN")
-        : "N/A",
     startDate: formatDate(item.startDate),
     lastDate: formatDate(item.endDate),
     status: getStatus(item.startDate, item.endDate),

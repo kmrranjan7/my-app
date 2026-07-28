@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdmissionPage from "@/components/AdmissionPage";
 import { DEFAULT_SEO_KEYWORDS, SITE_NAME } from "@/lib/seo";
+import { fetchAdmissionFirstPage } from "./admissionData";
 
 export const metadata: Metadata = {
   title: "Admission 2026 - Latest College and Entrance Admission Updates",
@@ -42,6 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AdmissionRoutePage() {
-  return <AdmissionPage />;
+export default async function AdmissionRoutePage() {
+  const initialRows = await fetchAdmissionFirstPage();
+  return <AdmissionPage initialRows={initialRows} />;
 }
