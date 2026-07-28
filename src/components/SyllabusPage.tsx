@@ -40,7 +40,7 @@ export default function SyllabusPage({ initialRows = EMPTY_INITIAL_ROWS }: Sylla
         <section className="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/80 to-cyan-50/90 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-4 lg:p-5">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Syllabus</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
-            Welcome to Sarkari Global Result Syllabus Updates
+          Latest Government Exam Syllabus
           </h2>
           <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
             Track syllabus changes, exam pattern revisions, and subject-wise updates for major government and competitive exams.

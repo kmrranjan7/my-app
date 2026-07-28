@@ -64,9 +64,9 @@ export default function AdmitCardPageClient({
           <div className="relative">
           <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-indigo-700 sm:text-[11px]"><span className="flex size-5 items-center justify-center rounded-md bg-indigo-600 text-white"><FileCheck2 className="size-3" aria-hidden="true" /></span> Admit Cards</p>
           <h1 className="mt-2 max-w-3xl text-[18px] font-black leading-tight tracking-tight text-slate-900 sm:text-[21px] lg:text-[25px]">
-            Download Latest Government Exam Admit Cards
+          Latest Government Exam Admit Cards
           </h1>
-          <p className="mt-1.5 max-w-4xl text-[11px] leading-relaxed text-slate-700 sm:text-[12px] lg:text-[13px]">
+          <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
             Track official hall ticket releases for recruitment and entrance exams across India. Open an update to find your admit card, exam instructions, and reporting details in one place.
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">

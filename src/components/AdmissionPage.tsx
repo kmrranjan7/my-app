@@ -53,7 +53,7 @@ export default function AdmissionPage({ initialRows = EMPTY_INITIAL_ROWS }: Admi
         <section className="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/80 to-cyan-50/90 p-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-4 lg:p-5">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-indigo-700">Admission</p>
           <h2 className="mt-1 text-[17px] font-black tracking-tight text-slate-900 sm:text-[19px]">
-            Welcome to Sarkari Global Result Admission Updates
+          Latest Government Admission Updates
           </h2>
           <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
             Stay informed about the latest admission notifications for government and competitive exam updates across India.

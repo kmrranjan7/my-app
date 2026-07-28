@@ -67,9 +67,9 @@ export default function LatestJobPageClient({
         <section className="rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/70 to-cyan-50/80 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] sm:p-3 lg:p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-indigo-700 sm:text-[11px]">Latest Jobs</p>
           <h2 className="mt-1 max-w-3xl text-[17px] font-black leading-tight tracking-tight text-slate-900 sm:text-[20px] lg:text-[24px]">
-            Welcome to Sarkari Global Result Latest Jobs Updates
+          Explore the Latest Government Job Opportunities
           </h2>
-          <p className="mt-1.5 max-w-4xl text-[11px] leading-relaxed text-slate-700 sm:text-[12px] lg:text-[13px]">
+          <p className="mt-1.5 text-[12px] leading-relaxed text-slate-700 sm:text-[13px]">
             Stay informed about the latest government job notifications published across India.
             Whether you are preparing for central or state recruitment, this page is refreshed regularly to help you track important vacancies without delay.
           </p>
