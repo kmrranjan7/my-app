@@ -5,6 +5,10 @@ import { BellRing, CheckCircle2, FileCheck2 } from "lucide-react";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import ShareActionButton from "@/components/common/ShareActionButton";
 import {
+  GOVT_CATEGORY_LINKS as EXAM_CATEGORY_LINKS,
+  STATE_WISE_LINKS,
+} from "@/data/jobQuickLinks";
+import {
   ADMIT_CARD_PAGE_SIZE,
   fetchAdmitCardsPage,
   getAdmitRowKey,
@@ -15,34 +19,7 @@ type AdmitCardPageClientProps = Readonly<{
   initialRows?: readonly AdmitRow[];
 }>;
 
-type QuickLink = Readonly<{
-  readonly label: string;
-  readonly href: string;
-}>;
-
 const EMPTY_INITIAL_ROWS: readonly AdmitRow[] = [];
-
-const EXAM_CATEGORY_LINKS: readonly QuickLink[] = [
-  { label: "SSC Admit Cards", href: "/latest-job?search=SSC" },
-  { label: "UPSC Admit Cards", href: "/latest-job?search=UPSC" },
-  { label: "Railway Admit Cards", href: "/latest-job?search=Railway" },
-  { label: "Bank Admit Cards", href: "/latest-job?search=Bank" },
-  { label: "Defence Admit Cards", href: "/latest-job?search=Defence" },
-  { label: "Police Admit Cards", href: "/latest-job?search=Police" },
-  { label: "Teaching Admit Cards", href: "/latest-job?search=Teaching" },
-  { label: "PSU Admit Cards", href: "/latest-job?search=PSU" },
-] as const;
-
-const STATE_WISE_LINKS: readonly QuickLink[] = [
-  { label: "Uttar Pradesh Updates", href: "/latest-job?search=Uttar%20Pradesh" },
-  { label: "Bihar Updates", href: "/latest-job?search=Bihar" },
-  { label: "Madhya Pradesh Updates", href: "/latest-job?search=Madhya%20Pradesh" },
-  { label: "Rajasthan Updates", href: "/latest-job?search=Rajasthan" },
-  { label: "Maharashtra Updates", href: "/latest-job?search=Maharashtra" },
-  { label: "Gujarat Updates", href: "/latest-job?search=Gujarat" },
-  { label: "Delhi Updates", href: "/latest-job?search=Delhi" },
-  { label: "West Bengal Updates", href: "/latest-job?search=West%20Bengal" },
-] as const;
 
 export default function AdmitCardPageClient({
   initialRows = EMPTY_INITIAL_ROWS,

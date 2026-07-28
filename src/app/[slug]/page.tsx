@@ -179,6 +179,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 		`Read full details for ${toText(item.postTitle) || slug}.`;
 	const canonicalUrl = `${normalizedSiteUrl}/${slug}`;
 	const imageUrl = getPrimaryImageUrl(item);
+	const socialImageUrl = imageUrl ?? `${normalizedSiteUrl}/opengraph.png`;
 	const focusKeyword = toText(item.seoFocusKeyword);
 	const keywordSet = new Set<string>(DEFAULT_SEO_KEYWORDS);
 	if (focusKeyword) {
@@ -206,22 +207,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 			url: canonicalUrl,
 			siteName: "Sarkari Global Result",
 			type: "article",
-			images: imageUrl
-				? [
-					{
-						url: imageUrl,
-						width: 1200,
-						height: 630,
-						alt: title,
-					},
-				]
-				: undefined,
+			images: [
+				{
+					url: socialImageUrl,
+					width: 1200,
+					height: 630,
+					alt: title,
+				},
+			],
 		},
 		twitter: {
 			card: "summary_large_image",
 			title,
 			description,
-			images: imageUrl ? [imageUrl] : undefined,
+			images: [socialImageUrl],
 		},
 	};
 }
@@ -240,6 +239,7 @@ export default async function SlugPage({ params }: PageProps) {
 		toText(item.seoDescription) || `Read full details for ${toText(item.postTitle) || slug}.`;
 	const canonicalUrl = `${normalizedSiteUrl}/${slug}`;
 	const imageUrl = getPrimaryImageUrl(item);
+	const schemaImageUrl = imageUrl ?? `${normalizedSiteUrl}/opengraph.png`;
 	const publishedAt = toText(item.createdAt);
 	const modifiedAt = toText(item.updatedAt);
 	const faqJsonLd = buildFaqJsonLd(item.faqSchemaJson);
@@ -284,9 +284,7 @@ export default async function SlugPage({ params }: PageProps) {
 		articleJsonLd.dateModified = modifiedAt;
 	}
 
-	if (imageUrl) {
-		articleJsonLd.image = [imageUrl];
-	}
+	articleJsonLd.image = [schemaImageUrl];
 
 	const breadcrumbJsonLd = {
 		"@context": "https://schema.org",

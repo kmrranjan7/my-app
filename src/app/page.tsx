@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Sarkari Result Jobs, Admit Card, Exam, Results | Sarkari Global Result",
+    title: "Sarkari Global Result – Latest Govt Jobs, Results, Admit Card & Exams",
     description:
-      "Find the latest Sarkari Result Jobs, Government Recruitment Notifications, Admit Cards, Exam Dates, Answer Keys, Results, and Online Forms for SSC, UPSC, Railway, Banking, Police, Defence, PSU, and State Government Exams.",
+      "Get the latest Government Jobs, Sarkari Results, Admit Cards, Answer Keys, Exam Dates, Syllabus, Admissions, Scholarships, and Online Forms. Stay updated with SSC, UPSC, Railway, Banking, Defence, Police, PSU, State Government, and other recruitment notifications across India.",
     url: "/",
     siteName: SITE_NAME,
     images: [
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sarkari Result Jobs, Admit Card, Exam, Results | Sarkari Global Result",
+    title: "Sarkari Global Result – Latest Govt Jobs, Results, Admit Card & Exams",
     description:
-      "Track latest Sarkari jobs, admit card releases, exam notices, and results.",
+      "Get the latest Government Jobs, Sarkari Results, Admit Cards, Answer Keys, Exam Dates, Syllabus, Admissions, Scholarships, and Online Forms. Stay updated with SSC, UPSC, Railway, Banking, Defence, Police, PSU, State Government, and other recruitment notifications across India.",
     images: ["/opengraph.png"],
   },
 };

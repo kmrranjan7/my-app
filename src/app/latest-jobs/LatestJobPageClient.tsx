@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getStatusClasses } from "@/lib/dateStatus";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import ShareActionButton from "@/components/common/ShareActionButton";
+import { GOVT_CATEGORY_LINKS, STATE_WISE_LINKS } from "@/data/jobQuickLinks";
 import {
   fetchLatestJobsPage,
   getLatestJobRowKey,
@@ -16,33 +17,6 @@ type LatestJobPageClientProps = Readonly<{
 }>;
 
 const EMPTY_INITIAL_ROWS: readonly LatestJobRow[] = [];
-
-type QuickLink = Readonly<{
-  readonly label: string;
-  readonly href: string;
-}>;
-
-const GOVT_CATEGORY_LINKS: readonly QuickLink[] = [
-  { label: "SSC Jobs", href: "/?search=SSC" },
-  { label: "UPSC Jobs", href: "/?search=UPSC" },
-  { label: "Railway Jobs", href: "/?search=Railway" },
-  { label: "Bank Jobs", href: "/?search=Bank" },
-  { label: "Defence Jobs", href: "/?search=Defence" },
-  { label: "Police Jobs", href: "/?search=Police" },
-  { label: "Teaching Jobs", href: "/?search=Teaching" },
-  { label: "PSU Jobs", href: "/?search=PSU" },
-] as const;
-
-const STATE_WISE_LINKS: readonly QuickLink[] = [
-  { label: "Uttar Pradesh Jobs", href: "/?search=Uttar%20Pradesh" },
-  { label: "Bihar Jobs", href: "/?search=Bihar" },
-  { label: "Madhya Pradesh Jobs", href: "/?search=Madhya%20Pradesh" },
-  { label: "Rajasthan Jobs", href: "/?search=Rajasthan" },
-  { label: "Maharashtra Jobs", href: "/?search=Maharashtra" },
-  { label: "Gujarat Jobs", href: "/?search=Gujarat" },
-  { label: "Delhi Jobs", href: "/?search=Delhi" },
-  { label: "West Bengal Jobs", href: "/?search=West%20Bengal" },
-] as const;
 
 export default function LatestJobPageClient({
   initialRows = EMPTY_INITIAL_ROWS,

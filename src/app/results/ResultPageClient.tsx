@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import ShareActionButton from "@/components/common/ShareActionButton";
+import { GOVT_CATEGORY_LINKS, STATE_WISE_LINKS } from "@/data/jobQuickLinks";
 import {
   fetchResultsPage,
   getResultRowKey,
@@ -143,63 +144,63 @@ export default function ResultPageClient({
           </section>
         )}
 
-        <section className="rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-3 shadow-[0_12px_32px_rgba(15,23,42,0.08)] sm:p-4">
+<section className="grid gap-2 md:grid-cols-2">
+          <article className="rounded-xl border border-cyan-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
+              More Govt Posts by Category
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Explore SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU recruitment updates.
+            </p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
+              {GOVT_CATEGORY_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex w-full justify-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-center text-[9px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-xl border border-blue-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
+              State Wise Govt Jobs
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Find state-wise opportunities and regional recruitment updates across major Indian states.
+            </p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
+              {STATE_WISE_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex w-full justify-center rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-center text-[9px] font-bold text-blue-800 transition-colors hover:bg-blue-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
+
+        <section className="rounded-xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3 lg:p-4">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-blue-800">Related Sections</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Link href="/latest-job" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
-              Latest Govt Jobs Updates
+          <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
+            <Link href="/results" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+              Latest Sarkari Result and Merit List Updates
             </Link>
-            <Link href="/admit-card" className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
-              Latest Admit Card Download
+            <Link href="/admit-cards" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+              Download Latest Admit Card and Hall Ticket
             </Link>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-cyan-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-          <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
-            More Govt Posts by Category
-          </h2>
-          <p className="mt-1 text-[11px] text-slate-600">
-            Explore high-demand government recruitment categories with quick navigation for SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU updates.
-          </p>
-          <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
-            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-800">
-              Daily refreshed listings
-            </p>
-            <p className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-800">
-              Official notification focused
-            </p>
-            <p className="rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-800">
-              Faster category discovery
-            </p>
-          </div>
-          <ul className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-            <li>
-              <Link href="/latest-job?search=SSC" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">SSC Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=UPSC" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">UPSC Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=Railway" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">Railway Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=Bank" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">Bank Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=Defence" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">Defence Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=Police" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">Police Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=Teaching" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">Teaching Jobs</Link>
-            </li>
-            <li>
-              <Link href="/latest-job?search=PSU" className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100">PSU Jobs</Link>
-            </li>
-          </ul>
-        </section>
+       
       </section>
     </main>
   );

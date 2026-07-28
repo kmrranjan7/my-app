@@ -4,17 +4,7 @@ import Link from "next/link";
 import ShareActionButton from "@/components/common/ShareActionButton";
 import { useInfinitePagedFeed } from "@/hooks/useInfinitePagedFeed";
 import { ANSWER_KEY_PAGE_SIZE, fetchAnswerKeyPage, getAnswerKeyRowKey, type AnswerKeyRow } from "@/app/answer-keys/answerKeyData";
-
-const ANSWER_KEY_CATEGORY_LINKS = [
-  { label: "SSC Answer Key", href: "/answer-key?search=SSC" },
-  { label: "UPSC Answer Key", href: "/answer-key?search=UPSC" },
-  { label: "Railway Answer Key", href: "/answer-key?search=Railway" },
-  { label: "Bank Answer Key", href: "/answer-key?search=Bank" },
-  { label: "Defence Answer Key", href: "/answer-key?search=Defence" },
-  { label: "Police Answer Key", href: "/answer-key?search=Police" },
-  { label: "Teaching Answer Key", href: "/answer-key?search=Teaching" },
-  { label: "State Exam Answer Key", href: "/answer-key?search=State" },
-] as const;
+import { GOVT_CATEGORY_LINKS, STATE_WISE_LINKS } from "@/data/jobQuickLinks";
 
 type AnswerKeyPageProps = Readonly<{ initialRows?: readonly AnswerKeyRow[] }>;
 const EMPTY_INITIAL_ROWS: readonly AnswerKeyRow[] = [];
@@ -153,28 +143,60 @@ export default function AnswerKeyPage({ initialRows = EMPTY_INITIAL_ROWS }: Answ
           </section>
         )}
 
-        <section className="rounded-2xl border border-cyan-100/90 bg-white/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-          <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900">
-            Answer Key by Exam Category
-          </h2>
-          <p className="mt-1 text-[11px] text-slate-600">
-            Explore official answer key updates across SSC, UPSC, Railway, Banking, Defence, Police, and state-level exams.
-          </p>
-          <p className="mt-1 text-[11px] font-semibold text-slate-500">
-            Showing records from Answer_Key-type published posts in your API.
-          </p>
-          <ul className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-            {ANSWER_KEY_CATEGORY_LINKS.map((item) => (
-              <li key={item.label}>
-                <Link
-                  href={item.href}
-                  className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+<section className="grid gap-2 md:grid-cols-2">
+          <article className="rounded-xl border border-cyan-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
+              More Govt Posts by Category
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Explore SSC, UPSC, Railway, Bank, Defence, Police, Teaching, and PSU recruitment updates.
+            </p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
+              {GOVT_CATEGORY_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex w-full justify-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-center text-[9px] font-bold text-cyan-800 transition-colors hover:bg-cyan-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-xl border border-blue-100/90 bg-white/92 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3">
+            <h2 className="text-[13px] font-black uppercase tracking-[0.08em] text-slate-900 sm:text-sm">
+              State Wise Govt Jobs
+            </h2>
+            <p className="mt-1 text-[11px] text-slate-600">
+              Find state-wise opportunities and regional recruitment updates across major Indian states.
+            </p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 min-[440px]:grid-cols-2">
+              {STATE_WISE_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex w-full justify-center rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-center text-[9px] font-bold text-blue-800 transition-colors hover:bg-blue-100"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
+
+        <section className="rounded-xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3 lg:p-4">
+          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-blue-800">Related Sections</p>
+          <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
+            <Link href="/results" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+              Latest Sarkari Result and Merit List Updates
+            </Link>
+            <Link href="/admit-cards" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+              Download Latest Admit Card and Hall Ticket
+            </Link>
+          </div>
         </section>
       </section>
     </main>
