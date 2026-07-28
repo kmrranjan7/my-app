@@ -1,4 +1,4 @@
-import { BookmarkCheck, PencilLine, Trash2 } from "lucide-react";
+import { BellRing, BookmarkCheck, PencilLine, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Card, EmptyState, SectionHeading } from "@/components/dashboard/ui";
@@ -49,6 +49,8 @@ export default function SavedJobsPanel({
 }: SavedJobsPanelProps) {
   const [records, setRecords] = useState<SavedPostRecord[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pushMessage, setPushMessage] = useState<string | null>(null);
+  const [sendingPushId, setSendingPushId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{
     readonly id: string;
@@ -256,6 +258,48 @@ export default function SavedJobsPanel({
     setPendingDelete(null);
   };
 
+  const sendPushNotification = async (record: SavedPostRecord) => {
+    if (record.postStatus !== "Published" || sendingPushId) {
+      return;
+    }
+
+    setSendingPushId(record.id);
+    setPushMessage(null);
+
+    try {
+      const response = await fetch("/api/dashboard/push-notifications", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `🔔 Sarkari Global Result: ${getCategoryLabel(record.postType)} Update`,
+          body: record.postTitle,
+          url: record.postSlug ? `/${record.postSlug}` : "/latest-jobs",
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        readonly message?: string;
+        readonly data?: { readonly sent?: number; readonly failed?: number };
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message ?? "Unable to send push notification.");
+      }
+
+      const sentCount = payload?.data?.sent ?? 0;
+      const failedCount = payload?.data?.failed ?? 0;
+      setPushMessage(
+        failedCount > 0
+          ? `Sent to ${sentCount} subscriber(s). ${failedCount} delivery attempt(s) failed; check the Spring log.`
+          : `Notification sent to ${sentCount} subscriber(s).`,
+      );
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to send push notification.");
+    } finally {
+      setSendingPushId(null);
+    }
+  };
+
   const editInNewPost = (record: SavedPostRecord) => {
     onEditInNewPost?.({
       id: record.id,
@@ -383,6 +427,12 @@ export default function SavedJobsPanel({
         {errorMessage ? (
           <p className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/35 dark:text-rose-300">
             {errorMessage}
+          </p>
+        ) : null}
+
+        {pushMessage ? (
+          <p className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/35 dark:text-emerald-300">
+            {pushMessage}
           </p>
         ) : null}
 
@@ -534,6 +584,17 @@ export default function SavedJobsPanel({
                           </div>
                         ) : (
                           <div className="flex items-center justify-end gap-3">
+                            {record.postStatus === "Published" ? (
+                              <button
+                                type="button"
+                                onClick={() => void sendPushNotification(record)}
+                                disabled={sendingPushId !== null}
+                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-emerald-300"
+                              >
+                                <BellRing size={12} aria-hidden="true" />
+                                {sendingPushId === record.id ? "Sending..." : "Send Push"}
+                              </button>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => editInNewPost(record)}
@@ -640,6 +701,17 @@ export default function SavedJobsPanel({
                         ) : null}
                       </div>
                       <div className="mt-2 flex items-center gap-3">
+                        {record.postStatus === "Published" ? (
+                          <button
+                            type="button"
+                            onClick={() => void sendPushNotification(record)}
+                            disabled={sendingPushId !== null}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-emerald-300"
+                          >
+                            <BellRing size={12} aria-hidden="true" />
+                            {sendingPushId === record.id ? "Sending..." : "Send Push"}
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => editInNewPost(record)}

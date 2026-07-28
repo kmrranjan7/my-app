@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import HeaderNavbar from "@/components/HeaderNavbar";
 import SiteFooter from "@/components/SiteFooter";
+import PushPermissionPrompt from "@/components/PushPermissionPrompt";
 import {
   DEFAULT_SEO_DESCRIPTION,
   DEFAULT_SEO_KEYWORDS,
@@ -23,6 +24,12 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_SEO_DESCRIPTION,
   applicationName: SITE_NAME,
+  manifest: "/api/manifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: SITE_NAME,
+  },
   keywords: [...DEFAULT_SEO_KEYWORDS],
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -72,6 +79,7 @@ export default function RootLayout({
         <HeaderNavbar />
         {children}
         <SiteFooter />
+        <PushPermissionPrompt />
       </body>
     </html>
   );

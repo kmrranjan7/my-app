@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bell, CircleDot } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { initializeForegroundPushNotifications } from "@/lib/firebasePush";
 
 const PAGE_SIZE = 10;
 const CACHE_DURATION_MS = 60 * 1000;
@@ -78,6 +79,8 @@ export default function NotifyBellHeader() {
   const isLoadingMoreRef = useRef(false);
 
   useEffect(() => {
+    void initializeForegroundPushNotifications();
+
     const onPointerDown = (event: MouseEvent) => {
       const target = event.target;
 
