@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest government jobs and vacancy updates",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     title: "Latest Govt Jobs 2026 - Sarkari Global Result Job Notifications",
     description:
       "Latest Government Jobs, SSC, UPSC, Railway, Bank, Defence, Police, Teaching, PSU, and all other government jobs with state-wise and central vacancy updates.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

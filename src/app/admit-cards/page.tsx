@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest government exam admit card updates",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "Admit Card - Download Latest Government Exam Hall Tickets",
     description:
       "Check and download latest government exam admit cards and hall ticket updates from official notifications.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

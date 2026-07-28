@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Sarkari Global Result latest government jobs and exam updates",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     title: "Sarkari Result Jobs, Admit Card, Exam, Results | Sarkari Global Result",
     description:
       "Track latest Sarkari jobs, admit card releases, exam notices, and results.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

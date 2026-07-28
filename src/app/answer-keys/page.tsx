@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest official and provisional answer key updates",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Latest Answer Key 2026 - Official and Provisional Key Updates",
     description:
       "Track latest official and provisional answer key notifications for SSC, UPSC, Railway, Banking, Defence, Police, and state-level exams.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

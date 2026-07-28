@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest admission updates and entrance notifications",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Admission 2026 - Latest College and Entrance Admission Updates",
     description:
       "Check latest admission notifications, entrance updates, counselling schedules, and registration timelines for government and public institutions.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

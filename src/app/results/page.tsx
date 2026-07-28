@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest Sarkari results and merit list updates",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     title: "Latest Sarkari Results 2026 - Government Exam Results",
     description:
       "Check latest government exam results, merit lists, and official result announcements in one place.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 

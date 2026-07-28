@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "Latest syllabus and exam pattern updates",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Latest Syllabus 2026 - Exam Pattern and Subject Updates",
     description:
       "Get latest syllabus updates, exam pattern changes, and subject-wise coverage for SSC, UPSC, Railway, Banking, Defence, and state-level exams.",
-    images: ["/twitter-image"],
+    images: ["/opengraph.png"],
   },
 };
 
