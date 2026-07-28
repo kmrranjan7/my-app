@@ -249,10 +249,10 @@ export default function LatestJobPageClient({
         <section className="rounded-xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:p-3 lg:p-4">
           <p className="text-[11px] font-black uppercase tracking-[0.12em] text-blue-800">Related Sections</p>
           <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
-            <Link href="/result" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+            <Link href="/results" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
               Latest Sarkari Result and Merit List Updates
             </Link>
-            <Link href="/admit-card" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
+            <Link href="/admit-cards" className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-center text-[11px] font-bold text-slate-800 transition-colors hover:border-blue-400 hover:text-blue-800">
               Download Latest Admit Card and Hall Ticket
             </Link>
           </div>

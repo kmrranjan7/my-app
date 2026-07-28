@@ -8,6 +8,36 @@ function getStringField(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getValidationMessage(payload: {
+  fullName: string;
+  email: string;
+  phone: string;
+  inquiryType: string;
+  subject: string;
+  message: string;
+}): string | null {
+  if (payload.fullName.length < 2) return "Please enter a name with at least 2 characters.";
+  if (!/^\S+@\S+\.\S+$/.test(payload.email)) return "Please enter a valid email address.";
+  if (!/^\d{10}$/.test(payload.phone)) return "Please enter a valid 10-digit mobile number.";
+  if (!payload.inquiryType) return "Please select an inquiry type.";
+  if (payload.subject.length < 3) return "Subject must be at least 3 characters.";
+  if (payload.message.length < 10) return "Message must be at least 10 characters.";
+  return null;
+}
+
+function getResponseErrorMessage(responseData: unknown): string {
+  if (!responseData || typeof responseData !== "object") {
+    return "Unable to send your message right now.";
+  }
+
+  const payload = responseData as { readonly message?: unknown; readonly details?: unknown };
+  if (Array.isArray(payload.details) && payload.details.length > 0) {
+    return payload.details.filter((detail): detail is string => typeof detail === "string").join(" ");
+  }
+
+  return typeof payload.message === "string" ? payload.message : "Unable to send your message right now.";
+}
+
 export default function ContactForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +62,12 @@ export default function ContactForm() {
       message: getStringField(formData, "message"),
     };
 
+    const validationMessage = getValidationMessage(payload);
+    if (validationMessage) {
+      setErrorMessage(validationMessage);
+      return;
+    }
+
     setErrorMessage("");
     setIsSubmitting(true);
 
@@ -48,7 +84,7 @@ export default function ContactForm() {
       const success = Boolean(responseData?.success);
 
       if (!response.ok || !success) {
-        throw new Error(responseData?.message || "Unable to send your message right now.");
+        throw new Error(getResponseErrorMessage(responseData));
       }
 
       setIsOpen(true);
@@ -77,6 +113,8 @@ export default function ContactForm() {
                 type="text"
                 name="fullName"
                 required
+                minLength={2}
+                maxLength={120}
                 className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 placeholder="Enter your full name"
               />
@@ -88,6 +126,7 @@ export default function ContactForm() {
                 type="email"
                 name="email"
                 required
+                maxLength={160}
                 className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 placeholder="you@example.com"
               />
@@ -133,6 +172,8 @@ export default function ContactForm() {
                 type="text"
                 name="subject"
                 required
+                minLength={3}
+                maxLength={180}
                 className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 placeholder="Write a short subject"
               />
@@ -144,6 +185,8 @@ export default function ContactForm() {
                 name="message"
                 rows={5}
                 required
+                minLength={10}
+                maxLength={4000}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 placeholder="Write your message here..."
               />
