@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const parseCsvEnv = (value?: string) =>
   value
     ?.split(",")
@@ -9,7 +7,10 @@ const parseCsvEnv = (value?: string) =>
     .filter(Boolean) ?? [];
 
 const allowedDevOrigins = Array.from(
-  new Set(parseCsvEnv(process.env.NEXT_ALLOWED_DEV_ORIGINS)),
+  new Set([
+    "untrolled-alton-hearselike.ngrok-free.dev",
+    ...parseCsvEnv(process.env.NEXT_ALLOWED_DEV_ORIGINS),
+  ]),
 );
 
 const sitemapApiOrigin = process.env.SITEMAP_API_ORIGIN?.trim();
