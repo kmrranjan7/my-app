@@ -342,9 +342,6 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
   const [isDropdownScopedLoading, setIsDropdownScopedLoading] = useState(false);
   const [searchFallbackJobs, setSearchFallbackJobs] = useState<LatestJob[] | null>(null);
   const [isSearchFallbackLoading, setIsSearchFallbackLoading] = useState(false);
-  const [badgeColorSeed] = useState(() =>
-    jobs.reduce((seed, job) => seed + job.postName.length, 0),
-  );
   const previousSavedCountRef = useRef(0);
   const hasHydratedSavedJobsRef = useRef(false);
 
@@ -921,10 +918,9 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
 
       <div className="mt-4 w-full min-w-0">
         <div className="overflow-visible pr-0 lg:max-h-[82vh] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-gutter:stable] lg:[scrollbar-color:#0284c7_#e2e8f0] lg:[&::-webkit-scrollbar]:w-2.5 lg:[&::-webkit-scrollbar-track]:rounded-full lg:[&::-webkit-scrollbar-track]:bg-slate-200/70 lg:[&::-webkit-scrollbar-thumb]:rounded-full lg:[&::-webkit-scrollbar-thumb]:bg-gradient-to-b lg:[&::-webkit-scrollbar-thumb]:from-cyan-400 lg:[&::-webkit-scrollbar-thumb]:via-sky-500 lg:[&::-webkit-scrollbar-thumb]:to-indigo-500 lg:[&::-webkit-scrollbar-thumb]:border-2 lg:[&::-webkit-scrollbar-thumb]:border-slate-100/90">
-          <div className="min-w-0 grid grid-cols-1 gap-2 px-0 sm:grid-cols-2 lg:gap-2.5 xl:grid-cols-3">
+          <div className="min-w-0 grid grid-cols-1 gap-2 px-0 min-[560px]:grid-cols-2 lg:gap-2.5 xl:grid-cols-3">
             {filteredJobs.map((job, index) => {
               const jobKey = `${job.href}-${job.postName}`;
-              const badge = getOrgBadge(job.badge, `${jobKey}-${badgeColorSeed}`);
               const deadlineChip = getDeadlineChip(job.startDate, job.lastDate);
               const hasLastDate = job.lastDate.trim().length > 0;
               const formattedStartDate = formatDateDdMmYyyy(job.startDate);
@@ -934,71 +930,60 @@ export default function HomeJobsExplorer({ jobs }: HomeJobsExplorerProps) {
               return (
                 <article
                   key={`${job.href}-${index}`}
-                  className="group rounded-2xl border border-slate-200/90 bg-white p-2.5 shadow-[0_8px_22px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-[0_18px_38px_rgba(15,23,42,0.13)] focus-within:ring-2 focus-within:ring-cyan-200 sm:p-3"
+                  className="group flex min-w-0 flex-col rounded-lg border border-slate-200/90 bg-white p-2 shadow-sm transition-shadow hover:shadow-md sm:rounded-md sm:p-1.5"
                 >
-                  <div className="flex items-start justify-between gap-1.5">
-                    <div className="flex min-w-0 items-center">
-                      <p
-                        className={[
-                          "max-w-full truncate rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em]",
-                          badge.style,
-                        ].join(" ")}
-                      >
-                        {badge.label}
-                      </p>
+                  <div className="flex items-start justify-between gap-1">
+                    <span className="max-w-[58%] truncate rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-cyan-800 sm:max-w-[58%]">
+                      {job.badge.trim() || "JOB"}
+                    </span>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                     </div>
-
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${deadlineChip.style}`}>{deadlineChip.text}</span>
                   </div>
 
-                  <Link href={job.href} className="mt-2 block text-[13px] font-bold leading-5 text-slate-900 transition-colors group-hover:text-cyan-800">
-                    <span className="line-clamp-2">{job.postName}</span>
+                  <Link href={job.href} className="mt-1 block text-[11px] font-bold leading-3.5 text-slate-900 transition-colors hover:text-cyan-800 sm:text-[12px]">
+                    {job.postName}
                   </Link>
 
-                  <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-600">
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">State:</span> <span className="font-medium">{job.state}</span></p>
-                      <span className="inline-flex size-4 shrink-0" aria-hidden="true" />
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Seats:</span> <span className="font-bold tabular-nums text-emerald-800">{job.seats}</span></p>
-                      <ShareActionButton
-                        title={job.postName}
-                        href={job.href}
-                        contextLabel="Job Alert"
-                        details={[
-                          { label: "Organization", value: job.badge },
-                          { label: "State", value: job.state },
-                          { label: "Qualification", value: job.qualification },
-                          { label: "Seats", value: job.seats },
-                          { label: "Start Date", value: formattedStartDate },
-                          { label: "Last Date", value: hasLastDate ? formattedLastDate : "To Be Announced" },
-                        ]}
-                        showLabel={false}
-                        buttonClassName="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 max-lg:size-6"
-                        iconClassName="size-2 max-lg:size-3"
-                        copiedTextClassName="text-[8px] font-semibold text-emerald-700 max-lg:text-[10px]"
-                      />
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Start:</span> <span className="font-medium tabular-nums">{formattedStartDate}</span></p>
-                      <span className="inline-flex size-4 shrink-0" aria-hidden="true" />
-                    </div>
-                    <div className="flex min-w-0 items-center justify-between gap-1">
-                      <p className="min-w-0 truncate"><span className="font-bold text-slate-700">Last:</span> <span className="font-bold tabular-nums text-red-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
-                      <button
-                        type="button"
-                        onClick={() => toggleSavedJob(jobKey, job)}
-                        className={[
-                          "inline-flex size-4 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(15,23,42,0.10)] transition-colors active:scale-[0.98] max-lg:size-6",
-                          isSaved
-                            ? "border-rose-300 bg-rose-50/90 text-rose-600"
-                            : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-100",
-                        ].join(" ")}
-                        aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
-                      >
-                        <Heart className={isSaved ? "size-2.5 fill-current max-lg:size-3" : "size-2.5 max-lg:size-3"} aria-hidden="true" />
-                      </button>
+                  <div className="mt-1 grid grid-cols-2 gap-x-1.5 gap-y-0.5 border-t border-slate-100 pt-1 text-[8px] leading-3 text-slate-600 sm:text-[9px]">
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">State</span><span className="line-clamp-1 font-semibold text-slate-700">{job.state}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Seats</span><span className="line-clamp-1 font-bold text-emerald-700">{job.seats}</span></p>
+                    <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Starts</span><span className="line-clamp-1 font-semibold text-slate-700">{formattedStartDate}</span></p>
+                    <div className="flex min-w-0 items-end justify-between gap-1">
+                      <p className="min-w-0"><span className="block font-bold uppercase tracking-wide text-slate-400">Last date</span><span className="line-clamp-1 font-bold text-rose-700">{hasLastDate ? formattedLastDate : "To Be Announced"}</span></p>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <ShareActionButton
+                          title={job.postName}
+                          href={job.href}
+                          contextLabel="Job Alert"
+                          details={[
+                            { label: "Organization", value: job.badge },
+                            { label: "State", value: job.state },
+                            { label: "Qualification", value: job.qualification },
+                            { label: "Seats", value: job.seats },
+                            { label: "Start Date", value: formattedStartDate },
+                            { label: "Last Date", value: hasLastDate ? formattedLastDate : "To Be Announced" },
+                          ]}
+                          showLabel={false}
+                          buttonClassName="inline-flex size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 sm:size-5"
+                          iconClassName="size-3 sm:size-2.5"
+                          copiedTextClassName="mt-0.5 text-[9px] font-semibold text-emerald-700"
+                        />
+                        <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                        <button
+                          type="button"
+                          onClick={() => toggleSavedJob(jobKey, job)}
+                          className={[
+                            "inline-flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors active:scale-[0.98] sm:size-5",
+                            isSaved
+                              ? "border-rose-300 bg-rose-50/90 text-rose-600"
+                              : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-100",
+                          ].join(" ")}
+                          aria-label={isSaved ? `Unsave ${job.postName}` : `Save ${job.postName}`}
+                        >
+                          <Heart className={isSaved ? "size-3 fill-current sm:size-2.5" : "size-3 sm:size-2.5"} aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </article>

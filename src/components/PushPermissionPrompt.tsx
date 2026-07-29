@@ -5,7 +5,17 @@ import { useEffect, useState } from "react";
 
 import { registerForPushNotifications, showPushTestNotification } from "@/lib/firebasePush";
 
-const PUSH_PROMPT_ACCEPTED_KEY = "sgr-push-prompt-accepted";
+const PUSH_PROMPT_ACCEPTED_COOKIE = "sgr_push_prompt_accepted";
+const PUSH_PROMPT_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+function hasAcceptedPushPrompt(): boolean {
+  return document.cookie.split(";").some((cookie) => cookie.trim() === `${PUSH_PROMPT_ACCEPTED_COOKIE}=true`);
+}
+
+function savePushPromptAcceptance(): void {
+  const secureAttribute = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${PUSH_PROMPT_ACCEPTED_COOKIE}=true; Max-Age=${PUSH_PROMPT_COOKIE_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secureAttribute}`;
+}
 
 export default function PushPermissionPrompt() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +23,7 @@ export default function PushPermissionPrompt() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (window.localStorage.getItem(PUSH_PROMPT_ACCEPTED_KEY) === "true") {
+    if (hasAcceptedPushPrompt()) {
       return;
     }
 
@@ -36,6 +46,9 @@ export default function PushPermissionPrompt() {
       return;
     }
 
+    // Do not keep the page blocked while the browser permission, service
+    // worker, Firebase token, and subscription save complete.
+    setIsOpen(false);
     setIsEnabling(true);
     setMessage("");
 
@@ -51,12 +64,12 @@ export default function PushPermissionPrompt() {
         throw new Error("Unable to save notification preferences.");
       }
 
-      window.localStorage.setItem(PUSH_PROMPT_ACCEPTED_KEY, "true");
+      savePushPromptAcceptance();
       await showPushTestNotification();
       setMessage("Alerts are enabled for this device.");
-      window.setTimeout(() => setIsOpen(false), 1200);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to enable alerts.");
+      setIsOpen(true);
     } finally {
       setIsEnabling(false);
     }
